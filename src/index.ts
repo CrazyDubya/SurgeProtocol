@@ -12,6 +12,7 @@ import { characterRoutes } from './api/character';
 import { missionRoutes } from './api/mission';
 import { factionRoutes } from './api/faction';
 import { adminRoutes } from './api/admin';
+import { economyRoutes } from './api/economy';
 
 // Environment bindings
 type Bindings = {
@@ -57,7 +58,7 @@ app.route('/api/auth', authRoutes);
 app.route('/api/characters', characterRoutes);
 app.route('/api/missions', missionRoutes);
 app.route('/api/factions', factionRoutes);
-// app.route('/api/economy', economyRoutes); // TODO: Implement
+app.route('/api/economy', economyRoutes);
 
 // WebSocket upgrade endpoints for Durable Objects
 app.get('/ws/combat/:combatId', async (c) => {
