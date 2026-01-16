@@ -11,6 +11,7 @@ import { authRoutes } from './api/auth';
 import { characterRoutes } from './api/character';
 import { missionRoutes } from './api/mission';
 import { factionRoutes } from './api/faction';
+import { adminRoutes } from './api/admin';
 
 // Environment bindings
 type Bindings = {
@@ -47,9 +48,9 @@ app.get('/health', (c) => {
   });
 });
 
-// Internal token management routes
-// TODO: Add authentication middleware for these routes
+// Internal routes (should be protected in production)
 app.route('/internal/tokens', tokenRoutes);
+app.route('/internal/admin', adminRoutes);
 
 // API routes
 app.route('/api/auth', authRoutes);
