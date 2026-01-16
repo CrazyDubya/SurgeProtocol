@@ -1,7 +1,8 @@
 /**
  * Surge Protocol - Main Application
  *
- * Performance optimizations:
+ * Production features:
+ * - Error boundaries for graceful error handling
  * - Lazy loading for route components
  * - Suspense boundaries for loading states
  */
@@ -11,6 +12,7 @@ import { Router, Route, Switch } from 'wouter-preact';
 import { ThemeProvider } from '@components/layout/ThemeProvider';
 import { Layout } from '@components/layout/Layout';
 import { ProtectedRoute } from '@components/layout/ProtectedRoute';
+import { ErrorBoundary } from '@components/layout/ErrorBoundary';
 import { PageLoader } from '@components/ui/PageLoader';
 
 // Auth pages (loaded immediately - critical path)
@@ -47,9 +49,10 @@ function ProtectedPage({
 
 export function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <Switch>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <Router>
+          <Switch>
           {/* Public auth routes */}
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
@@ -90,9 +93,10 @@ export function App() {
               </Layout>
             )}
           </Route>
-        </Switch>
-      </Router>
-    </ThemeProvider>
+          </Switch>
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
