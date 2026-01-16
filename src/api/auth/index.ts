@@ -23,6 +23,7 @@ import {
   authMiddleware,
   type StoredSession,
 } from '../../middleware/auth';
+import { authRateLimit } from '../../middleware/rateLimit';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -63,6 +64,11 @@ const refreshSchema = z.object({
 // =============================================================================
 
 export const authRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Apply rate limiting to auth endpoints to prevent brute force
+authRoutes.use('/register', authRateLimit());
+authRoutes.use('/login', authRateLimit());
+authRoutes.use('/refresh', authRateLimit());
 
 /**
  * POST /auth/register
