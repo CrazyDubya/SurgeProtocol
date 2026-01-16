@@ -74,6 +74,14 @@
   --tier-apex: #ffffff;
 
   /* ===========================================
+     FACTION COLORS (muted in Algorithm view)
+     =========================================== */
+  --faction-omni: #00d4ff;       /* OmniDeliver - algorithm cyan */
+  --faction-saints: #cc66ff;     /* Chrome Saints - purple */
+  --faction-tide: #ff3300;       /* Red Tide - threat red */
+  --faction-dragons: #ff8800;    /* Neon Dragons - warning orange */
+
+  /* ===========================================
      STATUS COLORS
      =========================================== */
   --status-healthy: #00ff66;
@@ -143,6 +151,7 @@
      =========================================== */
   --font-ui: 'Roboto Mono', 'Consolas', monospace;
   --font-display: 'Exo 2', 'Rajdhani', sans-serif;
+  --font-narrative: 'IBM Plex Sans', 'Segoe UI', sans-serif;
   --font-data: 'Source Code Pro', 'Roboto Mono', monospace;
   --font-label: 'Rajdhani', 'Roboto Condensed', sans-serif;
 
