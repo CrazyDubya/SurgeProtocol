@@ -1,0 +1,176 @@
+/**
+ * Algorithm Page Styles
+ * Full communication interface with The Algorithm
+ */
+
+.algorithm {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-5);
+  min-height: calc(100vh - 120px);
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 1024px) {
+  .algorithm {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   MAIN AREA (Terminal)
+   =========================================== */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   SECTION
+   =========================================== */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===========================================
+   TABS
+   =========================================== */
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.tab.active {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
+
+/* ===========================================
+   QUICK STATS
+   =========================================== */
+
+.quickStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.quickStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.quickStatLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.quickStatValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.quickStatValue.highlight {
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   DIRECTIVES LIST
+   =========================================== */
+
+.directives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.directive {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.directiveIcon {
+  font-size: var(--text-sm);
+  color: var(--accent-algorithm);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.directiveText {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.directive.priority .directiveIcon {
+  color: var(--accent-danger);
+}
+
+.directive.priority .directiveText {
+  color: var(--text-primary);
+}

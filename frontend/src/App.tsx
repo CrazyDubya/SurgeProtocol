@@ -3,6 +3,7 @@ import { ThemeProvider } from '@components/layout/ThemeProvider';
 import { Layout } from '@components/layout/Layout';
 import { Dashboard } from '@pages/Dashboard';
 import { Missions } from '@pages/Missions';
+import { Algorithm } from '@pages/Algorithm';
 import { Character } from '@pages/Character';
 import { Inventory } from '@pages/Inventory';
 import { NotFound } from '@pages/NotFound';
@@ -15,6 +16,7 @@ export function App() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/missions" component={Missions} />
+            <Route path="/algorithm" component={Algorithm} />
             <Route path="/character" component={Character} />
             <Route path="/inventory" component={Inventory} />
             <Route component={NotFound} />

@@ -1,0 +1,317 @@
+/**
+ * Reputation Display Component Styles
+ */
+
+.reputation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   MAIN METER
+   =========================================== */
+
+.mainMeter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.meterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meterLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+}
+
+.meterValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+.meterTrack {
+  height: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: 6px;
+  transition: width var(--duration-normal) var(--ease-out);
+  position: relative;
+}
+
+.meterFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+}
+
+/* Meter markers */
+.meterMarkers {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1);
+}
+
+.meterMarker {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   STATUS DISPLAY
+   =========================================== */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.statusIcon {
+  font-size: var(--text-2xl);
+}
+
+.statusContent {
+  flex: 1;
+}
+
+.statusTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.statusDescription {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0 0;
+}
+
+/* Status variants */
+.status-hostile {
+  border-left: 3px solid var(--accent-danger);
+}
+.status-hostile .statusIcon { color: var(--accent-danger); }
+.status-hostile .statusTitle { color: var(--accent-danger); }
+
+.status-distant {
+  border-left: 3px solid var(--accent-warning);
+}
+.status-distant .statusIcon { color: var(--accent-warning); }
+
+.status-observant {
+  border-left: 3px solid var(--text-secondary);
+}
+.status-observant .statusIcon { color: var(--text-secondary); }
+
+.status-familiar {
+  border-left: 3px solid var(--accent-algorithm);
+}
+.status-familiar .statusIcon { color: var(--accent-algorithm); }
+
+.status-intimate {
+  border-left: 3px solid var(--accent-success);
+}
+.status-intimate .statusIcon { color: var(--accent-success); }
+.status-intimate .statusTitle { color: var(--accent-success); }
+
+.status-unified {
+  border-left: 3px solid var(--accent-humanity, #ff00ff);
+}
+.status-unified .statusIcon { color: var(--accent-humanity, #ff00ff); }
+.status-unified .statusTitle { color: var(--accent-humanity, #ff00ff); }
+
+/* ===========================================
+   STAT BREAKDOWN
+   =========================================== */
+
+.breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.breakdownItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.breakdownLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.breakdownValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.breakdownValue.positive {
+  color: var(--accent-success);
+}
+
+.breakdownValue.negative {
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   RECENT CHANGES
+   =========================================== */
+
+.changes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.changesTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+.changeItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.changeIcon {
+  font-size: var(--text-sm);
+}
+
+.changeItem.positive .changeIcon {
+  color: var(--accent-success);
+}
+
+.changeItem.negative .changeIcon {
+  color: var(--accent-danger);
+}
+
+.changeText {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.changeValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.changeItem.positive .changeValue {
+  color: var(--accent-success);
+}
+
+.changeItem.negative .changeValue {
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   COMPACT MODE
+   =========================================== */
+
+.compact {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.compactIcon {
+  font-size: var(--text-xl);
+  color: var(--accent-algorithm);
+}
+
+.compactInfo {
+  flex: 1;
+}
+
+.compactLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.compactValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+.compactStatus {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.compactMeter {
+  width: 100px;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.compactMeterFill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: 3px;
+}
