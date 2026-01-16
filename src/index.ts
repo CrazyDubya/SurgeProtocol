@@ -68,6 +68,29 @@ app.get('/ws/war/:warId', async (c) => {
   return stub.fetch(c.req.raw);
 });
 
+app.get('/ws/world', async (c) => {
+  const id = c.env.WORLD_CLOCK.idFromName('global');
+  const stub = c.env.WORLD_CLOCK.get(id);
+  return stub.fetch(c.req.raw);
+});
+
+// REST endpoints for Durable Objects
+app.all('/api/combat/:combatId/*', async (c) => {
+  const id = c.env.COMBAT_SESSION.idFromName(c.req.param('combatId'));
+  const stub = c.env.COMBAT_SESSION.get(id);
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace(`/api/combat/${c.req.param('combatId')}`, '');
+  return stub.fetch(new Request(url.toString(), c.req.raw));
+});
+
+app.all('/api/world/*', async (c) => {
+  const id = c.env.WORLD_CLOCK.idFromName('global');
+  const stub = c.env.WORLD_CLOCK.get(id);
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace('/api/world', '');
+  return stub.fetch(new Request(url.toString(), c.req.raw));
+});
+
 // 404 handler
 app.notFound((c) => {
   return c.json(
@@ -93,7 +116,7 @@ app.onError((err, c) => {
 
 export default app;
 
-// Durable Object exports will be added as they're implemented
-// export { CombatSession } from './realtime/combat';
-// export { WarTheater } from './realtime/war';
-// export { WorldClock } from './realtime/world';
+// Durable Object exports
+export { CombatSession } from './realtime/combat';
+export { WorldClock } from './realtime/world';
+// export { WarTheater } from './realtime/war'; // TODO: Implement
