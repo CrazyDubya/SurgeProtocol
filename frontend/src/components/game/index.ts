@@ -7,6 +7,14 @@
 export { CharacterStatus, CharacterStatusMini } from './CharacterStatus';
 export type { CharacterStatusProps } from './CharacterStatus';
 
+// Attribute Display
+export { AttributeDisplay, AttributeSummary, DerivedStats } from './AttributeDisplay';
+export type { AttributeDisplayProps, AttributeSummaryProps, DerivedStatsProps } from './AttributeDisplay';
+
+// Augmentation Slots
+export { AugmentationSlots } from './AugmentationSlots';
+export type { AugmentationSlotsProps } from './AugmentationSlots';
+
 // Mission Card
 export { MissionCard, MissionListItem } from './MissionCard';
 export type { MissionCardProps } from './MissionCard';
@@ -42,6 +50,14 @@ export type { MessageHistoryProps, HistoryMessage } from './MessageHistory';
 // Reputation Display
 export { ReputationDisplay } from './ReputationDisplay';
 export type { ReputationDisplayProps, ReputationChange } from './ReputationDisplay';
+
+// Inventory Grid
+export { InventoryGrid } from './InventoryGrid';
+export type { InventoryGridProps } from './InventoryGrid';
+
+// Item Detail
+export { ItemDetail } from './ItemDetail';
+export type { ItemDetailProps } from './ItemDetail';
 
 // Quick Actions
 export { QuickActions, NavActions, StatAction } from './QuickActions';

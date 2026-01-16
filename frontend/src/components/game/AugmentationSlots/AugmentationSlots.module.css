@@ -1,0 +1,375 @@
+/**
+ * Augmentation Slots Component Styles
+ * Cybernetic body map and slot management
+ */
+
+.augmentations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   BODY MAP
+   =========================================== */
+
+.bodyMap {
+  position: relative;
+  width: 200px;
+  height: 320px;
+  margin: 0 auto;
+}
+
+.bodyOutline {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 300px;
+  border: 2px solid var(--border-default);
+  border-radius: 60px 60px 20px 20px;
+  background: var(--bg-secondary);
+}
+
+/* Head */
+.bodyOutline::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  border: 2px solid var(--border-default);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+}
+
+/* ===========================================
+   SLOT POSITIONS
+   =========================================== */
+
+.slot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-default);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  z-index: 1;
+}
+
+.slot:hover {
+  border-color: var(--accent-algorithm);
+  transform: scale(1.1);
+}
+
+.slot.active {
+  border-color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.2);
+  box-shadow: 0 0 15px var(--accent-algorithm);
+}
+
+.slot.dormant {
+  border-color: var(--accent-warning);
+  background: rgba(255, 165, 0, 0.2);
+}
+
+.slot.damaged {
+  border-color: var(--accent-danger);
+  background: rgba(255, 0, 0, 0.2);
+  animation: damagedPulse 2s infinite;
+}
+
+@keyframes damagedPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.slot.empty {
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+.slot.empty:hover {
+  opacity: 1;
+}
+
+.slotIcon {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.slot.active .slotIcon {
+  color: var(--accent-algorithm);
+}
+
+/* Slot positions */
+.slot-ocular { top: -30px; left: 50%; transform: translateX(-50%); }
+.slot-neural { top: -10px; left: 50%; transform: translateX(-50%); }
+.slot-arm_left { top: 80px; left: -20px; }
+.slot-arm_right { top: 80px; right: -20px; }
+.slot-torso { top: 120px; left: 50%; transform: translateX(-50%); }
+.slot-spine { top: 180px; left: 50%; transform: translateX(-50%); }
+.slot-leg_left { top: 260px; left: 20px; }
+.slot-leg_right { top: 260px; right: 20px; }
+
+/* ===========================================
+   SLOT LIST
+   =========================================== */
+
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.slotItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.slotItem:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.slotItem.selected {
+  border-color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.1);
+}
+
+.slotItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-lg);
+}
+
+.slotItem.active .slotItemIcon {
+  color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.1);
+}
+
+.slotItem.dormant .slotItemIcon {
+  color: var(--accent-warning);
+  background: rgba(255, 165, 0, 0.1);
+}
+
+.slotItem.damaged .slotItemIcon {
+  color: var(--accent-danger);
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.slotItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.slotItemName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.slotItemLocation {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.slotItemStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.slotItemHumanity {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-humanity, #ff00ff);
+}
+
+/* ===========================================
+   AUGMENTATION DETAIL
+   =========================================== */
+
+.detail {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.detailName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.detailSlot {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.detailDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.detailEffects {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.effectItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-algorithm);
+}
+
+.effectIcon {
+  font-size: var(--text-xs);
+}
+
+.detailHumanity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.humanityLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.humanityValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--accent-humanity, #ff00ff);
+}
+
+/* ===========================================
+   HUMANITY COST METER
+   =========================================== */
+
+.humanityMeter {
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.humanityHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.humanityTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.humanityTotal {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-humanity, #ff00ff);
+}
+
+.humanityBar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.humanityFill {
+  height: 100%;
+  background: var(--accent-humanity, #ff00ff);
+  border-radius: 4px;
+  transition: width var(--duration-normal);
+}
+
+.humanityWarning {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   EMPTY SLOT
+   =========================================== */
+
+.emptySlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: var(--text-2xl);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}

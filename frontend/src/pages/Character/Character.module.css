@@ -1,0 +1,265 @@
+/**
+ * Character Page Styles
+ */
+
+.character {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-5);
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1024px) {
+  .character {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   MAIN CONTENT
+   =========================================== */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-algorithm);
+  border-radius: var(--radius-md);
+  font-size: var(--text-4xl);
+  color: var(--accent-algorithm);
+  flex-shrink: 0;
+}
+
+.identity {
+  flex: 1;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.alias {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  color: var(--accent-algorithm);
+  font-style: italic;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-algorithm);
+  border-radius: var(--radius-sm);
+}
+
+.levelLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.levelValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   VITALS
+   =========================================== */
+
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .vitals {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vitalCard {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.vitalHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.vitalLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.vitalValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.vitalBar {
+  height: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.vitalFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width var(--duration-normal);
+}
+
+.vitalFill.hp {
+  background: var(--accent-success);
+}
+
+.vitalFill.humanity {
+  background: var(--accent-humanity, #ff00ff);
+}
+
+.vitalFill.xp {
+  background: var(--accent-xp, var(--accent-warning));
+}
+
+/* ===========================================
+   SECTIONS
+   =========================================== */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   CREDITS CARD
+   =========================================== */
+
+.creditsCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-xp, var(--accent-warning));
+  border-radius: var(--radius-md);
+}
+
+.creditsLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.creditsValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+/* ===========================================
+   TABS
+   =========================================== */
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.tab.active {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
