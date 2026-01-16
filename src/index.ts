@@ -11,6 +11,7 @@ import { authRoutes } from './api/auth';
 import { characterRoutes } from './api/character';
 import { missionRoutes } from './api/mission';
 import { factionRoutes } from './api/faction';
+import { skillRoutes } from './api/skills';
 import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
@@ -71,6 +72,7 @@ app.route('/api/auth', authRoutes);
 app.route('/api/characters', characterRoutes);
 app.route('/api/missions', missionRoutes);
 app.route('/api/factions', factionRoutes);
+app.route('/api/skills', skillRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
