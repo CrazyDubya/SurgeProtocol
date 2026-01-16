@@ -29,6 +29,12 @@ import {
   generateProceduralEnemy,
 } from '../../db';
 import type { Combatant } from '../../game/mechanics/combat';
+import {
+  type DistrictEvent,
+  type EventModifier,
+  EVENT_TEMPLATES,
+  getEventSummary,
+} from '../../game/events/district';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -79,15 +85,16 @@ missionRoutes.use('*', requireCharacterMiddleware());
 /**
  * GET /missions/available
  * List missions available for the character's current tier.
+ * Applies district event modifiers to mission data.
  */
 missionRoutes.get('/available', async (c) => {
   const characterId = c.get('characterId')!;
 
-  // Get character's current tier
+  // Get character's current tier and location
   const character = await c.env.DB
-    .prepare('SELECT current_tier, carrier_rating FROM characters WHERE id = ?')
+    .prepare('SELECT current_tier, carrier_rating, current_location_id FROM characters WHERE id = ?')
     .bind(characterId)
-    .first<{ current_tier: number; carrier_rating: number }>();
+    .first<{ current_tier: number; carrier_rating: number; current_location_id: string | null }>();
 
   if (!character) {
     return c.json({
@@ -97,14 +104,49 @@ missionRoutes.get('/available', async (c) => {
   }
 
   // Get available missions for this tier range
-  const missions = await getAvailableMissions(
+  const baseMissions = await getAvailableMissions(
     c.env.DB,
     character.current_tier,
     character.carrier_rating
   );
 
+  // Get character's current district (default to 'downtown' if not set)
+  const districtId = character.current_location_id || 'downtown';
+
+  // Get active district events
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+
+  // Apply event modifiers to missions
+  const missions = baseMissions.map(mission => {
+    const rewardMod = modifiers.get('MISSION_REWARD') || 1.0;
+    const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
+
+    return {
+      ...mission,
+      // Show modified rewards
+      effective_credits: Math.round(mission.base_credits * rewardMod),
+      effective_xp: Math.round(mission.base_xp * rewardMod),
+      // Show danger level modification
+      danger_modifier: dangerMod,
+      danger_warning: dangerMod > 1.3 ? 'HIGH' : dangerMod > 1.0 ? 'ELEVATED' : null,
+      // Original values for reference
+      base_credits: mission.base_credits,
+      base_xp: mission.base_xp,
+    };
+  });
+
   // Get active mission to check if player can accept new ones
   const activeMission = await getActiveMission(c.env.DB, characterId);
+
+  // Format active events for response
+  const eventWarnings = activeEvents.map(e => ({
+    type: e.type,
+    name: e.name,
+    severity: e.severity,
+    summary: getEventSummary(e),
+    endsAt: e.endTime.toISOString(),
+  }));
 
   return c.json({
     success: true,
@@ -113,6 +155,14 @@ missionRoutes.get('/available', async (c) => {
       count: missions.length,
       canAcceptNew: !activeMission,
       currentTier: character.current_tier,
+      currentDistrict: districtId,
+      activeEvents: eventWarnings,
+      modifiers: {
+        missionReward: modifiers.get('MISSION_REWARD') || 1.0,
+        routeDanger: modifiers.get('ROUTE_DANGER') || 1.0,
+        routeTime: modifiers.get('ROUTE_TIME') || 1.0,
+        detectionRisk: modifiers.get('DETECTION_RISK') || 1.0,
+      },
     },
   });
 });
@@ -161,6 +211,7 @@ missionRoutes.get('/active', async (c) => {
 /**
  * GET /missions/:id
  * Get details of a specific mission definition.
+ * Includes district event warnings and modified rewards.
  */
 missionRoutes.get('/:id', async (c) => {
   const missionId = c.req.param('id');
@@ -175,11 +226,11 @@ missionRoutes.get('/:id', async (c) => {
     }, 404);
   }
 
-  // Get character's tier to check if mission is accessible
+  // Get character's tier and location to check if mission is accessible
   const character = await c.env.DB
-    .prepare('SELECT current_tier FROM characters WHERE id = ?')
+    .prepare('SELECT current_tier, current_location_id FROM characters WHERE id = ?')
     .bind(characterId)
-    .first<{ current_tier: number }>();
+    .first<{ current_tier: number; current_location_id: string | null }>();
 
   const isAccessible = character &&
     mission.tier_minimum <= character.current_tier &&
@@ -197,13 +248,55 @@ missionRoutes.get('/:id', async (c) => {
     .bind(missionId)
     .all();
 
+  // Get district events and calculate modifiers
+  const districtId = character?.current_location_id || 'downtown';
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+
+  const rewardMod = modifiers.get('MISSION_REWARD') || 1.0;
+  const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
+  const timeMod = modifiers.get('ROUTE_TIME') || 1.0;
+
+  // Format event warnings
+  const eventWarnings = activeEvents.map(e => ({
+    type: e.type,
+    name: e.name,
+    severity: e.severity,
+    description: e.description,
+    effects: e.modifiers.map(m => ({
+      type: m.type,
+      multiplier: m.value,
+      description: m.type === 'ROUTE_DANGER' ? 'Increased danger' :
+                   m.type === 'ROUTE_TIME' ? 'Travel delays' :
+                   m.type === 'MISSION_REWARD' ? 'Modified rewards' :
+                   m.type === 'DETECTION_RISK' ? 'Detection risk' : m.type,
+    })),
+  }));
+
   return c.json({
     success: true,
     data: {
-      mission,
+      mission: {
+        ...mission,
+        effective_credits: Math.round(mission.base_credits * rewardMod),
+        effective_xp: Math.round(mission.base_xp * rewardMod),
+        effective_time_limit: mission.time_limit_minutes
+          ? Math.round(mission.time_limit_minutes / timeMod)
+          : null,
+      },
       requirements: requirements.results,
       rewards: rewards.results,
       isAccessible,
+      districtConditions: {
+        districtId,
+        dangerLevel: dangerMod > 1.5 ? 'EXTREME' :
+                     dangerMod > 1.3 ? 'HIGH' :
+                     dangerMod > 1.0 ? 'ELEVATED' : 'NORMAL',
+        dangerMultiplier: dangerMod,
+        rewardMultiplier: rewardMod,
+        timeMultiplier: timeMod,
+        activeEvents: eventWarnings,
+      },
     },
   });
 });
@@ -443,6 +536,7 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
       result = await processCombatAction(
         c.env.DB,
         c.env.COMBAT_SESSION,
+        c.env.CACHE,
         instanceId,
         characterId,
         missionDef?.tier_minimum ?? 1,
@@ -571,8 +665,20 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   const elapsedMinutes = (Date.now() - new Date(instance.started_at).getTime()) / 60000;
   const timeBonusMultiplier = elapsedMinutes < instance.time_limit_minutes * 0.75 ? 1.1 : 1.0;
 
-  const finalCredits = Math.floor(instance.base_credits * creditMultiplier * timeBonusMultiplier);
-  const finalXp = Math.floor(instance.base_xp * xpMultiplier);
+  // Get character's district and apply event modifiers
+  const character = await c.env.DB
+    .prepare('SELECT current_location_id FROM characters WHERE id = ?')
+    .bind(characterId)
+    .first<{ current_location_id: string | null }>();
+
+  const districtId = character?.current_location_id || 'downtown';
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const eventModifiers = getEffectiveModifiers(activeEvents);
+  const eventRewardMod = eventModifiers.get('MISSION_REWARD') || 1.0;
+
+  // Apply all multipliers: outcome * time bonus * district events
+  const finalCredits = Math.floor(instance.base_credits * creditMultiplier * timeBonusMultiplier * eventRewardMod);
+  const finalXp = Math.floor(instance.base_xp * xpMultiplier * eventRewardMod);
 
   // Update mission instance
   await c.env.DB
@@ -634,6 +740,17 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   // Get updated character
   const updatedCharacter = await getCharacter(c.env.DB, characterId);
 
+  // Build message with event context
+  let message = completion.outcome === 'SUCCESS'
+    ? 'Delivery confirmed. Payment transferred.'
+    : completion.outcome === 'PARTIAL'
+      ? 'Partial completion noted. Reduced payment processed.'
+      : 'Mission failed. The Algorithm has taken note.';
+
+  if (eventRewardMod > 1.0) {
+    message += ` District conditions granted a ${Math.round((eventRewardMod - 1) * 100)}% bonus.`;
+  }
+
   return c.json({
     success: true,
     data: {
@@ -643,13 +760,15 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
         xp: finalXp,
         ratingChange,
         timeBonus: timeBonusMultiplier > 1,
+        eventBonus: eventRewardMod !== 1.0,
+        eventMultiplier: eventRewardMod,
+      },
+      districtConditions: {
+        districtId,
+        activeEvents: activeEvents.map(e => e.name),
       },
       character: updatedCharacter,
-      message: completion.outcome === 'SUCCESS'
-        ? 'Delivery confirmed. Payment transferred.'
-        : completion.outcome === 'PARTIAL'
-          ? 'Partial completion noted. Reduced payment processed.'
-          : 'Mission failed. The Algorithm has taken note.',
+      message,
     },
   });
 });
@@ -1021,9 +1140,146 @@ async function processInteraction(
  * Process a COMBAT mission action.
  * Creates a combat session and returns WebSocket connection info.
  */
+// =============================================================================
+// DISTRICT EVENT HELPERS
+// =============================================================================
+
+/** Stored event format in KV */
+interface StoredDistrictEvent {
+  id: string;
+  type: string;
+  districtId: string;
+  severity: string;
+  name: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  modifiers: EventModifier[];
+}
+
+/**
+ * Get active district events from KV storage.
+ */
+async function getActiveDistrictEvents(
+  kv: KVNamespace,
+  districtId: string
+): Promise<DistrictEvent[]> {
+  const key = `district_events:${districtId}`;
+  const stored = await kv.get<StoredDistrictEvent[]>(key, 'json');
+
+  if (!stored) return [];
+
+  const now = new Date();
+  return stored
+    .filter(e => new Date(e.endTime) > now)
+    .map(e => ({
+      ...e,
+      type: e.type as DistrictEvent['type'],
+      severity: e.severity as DistrictEvent['severity'],
+      startTime: new Date(e.startTime),
+      endTime: new Date(e.endTime),
+    }));
+}
+
+/**
+ * Get combined event modifiers for a district.
+ */
+function getEffectiveModifiers(
+  events: DistrictEvent[]
+): Map<EventModifier['type'], number> {
+  const modifiers = new Map<EventModifier['type'], number>();
+
+  // Start with base values
+  const modifierTypes: EventModifier['type'][] = [
+    'ROUTE_TIME', 'ROUTE_DANGER', 'SHOP_PRICE',
+    'NPC_AVAILABILITY', 'MISSION_REWARD', 'DETECTION_RISK'
+  ];
+  for (const type of modifierTypes) {
+    modifiers.set(type, 1.0);
+  }
+
+  // Apply event modifiers (multiplicative)
+  for (const event of events) {
+    for (const mod of event.modifiers) {
+      const current = modifiers.get(mod.type) || 1.0;
+      modifiers.set(mod.type, current * mod.value);
+    }
+  }
+
+  return modifiers;
+}
+
+/**
+ * Apply a modifier to a base value.
+ * Reserved for future use (timing modifiers, stealth checks, etc.)
+ */
+function _applyModifier(
+  modifiers: Map<EventModifier['type'], number>,
+  type: EventModifier['type'],
+  baseValue: number
+): number {
+  const modifier = modifiers.get(type) || 1.0;
+  return Math.round(baseValue * modifier);
+}
+
+/**
+ * Generate a random event for testing/demo purposes.
+ * In production, events would be triggered by game logic or admin actions.
+ */
+function _generateRandomEvent(districtId: string, durationMinutes: number = 60): DistrictEvent {
+  const types = Object.keys(EVENT_TEMPLATES) as Array<keyof typeof EVENT_TEMPLATES>;
+  const type = types[Math.floor(Math.random() * types.length)]!;
+  const template = EVENT_TEMPLATES[type];
+
+  const now = new Date();
+  return {
+    id: nanoid(),
+    districtId,
+    startTime: now,
+    endTime: new Date(now.getTime() + durationMinutes * 60 * 1000),
+    ...template,
+  };
+}
+
+/**
+ * Store a district event in KV.
+ * Reserved for admin endpoints and game event triggers.
+ */
+async function _storeDistrictEvent(
+  kv: KVNamespace,
+  event: DistrictEvent
+): Promise<void> {
+  const key = `district_events:${event.districtId}`;
+  const existing = await kv.get<StoredDistrictEvent[]>(key, 'json') || [];
+
+  const stored: StoredDistrictEvent = {
+    ...event,
+    startTime: event.startTime.toISOString(),
+    endTime: event.endTime.toISOString(),
+  };
+
+  // Filter out expired events and add new one
+  const now = new Date();
+  const updated = [
+    ...existing.filter(e => new Date(e.endTime) > now),
+    stored,
+  ];
+
+  // Store with TTL matching the longest event duration
+  const maxEndTime = Math.max(...updated.map(e => new Date(e.endTime).getTime()));
+  const ttlSeconds = Math.ceil((maxEndTime - now.getTime()) / 1000) + 60;
+
+  await kv.put(key, JSON.stringify(updated), { expirationTtl: ttlSeconds });
+}
+
+// =============================================================================
+// COMBAT ACTION HANDLER
+// =============================================================================
+
 async function processCombatAction(
   db: D1Database,
   combatDO: DurableObjectNamespace,
+  kv: KVNamespace,
   instanceId: string,
   characterId: string,
   missionTier: number,
@@ -1050,7 +1306,7 @@ async function processCombatAction(
     };
   }
 
-  // Get character combat data
+  // Get character combat data and district info
   const characterData = await getCharacterCombatData(db, characterId);
   if (!characterData) {
     return {
@@ -1059,6 +1315,19 @@ async function processCombatAction(
       details: { error: 'Could not load character combat data' },
     };
   }
+
+  // Get character's current district for event modifiers
+  const character = await db
+    .prepare('SELECT current_location_id FROM characters WHERE id = ?')
+    .bind(characterId)
+    .first<{ current_location_id: string | null }>();
+
+  const districtId = character?.current_location_id || 'downtown';
+
+  // Fetch district events and calculate danger modifier
+  const activeEvents = await getActiveDistrictEvents(kv, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+  const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
 
   // Convert character to Combatant format
   const playerCombatant: Combatant = {
@@ -1098,10 +1367,34 @@ async function processCombatAction(
   const enemyType = (params?.enemyType as 'GANGER' | 'CORPORATE' | 'DRONE' | 'BEAST' | 'BOSS') ?? 'GANGER';
   const enemyCount = Math.min((params?.enemyCount as number) ?? 1, 3); // Max 3 enemies
 
-  // Generate enemies
+  // Generate enemies with danger modifier applied
+  // Danger increases: HP, attack bonus, and potentially enemy count
   const enemies: Combatant[] = [];
-  for (let i = 0; i < enemyCount; i++) {
+  const effectiveEnemyCount = dangerMod > 1.5
+    ? Math.min(enemyCount + 1, 4) // Extra enemy at extreme danger
+    : enemyCount;
+
+  for (let i = 0; i < effectiveEnemyCount; i++) {
     const enemy = generateProceduralEnemy(missionTier, enemyType);
+
+    // Scale enemy stats based on danger modifier
+    if (dangerMod > 1.0) {
+      // Increase HP (up to +50% at 1.5x danger)
+      const hpBonus = Math.floor(enemy.hpMax * (dangerMod - 1));
+      enemy.hp += hpBonus;
+      enemy.hpMax += hpBonus;
+
+      // Increase attack modifier based on danger
+      if (enemy.weapon) {
+        enemy.weapon.attackMod += Math.floor((dangerMod - 1) * 2);
+      }
+
+      // Add danger indicator to name
+      if (dangerMod > 1.3) {
+        enemy.name = `Elite ${enemy.name}`;
+      }
+    }
+
     enemies.push(enemy);
   }
 
@@ -1165,6 +1458,27 @@ async function processCombatAction(
         hp: playerCombatant.hp,
         hpMax: playerCombatant.hpMax,
       },
+      districtConditions: {
+        districtId,
+        dangerLevel: dangerMod > 1.5 ? 'EXTREME' :
+                     dangerMod > 1.3 ? 'HIGH' :
+                     dangerMod > 1.0 ? 'ELEVATED' : 'NORMAL',
+        dangerMultiplier: dangerMod,
+        activeEvents: activeEvents.map(e => e.name),
+      },
     },
   };
 }
+
+// =============================================================================
+// EXPORTED UTILITIES
+// =============================================================================
+// These utilities are exported for admin endpoints and testing
+
+export {
+  getActiveDistrictEvents,
+  getEffectiveModifiers,
+  _applyModifier as applyEventModifier,
+  _generateRandomEvent as generateRandomEvent,
+  _storeDistrictEvent as storeDistrictEvent,
+};
