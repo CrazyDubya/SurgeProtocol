@@ -362,7 +362,11 @@ describe('Damage Calculation', () => {
       const result = calculateDamage(attacker, defender, weapon, 0);
 
       expect(result.armorReduction).toBe(4);
-      expect(result.finalDamage).toBe(Math.max(0, result.rawDamage - 4));
+      // Account for minimum 1 damage rule if rawDamage > 0
+      const expectedDamage = result.rawDamage > 0
+        ? Math.max(1, result.rawDamage - 4)
+        : 0;
+      expect(result.finalDamage).toBe(expectedDamage);
     });
 
     it('should ensure minimum 1 damage if any damage dealt', () => {
