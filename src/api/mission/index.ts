@@ -27,6 +27,7 @@ import {
   getCharacter,
   getCharacterCombatData,
   generateProceduralEnemy,
+  getSkillCheckData,
 } from '../../db';
 import type { Combatant } from '../../game/mechanics/combat';
 import {
@@ -1058,34 +1059,66 @@ async function processSkillCheck(
     };
   }
 
-  // Get character's skill level
-  const skill = await db
-    .prepare(
-      `SELECT cs.current_level FROM character_skills cs
-       JOIN skill_definitions sd ON cs.skill_id = sd.id
-       WHERE cs.character_id = ? AND sd.code = ?`
-    )
-    .bind(characterId, skillCode)
-    .first<{ current_level: number }>();
+  // Get comprehensive skill check data including:
+  // - Skill level
+  // - Governing attribute modifier
+  // - Equipment bonuses
+  // - Condition penalties
+  const checkData = await getSkillCheckData(db, characterId, skillCode);
 
-  const skillLevel = skill?.current_level ?? 0;
+  if (!checkData) {
+    return {
+      success: false,
+      outcome: 'UNKNOWN_SKILL',
+      details: { error: `Unknown skill: ${skillCode}` },
+    };
+  }
 
-  // Simple 2d6 + skill vs difficulty
+  // Roll 2d6 + total bonus vs difficulty
   const roll1 = Math.floor(Math.random() * 6) + 1;
   const roll2 = Math.floor(Math.random() * 6) + 1;
-  const total = roll1 + roll2 + skillLevel;
+  const rollTotal = roll1 + roll2;
+  const total = rollTotal + checkData.totalBonus;
   const success = total >= difficulty;
 
+  // Determine margin of success/failure
+  const margin = total - difficulty;
+
+  // Critical success on natural 12, critical failure on natural 2
+  const isCriticalSuccess = rollTotal === 12;
+  const isCriticalFailure = rollTotal === 2;
+
+  let outcome = success ? 'SKILL_SUCCESS' : 'SKILL_FAILURE';
+  if (isCriticalSuccess) outcome = 'CRITICAL_SUCCESS';
+  if (isCriticalFailure) outcome = 'CRITICAL_FAILURE';
+
   return {
-    success,
-    outcome: success ? 'SKILL_SUCCESS' : 'SKILL_FAILURE',
+    success: success || isCriticalSuccess,
+    outcome,
     details: {
-      skill: skillCode,
+      skill: checkData.skillCode,
+      skillName: checkData.skillName,
       roll: [roll1, roll2],
-      skillBonus: skillLevel,
+      rollTotal,
+      // Breakdown of bonuses
+      skillLevel: checkData.skillLevel,
+      attributeModifier: checkData.attributeModifier,
+      governingAttribute: checkData.governingAttribute
+        ? {
+            code: checkData.governingAttribute.code,
+            name: checkData.governingAttribute.name,
+            value: checkData.governingAttribute.effectiveValue,
+          }
+        : null,
+      equipmentBonus: checkData.equipmentBonus,
+      conditionPenalty: checkData.conditionPenalty,
+      totalBonus: checkData.totalBonus,
+      // Final calculation
       total,
       difficulty,
-      margin: total - difficulty,
+      margin,
+      isCriticalSuccess,
+      isCriticalFailure,
     },
   };
 }

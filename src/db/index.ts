@@ -58,4 +58,8 @@ export {
   type CharacterCombatData,
   type NPCCombatData,
   type GeneratedEnemy,
+
+  // Skill Checks
+  getSkillCheckData,
+  type SkillCheckData,
 } from './queries';

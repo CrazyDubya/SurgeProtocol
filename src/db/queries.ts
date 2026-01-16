@@ -1085,3 +1085,209 @@ export function generateProceduralEnemy(
     conditions: [],
   };
 }
+
+// =============================================================================
+// SKILL CHECK QUERIES
+// =============================================================================
+
+/** Skill check data interface */
+export interface SkillCheckData {
+  skillCode: string;
+  skillName: string;
+  skillLevel: number;
+  governingAttribute: {
+    code: string;
+    name: string;
+    effectiveValue: number;
+  } | null;
+  attributeModifier: number;
+  equipmentBonus: number;
+  conditionPenalty: number;
+  totalBonus: number;
+}
+
+/**
+ * Get all data needed for a skill check.
+ * Includes skill level, attribute modifier, equipment bonuses, and condition penalties.
+ */
+export async function getSkillCheckData(
+  db: D1Database,
+  characterId: string,
+  skillCode: string
+): Promise<SkillCheckData | null> {
+  // Get skill definition with governing attribute
+  const skillDef = await db
+    .prepare(
+      `SELECT sd.id as skill_id, sd.code, sd.name, sd.governing_attribute_id,
+              ad.code as attr_code, ad.name as attr_name
+       FROM skill_definitions sd
+       LEFT JOIN attribute_definitions ad ON sd.governing_attribute_id = ad.id
+       WHERE sd.code = ?`
+    )
+    .bind(skillCode)
+    .first<{
+      skill_id: string;
+      code: string;
+      name: string;
+      governing_attribute_id: string | null;
+      attr_code: string | null;
+      attr_name: string | null;
+    }>();
+
+  if (!skillDef) {
+    return null;
+  }
+
+  // Get character's skill level
+  const charSkill = await db
+    .prepare(
+      `SELECT current_level FROM character_skills
+       WHERE character_id = ? AND skill_id = ?`
+    )
+    .bind(characterId, skillDef.skill_id)
+    .first<{ current_level: number }>();
+
+  const skillLevel = charSkill?.current_level ?? 0;
+
+  // Get governing attribute's effective value if one exists
+  let attrValue = 10; // Default if no attribute
+  let attrModifier = 0;
+
+  if (skillDef.attr_code) {
+    const attrResult = await db
+      .prepare(
+        `SELECT ca.current_value + ca.bonus_from_augments + ca.bonus_from_items +
+                ca.bonus_from_conditions + ca.temporary_modifier as effective_value
+         FROM character_attributes ca
+         JOIN attribute_definitions ad ON ca.attribute_id = ad.id
+         WHERE ca.character_id = ? AND ad.code = ?`
+      )
+      .bind(characterId, skillDef.attr_code)
+      .first<{ effective_value: number }>();
+
+    attrValue = attrResult?.effective_value ?? 10;
+    // Calculate attribute modifier: floor((attr - 10) / 2)
+    // e.g., 10 = +0, 12 = +1, 14 = +2, 8 = -1
+    attrModifier = Math.floor((attrValue - 10) / 2);
+  }
+
+  // Get equipment bonuses for this skill from equipped items
+  // Items store skill bonuses in passive_effects or equip_effects JSON
+  const equippedItems = await db
+    .prepare(
+      `SELECT id.passive_effects, id.equip_effects
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND (id.passive_effects IS NOT NULL OR id.equip_effects IS NOT NULL)`
+    )
+    .bind(characterId)
+    .all<{ passive_effects: string | null; equip_effects: string | null }>();
+
+  let equipmentBonus = 0;
+  for (const item of equippedItems.results) {
+    // Check passive_effects
+    if (item.passive_effects) {
+      try {
+        const effects = JSON.parse(item.passive_effects) as Record<string, unknown>;
+        if (effects.skill_bonuses && typeof effects.skill_bonuses === 'object') {
+          const bonuses = effects.skill_bonuses as Record<string, number>;
+          if (bonuses[skillCode]) {
+            equipmentBonus += bonuses[skillCode];
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+    // Check equip_effects
+    if (item.equip_effects) {
+      try {
+        const effects = JSON.parse(item.equip_effects) as Record<string, unknown>;
+        if (effects.skill_bonuses && typeof effects.skill_bonuses === 'object') {
+          const bonuses = effects.skill_bonuses as Record<string, number>;
+          if (bonuses[skillCode]) {
+            equipmentBonus += bonuses[skillCode];
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+  }
+
+  // Get active condition penalties
+  // Conditions can have stat_modifiers or skill penalties
+  const activeConditions = await db
+    .prepare(
+      `SELECT cd.stat_modifiers, cd.attribute_modifiers, cc.current_stacks
+       FROM character_conditions cc
+       JOIN condition_definitions cd ON cc.condition_id = cd.id
+       WHERE cc.character_id = ?
+       AND (cc.duration_remaining_seconds IS NULL OR cc.duration_remaining_seconds > 0)`
+    )
+    .bind(characterId)
+    .all<{
+      stat_modifiers: string | null;
+      attribute_modifiers: string | null;
+      current_stacks: number;
+    }>();
+
+  let conditionPenalty = 0;
+  for (const cond of activeConditions.results) {
+    const stacks = cond.current_stacks || 1;
+
+    // Check stat_modifiers for skill penalties
+    if (cond.stat_modifiers) {
+      try {
+        const modifiers = JSON.parse(cond.stat_modifiers) as Record<string, unknown>;
+        // Check for global skill penalty
+        if (typeof modifiers.skill_check_penalty === 'number') {
+          conditionPenalty += modifiers.skill_check_penalty * stacks;
+        }
+        // Check for specific skill penalty
+        if (modifiers.skill_penalties && typeof modifiers.skill_penalties === 'object') {
+          const penalties = modifiers.skill_penalties as Record<string, number>;
+          if (penalties[skillCode]) {
+            conditionPenalty += penalties[skillCode] * stacks;
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+
+    // Check attribute_modifiers that might affect the governing attribute
+    if (cond.attribute_modifiers && skillDef.attr_code) {
+      try {
+        const modifiers = JSON.parse(cond.attribute_modifiers) as Record<string, number>;
+        if (modifiers[skillDef.attr_code]) {
+          // Already accounted for in bonus_from_conditions, but double-check
+          // This would apply to the attribute, not directly to skill
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+  }
+
+  // Calculate total bonus
+  const totalBonus = skillLevel + attrModifier + equipmentBonus - conditionPenalty;
+
+  return {
+    skillCode: skillDef.code,
+    skillName: skillDef.name,
+    skillLevel,
+    governingAttribute: skillDef.attr_code
+      ? {
+          code: skillDef.attr_code,
+          name: skillDef.attr_name ?? skillDef.attr_code,
+          effectiveValue: attrValue,
+        }
+      : null,
+    attributeModifier: attrModifier,
+    equipmentBonus,
+    conditionPenalty,
+    totalBonus,
+  };
+}
