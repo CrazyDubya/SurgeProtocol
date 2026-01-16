@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="neon-decay">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Board - SURGE PROTOCOL</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700&family=IBM+Plex+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../styles/tokens/base.css">
+  <link rel="stylesheet" href="../styles/themes/neon-decay.css">
+  <link rel="stylesheet" href="../styles/themes/terminal-noir.css">
+  <link rel="stylesheet" href="../styles/themes/algorithm-vision.css">
+  <link rel="stylesheet" href="../styles/components/card.css">
+  <link rel="stylesheet" href="../styles/components/button.css">
+  <link rel="stylesheet" href="../styles/components/progress.css">
+  <link rel="stylesheet" href="../styles/components/badge.css">
+  <link rel="stylesheet" href="../styles/components/stat.css">
+  <link rel="stylesheet" href="../styles/components/input.css">
+
+  <style>
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    .mission-board {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
+
+    /* Header */
+    .mission-board__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .mission-board__title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      margin: 0;
+    }
+
+    .mission-board__filters {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    /* Mission grid */
+    .mission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--space-4);
+    }
+
+    /* Mission card */
+    .mission-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--duration-normal) var(--ease-out);
+      cursor: pointer;
+    }
+
+    .mission-card:hover {
+      border-color: var(--accent-algorithm);
+      transform: translateY(-2px);
+    }
+
+    .mission-card--featured {
+      border-color: var(--accent-algorithm);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    }
+
+    .mission-card--gray {
+      border-color: var(--accent-warning);
+    }
+
+    .mission-card--gray:hover {
+      border-color: var(--accent-warning);
+    }
+
+    .mission-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .mission-card__type {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      margin-bottom: var(--space-1);
+    }
+
+    .mission-card__title {
+      font-size: var(--text-lg);
+      font-weight: var(--font-bold);
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .mission-card--gray .mission-card__title {
+      color: var(--accent-warning);
+    }
+
+    .mission-card__body {
+      flex: 1;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .mission-card__description {
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      line-height: var(--leading-relaxed);
+    }
+
+    .mission-card__details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2);
+    }
+
+    .mission-card__detail {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .mission-card__detail-label {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .mission-card__detail-value {
+      font-weight: var(--font-bold);
+      color: var(--text-primary);
+    }
+
+    .mission-card__detail-value--credits {
+      color: var(--accent-credits);
+    }
+
+    .mission-card__detail-value--danger {
+      color: var(--accent-danger);
+    }
+
+    .mission-card__detail-value--success {
+      color: var(--accent-success);
+    }
+
+    .mission-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+
+    .mission-card__footer {
+      padding: var(--space-4);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mission-card__requirements {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+    }
+
+    .mission-card__requirements--met {
+      color: var(--accent-success);
+    }
+
+    .mission-card__requirements--unmet {
+      color: var(--accent-danger);
+    }
+
+    /* Filter tags */
+    .filter-group {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .filter-tag:hover {
+      border-color: var(--accent-algorithm);
+      color: var(--accent-algorithm);
+    }
+
+    .filter-tag--active {
+      background: var(--accent-algorithm);
+      border-color: var(--accent-algorithm);
+      color: var(--bg-primary);
+    }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .search-bar .input {
+      flex: 1;
+    }
+
+    /* Theme switcher */
+    .theme-switcher {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: var(--z-fixed);
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-2);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+    }
+
+    .theme-switcher button {
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-switcher button:hover {
+      color: var(--accent-algorithm);
+    }
+
+    .theme-switcher button.active {
+      background: var(--accent-algorithm);
+      color: var(--bg-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .mission-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mission-board__header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .theme-switcher {
+        top: auto;
+        bottom: var(--space-4);
+        right: var(--space-4);
+        left: var(--space-4);
+        justify-content: center;
+      }
+
+      .mission-board {
+        padding-bottom: var(--space-20);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <button class="active" onclick="setTheme('neon-decay')">Neon</button>
+    <button onclick="setTheme('terminal-noir')">Terminal</button>
+    <button onclick="setTheme('algorithm-vision')">Algorithm</button>
+  </div>
+
+  <main class="mission-board">
+    <!-- Header -->
+    <header class="mission-board__header">
+      <h1 class="mission-board__title">Mission Board</h1>
+      <div class="mission-board__filters">
+        <button class="btn btn--secondary btn--sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filter
+        </button>
+        <select class="select" style="width: auto; min-width: 150px; min-height: 36px; padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);">
+          <option>Sort by: Recommended</option>
+          <option>Sort by: Pay (High)</option>
+          <option>Sort by: Pay (Low)</option>
+          <option>Sort by: Distance</option>
+          <option>Sort by: Rating Impact</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <input type="text" class="input input--search" placeholder="Search missions...">
+    </div>
+
+    <!-- Filter Tags -->
+    <div class="filter-group">
+      <button class="filter-tag filter-tag--active">All</button>
+      <button class="filter-tag">Delivery</button>
+      <button class="filter-tag">Escort</button>
+      <button class="filter-tag">Retrieval</button>
+      <button class="filter-tag">Gray Market</button>
+      <button class="filter-tag">High Pay</button>
+      <button class="filter-tag">Quick</button>
+    </div>
+
+    <!-- Mission Grid -->
+    <div class="mission-grid">
+
+      <!-- Featured Mission -->
+      <article class="mission-card mission-card--featured">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Featured Delivery</span>
+            <h2 class="mission-card__title">Priority Medical Supply Run</h2>
+          </div>
+          <span class="badge badge--outline">Featured</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            Urgent delivery of temperature-sensitive medical supplies to Hollows Free Clinic.
+            Time-critical cargo requires careful handling.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 85-100</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">3.2 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">25 min</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value mission-card__detail-value--success">+0.8</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">Medical</span>
+            <span class="tag">Fragile</span>
+            <span class="tag">Temperature Controlled</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--met">Requirements met</span>
+          <button class="btn btn--primary btn--sm">Accept Mission</button>
+        </footer>
+      </article>
+
+      <!-- Standard Mission -->
+      <article class="mission-card">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Standard Delivery</span>
+            <h2 class="mission-card__title">Package to Meridian Heights</h2>
+          </div>
+          <span class="badge badge--secondary">Routine</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            Standard residential delivery. No special handling required.
+            Client has requested contactless delivery.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 45-55</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">1.8 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">45 min</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value mission-card__detail-value--success">+0.3</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">Standard</span>
+            <span class="tag">Contactless</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--met">Requirements met</span>
+          <button class="btn btn--secondary btn--sm">View Details</button>
+        </footer>
+      </article>
+
+      <!-- Gray Market Mission -->
+      <article class="mission-card mission-card--gray">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Gray Market</span>
+            <h2 class="mission-card__title">[GRAY] Unmarked Package</h2>
+          </div>
+          <span class="badge badge--danger">High Risk</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            No questions asked. Package contents unknown.
+            Signal scrambler recommended. Payment in GhostCoin.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 200</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">4.5 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">30 min</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value">N/A</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">Off-Book</span>
+            <span class="tag">No Scan</span>
+            <span class="tag">Danger Pay</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--unmet">Tier 4 required</span>
+          <button class="btn btn--secondary btn--sm" disabled>Locked</button>
+        </footer>
+      </article>
+
+      <!-- Escort Mission -->
+      <article class="mission-card">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Escort</span>
+            <h2 class="mission-card__title">VIP Transport: Corporate Executive</h2>
+          </div>
+          <span class="badge badge--warning">Challenging</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            Escort a mid-level OmniDeliver executive safely through Neon Dragons territory.
+            Discretion is paramount. Route flexibility required.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 180</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">5.2 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">1 hour</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value mission-card__detail-value--success">+0.5</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">VIP</span>
+            <span class="tag">Stealth Recommended</span>
+            <span class="tag">Faction: OmniDeliver</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--met">Requirements met</span>
+          <button class="btn btn--secondary btn--sm">View Details</button>
+        </footer>
+      </article>
+
+      <!-- Quick Mission -->
+      <article class="mission-card">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Quick Delivery</span>
+            <h2 class="mission-card__title">Food Delivery: Ramen Express</h2>
+          </div>
+          <span class="badge badge--success">Easy</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            Hot food delivery to nearby residential block.
+            Customer expects food to arrive warm. Keep container upright.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 25</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">0.8 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">15 min</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value mission-card__detail-value--success">+0.1</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">Food</span>
+            <span class="tag">Quick</span>
+            <span class="tag">Handle With Care</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--met">Requirements met</span>
+          <button class="btn btn--secondary btn--sm">View Details</button>
+        </footer>
+      </article>
+
+      <!-- Long Distance Mission -->
+      <article class="mission-card">
+        <header class="mission-card__header">
+          <div>
+            <span class="mission-card__type">Long Haul</span>
+            <h2 class="mission-card__title">Cross-District Document Transfer</h2>
+          </div>
+          <span class="badge badge--secondary">Moderate</span>
+        </header>
+        <div class="mission-card__body">
+          <p class="mission-card__description">
+            Secure document transfer requiring physical biometric seal.
+            Multiple checkpoints expected. Corporate clearance provided.
+          </p>
+          <div class="mission-card__details">
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Pay</span>
+              <span class="mission-card__detail-value mission-card__detail-value--credits">&#164; 120</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Distance</span>
+              <span class="mission-card__detail-value">8.7 km</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Time Limit</span>
+              <span class="mission-card__detail-value">2 hours</span>
+            </div>
+            <div class="mission-card__detail">
+              <span class="mission-card__detail-label">Rating</span>
+              <span class="mission-card__detail-value mission-card__detail-value--success">+0.4</span>
+            </div>
+          </div>
+          <div class="mission-card__tags">
+            <span class="tag">Documents</span>
+            <span class="tag">Secure</span>
+            <span class="tag">Checkpoints</span>
+          </div>
+        </div>
+        <footer class="mission-card__footer">
+          <span class="mission-card__requirements mission-card__requirements--met">Requirements met</span>
+          <button class="btn btn--secondary btn--sm">View Details</button>
+        </footer>
+      </article>
+
+    </div>
+  </main>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-switcher button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // Filter tag toggle
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        if (tag.textContent === 'All') {
+          document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('filter-tag--active'));
+          tag.classList.add('filter-tag--active');
+        } else {
+          document.querySelector('.filter-tag--active[textContent="All"]')?.classList.remove('filter-tag--active');
+          tag.classList.toggle('filter-tag--active');
+        }
+      });
+    });
+
+    // Mission card click
+    document.querySelectorAll('.mission-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.btn')) return;
+        card.style.transform = 'scale(0.99)';
+        setTimeout(() => {
+          card.style.transform = '';
+        }, 100);
+      });
+    });
+  </script>
+</body>
+</html>

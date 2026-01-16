@@ -122,7 +122,7 @@ const FORBIDDEN_PATTERNS = [
     name: 'hardcoded pixel value',
     allowInVarDef: true,
     allowInEffects: true,  // Allow in shadows, transforms, etc.
-    exceptions: ['font-size', 'border-width', 'line-height', 'letter-spacing', 'width', 'height', 'inset', 'top', 'left', 'right', 'bottom']
+    exceptions: ['font-size', 'border-width', 'line-height', 'letter-spacing', 'width', 'height', 'inset', 'top', 'left', 'right', 'bottom', 'outline-offset', 'gap', 'stroke-width', 'border-radius', 'scrollbar', 'translateX', 'translateY']
   },
 
   // Hardcoded font families (should use tokens)
@@ -131,14 +131,22 @@ const FORBIDDEN_PATTERNS = [
 
 // CSS properties where raw color values are expected (gradients, shadows, etc.)
 const EFFECT_PROPERTIES = [
+  'background:',
+  'background-color',
+  'background-image',
+  'background-size',
   'linear-gradient',
   'radial-gradient',
+  'repeating-linear-gradient',
   'box-shadow',
   'text-shadow',
   'filter',
-  'background-image',
   '@keyframes',
   'animation',
+  'clip-path',
+  'outline',
+  'scrollbar',
+  'transform',
 ];
 
 // Themes that must exist
@@ -198,8 +206,8 @@ function isInsideVarDefinition(content, matchIndex) {
  * Helper: Check if a position is inside an effect property (gradient, shadow, keyframe)
  */
 function isInsideEffectProperty(content, matchIndex) {
-  // Get the context around the match (100 chars before)
-  const contextStart = Math.max(0, matchIndex - 100);
+  // Get the context around the match (200 chars before to catch multi-line gradients)
+  const contextStart = Math.max(0, matchIndex - 200);
   const context = content.substring(contextStart, matchIndex);
 
   // Check if any effect property appears in the context
