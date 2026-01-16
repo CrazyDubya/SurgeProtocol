@@ -1,0 +1,388 @@
+/**
+ * SURGE PROTOCOL - Progress Bar Component
+ *
+ * Theme-agnostic progress bar styles for HP, Humanity, XP, time, etc.
+ * Supports multiple variants, sizes, and animated states.
+ *
+ * Usage:
+ *   <div class="progress">
+ *     <div class="progress__fill" style="width: 75%"></div>
+ *   </div>
+ *
+ *   <div class="progress progress--labeled">
+ *     <span class="progress__label">HP</span>
+ *     <div class="progress__track">
+ *       <div class="progress__fill" style="width: 82%"></div>
+ *     </div>
+ *     <span class="progress__value">82/100</span>
+ *   </div>
+ */
+
+/* ===========================================
+   BASE PROGRESS BAR
+   =========================================== */
+
+.progress {
+  position: relative;
+  width: 100%;
+  height: var(--bar-md, 12px);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: var(--radius-sm);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* ===========================================
+   LABELED PROGRESS BAR
+   =========================================== */
+
+.progress--labeled {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: auto;
+  background: transparent;
+  overflow: visible;
+}
+
+.progress--labeled .progress__track {
+  flex: 1;
+  height: var(--bar-md, 12px);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.progress__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  min-width: 3em;
+}
+
+.progress__value {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  min-width: 4em;
+  text-align: right;
+}
+
+/* ===========================================
+   SIZE VARIANTS
+   =========================================== */
+
+.progress--xs {
+  height: var(--bar-xs, 4px);
+}
+
+.progress--sm {
+  height: var(--bar-sm, 8px);
+}
+
+.progress--lg {
+  height: var(--bar-lg, 16px);
+}
+
+.progress--xl {
+  height: var(--bar-xl, 24px);
+}
+
+.progress--labeled.progress--xs .progress__track { height: var(--bar-xs, 4px); }
+.progress--labeled.progress--sm .progress__track { height: var(--bar-sm, 8px); }
+.progress--labeled.progress--lg .progress__track { height: var(--bar-lg, 16px); }
+.progress--labeled.progress--xl .progress__track { height: var(--bar-xl, 24px); }
+
+/* ===========================================
+   COLOR VARIANTS
+   =========================================== */
+
+/* Health / HP */
+.progress--hp .progress__fill {
+  background: var(--accent-success);
+}
+
+.progress--hp[data-percentage="low"] .progress__fill,
+.progress--hp.progress--low .progress__fill {
+  background: var(--accent-warning);
+}
+
+.progress--hp[data-percentage="critical"] .progress__fill,
+.progress--hp.progress--critical .progress__fill {
+  background: var(--accent-danger);
+  animation: pulse-danger 1s ease-in-out infinite;
+}
+
+/* Humanity */
+.progress--humanity .progress__fill {
+  background: var(--accent-humanity);
+}
+
+/* Experience / XP */
+.progress--xp .progress__fill {
+  background: var(--accent-algorithm);
+}
+
+/* Time / Timer */
+.progress--time .progress__fill {
+  background: var(--accent-warning);
+}
+
+.progress--time[data-percentage="low"] .progress__fill,
+.progress--time.progress--low .progress__fill {
+  background: var(--accent-danger);
+  animation: pulse-danger 0.5s ease-in-out infinite;
+}
+
+/* Danger */
+.progress--danger .progress__fill {
+  background: var(--accent-danger);
+}
+
+/* Success */
+.progress--success .progress__fill {
+  background: var(--accent-success);
+}
+
+/* Warning */
+.progress--warning .progress__fill {
+  background: var(--accent-warning);
+}
+
+/* Credits / Money */
+.progress--credits .progress__fill {
+  background: var(--accent-credits);
+}
+
+/* Faction colors */
+.progress--faction-omni .progress__fill { background: var(--faction-omni); }
+.progress--faction-saints .progress__fill { background: var(--faction-saints); }
+.progress--faction-tide .progress__fill { background: var(--faction-tide); }
+.progress--faction-dragons .progress__fill { background: var(--faction-dragons); }
+
+/* ===========================================
+   STYLE VARIANTS
+   =========================================== */
+
+/* Bordered */
+.progress--bordered {
+  border: 1px solid var(--border-default);
+  background: transparent;
+}
+
+/* Striped */
+.progress--striped .progress__fill {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+
+/* Animated stripes */
+.progress--animated .progress__fill {
+  animation: progress-stripes 1s linear infinite;
+}
+
+@keyframes progress-stripes {
+  from { background-position: 1rem 0; }
+  to { background-position: 0 0; }
+}
+
+/* Glow effect */
+.progress--glow .progress__fill {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Segmented (discrete steps) */
+.progress--segmented {
+  background: transparent;
+  display: flex;
+  gap: 2px;
+}
+
+.progress--segmented .progress__segment {
+  flex: 1;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.progress--segmented .progress__segment--filled {
+  background: var(--accent-algorithm);
+}
+
+.progress--segmented .progress__segment--partial {
+  background: linear-gradient(
+    90deg,
+    var(--accent-algorithm) 50%,
+    var(--bg-secondary) 50%
+  );
+}
+
+/* ===========================================
+   SPECIAL PROGRESS TYPES
+   =========================================== */
+
+/* Rating bar (with threshold markers) */
+.progress--rating {
+  position: relative;
+}
+
+.progress--rating::before,
+.progress--rating::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-strong);
+  z-index: 1;
+}
+
+.progress--rating::before {
+  left: 25%;
+}
+
+.progress--rating::after {
+  left: 75%;
+}
+
+/* Tier progress (shows tier markers) */
+.progress--tier {
+  position: relative;
+}
+
+.progress--tier .progress__markers {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.progress--tier .progress__marker {
+  width: 1px;
+  height: 100%;
+  background: var(--border-strong);
+}
+
+/* Circular progress */
+.progress--circular {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background: conic-gradient(
+    var(--accent-algorithm) calc(var(--progress, 0) * 1%),
+    var(--bg-secondary) 0
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress--circular::before {
+  content: '';
+  width: 70%;
+  height: 70%;
+  background: var(--bg-primary);
+  border-radius: var(--radius-full);
+}
+
+.progress--circular .progress__value {
+  position: absolute;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+/* ===========================================
+   ANIMATIONS
+   =========================================== */
+
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Indeterminate loading state */
+.progress--indeterminate .progress__fill {
+  width: 30%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* ===========================================
+   STACKED PROGRESS BARS
+   =========================================== */
+
+.progress-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Multiple fills in one bar (for showing composition) */
+.progress--multi {
+  display: flex;
+}
+
+.progress--multi .progress__fill {
+  flex-shrink: 0;
+}
+
+.progress--multi .progress__fill:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.progress--multi .progress__fill:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.progress--multi .progress__fill:only-child {
+  border-radius: var(--radius-sm);
+}
+
+/* ===========================================
+   RESPONSIVE ADJUSTMENTS
+   =========================================== */
+
+@media (max-width: 640px) {
+  .progress--labeled {
+    flex-wrap: wrap;
+  }
+
+  .progress--labeled .progress__track {
+    order: 3;
+    flex-basis: 100%;
+    margin-top: var(--space-1);
+  }
+
+  .progress__label {
+    flex: 1;
+    min-width: auto;
+  }
+
+  .progress__value {
+    min-width: auto;
+  }
+}

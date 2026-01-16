@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="terminal-noir">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Terminal - SURGE PROTOCOL</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=VT323&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../styles/tokens/base.css">
+  <link rel="stylesheet" href="../styles/themes/neon-decay.css">
+  <link rel="stylesheet" href="../styles/themes/terminal-noir.css">
+  <link rel="stylesheet" href="../styles/themes/algorithm-vision.css">
+  <link rel="stylesheet" href="../styles/components/card.css">
+  <link rel="stylesheet" href="../styles/components/button.css">
+  <link rel="stylesheet" href="../styles/components/progress.css">
+  <link rel="stylesheet" href="../styles/components/badge.css">
+  <link rel="stylesheet" href="../styles/components/terminal.css">
+
+  <style>
+    /* Terminal Inventory Page Layout */
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      margin: 0;
+      padding: var(--space-4);
+    }
+
+    .terminal-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Terminal header */
+    .terminal-window {
+      border: 1px solid var(--text-primary);
+      margin-bottom: var(--space-4);
+    }
+
+    .terminal-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--text-primary);
+    }
+
+    .terminal-titlebar__title {
+      font-family: var(--font-ui);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .terminal-titlebar__controls {
+      display: flex;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+    }
+
+    .terminal-body {
+      padding: var(--space-4);
+      min-height: 400px;
+    }
+
+    /* Two column layout */
+    .inventory-layout {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+
+    /* Category sidebar */
+    .category-nav {
+      border-right: 1px dashed var(--text-dim);
+      padding-right: var(--space-4);
+    }
+
+    .category-title {
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      font-size: var(--text-xs);
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--text-dim);
+    }
+
+    /* Inventory grid */
+    .inventory-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: var(--space-6);
+      padding: var(--space-3);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      margin-bottom: var(--space-4);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+    }
+
+    .stat-item__label {
+      color: var(--text-dim);
+    }
+
+    .stat-item__value {
+      color: var(--text-primary);
+    }
+
+    .stat-item__value--credits {
+      color: var(--accent-credits);
+    }
+
+    /* Command input area */
+    .command-area {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px dashed var(--text-dim);
+    }
+
+    /* Selected item detail */
+    .item-detail {
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      margin-top: var(--space-4);
+    }
+
+    .item-detail__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px dashed var(--text-dim);
+    }
+
+    .item-detail__name {
+      font-size: var(--text-lg);
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .item-detail__type {
+      color: var(--text-dim);
+      font-size: var(--text-sm);
+    }
+
+    .item-detail__description {
+      color: var(--text-secondary);
+      line-height: var(--leading-relaxed);
+      margin-bottom: var(--space-4);
+    }
+
+    .item-detail__stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .item-detail__actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    /* Theme switcher */
+    .theme-switcher {
+      position: fixed;
+      bottom: var(--space-4);
+      right: var(--space-4);
+      z-index: var(--z-fixed);
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-2);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+    }
+
+    .theme-switcher button {
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-switcher button:hover {
+      color: var(--accent-algorithm);
+    }
+
+    .theme-switcher button.active {
+      background: var(--accent-algorithm);
+      color: var(--bg-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .inventory-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .category-nav {
+        border-right: none;
+        border-bottom: 1px dashed var(--text-dim);
+        padding-right: 0;
+        padding-bottom: var(--space-4);
+      }
+
+      .stats-bar {
+        flex-wrap: wrap;
+        gap: var(--space-3);
+      }
+
+      .item-detail__stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <button onclick="setTheme('neon-decay')">Neon</button>
+    <button class="active" onclick="setTheme('terminal-noir')">Terminal</button>
+    <button onclick="setTheme('algorithm-vision')">Algorithm</button>
+  </div>
+
+  <div class="terminal-container">
+
+    <!-- Terminal Window -->
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <span class="terminal-titlebar__title">INVENTORY.SYS</span>
+        <span class="terminal-titlebar__controls">
+          <span>[-]</span>
+          <span>[□]</span>
+          <span>[×]</span>
+        </span>
+      </div>
+
+      <div class="terminal-body">
+
+        <!-- Terminal Output Header -->
+        <div class="term-output">
+          <span class="term-output__line term-output__line--dim">SURGE PROTOCOL v2.087.3</span>
+          <span class="term-output__line term-output__line--dim">Inventory Management System</span>
+          <span class="term-output__line term-output__line--dim">────────────────────────────────────────────────</span>
+          <span class="term-output__line">Logged in as: MARCUS_CHEN [CRR-2087-MC-7744]</span>
+          <span class="term-output__line term-output__line--success">Connection: SECURE</span>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="stat-item__label">CREDITS:</span>
+            <span class="stat-item__value stat-item__value--credits">¤ 847</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">CARRY:</span>
+            <span class="stat-item__value">12/20 kg</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">SLOTS:</span>
+            <span class="stat-item__value">7/10</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">STASH:</span>
+            <span class="stat-item__value">3 items</span>
+          </div>
+        </div>
+
+        <!-- Inventory Layout -->
+        <div class="inventory-layout">
+
+          <!-- Category Navigation -->
+          <nav class="category-nav">
+            <div class="category-title">Categories</div>
+            <ul class="term-list">
+              <li class="term-list__item term-list__item--selected" data-category="all">
+                All Items (7)
+              </li>
+              <li class="term-list__item" data-category="weapons">
+                Weapons (1)
+              </li>
+              <li class="term-list__item" data-category="consumables">
+                Consumables (3)
+              </li>
+              <li class="term-list__item" data-category="gear">
+                Gear (2)
+              </li>
+              <li class="term-list__item" data-category="data">
+                Data/Keys (1)
+              </li>
+            </ul>
+
+            <div class="category-title" style="margin-top: var(--space-4);">Quick Actions</div>
+            <ul class="term-list">
+              <li class="term-list__item">[S] Sort by Type</li>
+              <li class="term-list__item">[V] Sort by Value</li>
+              <li class="term-list__item">[D] Drop Selected</li>
+              <li class="term-list__item">[T] Transfer to Stash</li>
+            </ul>
+          </nav>
+
+          <!-- Inventory Items -->
+          <div class="inventory-content">
+
+            <table class="term-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px;">#</th>
+                  <th>Item</th>
+                  <th style="width: 80px;">Type</th>
+                  <th style="width: 60px;">Qty</th>
+                  <th style="width: 70px;">Weight</th>
+                  <th style="width: 70px;">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-item="1" class="inventory-row" onclick="selectItem(this)">
+                  <td>1</td>
+                  <td class="term-table__cell--primary">Kendachi Mono-Blade</td>
+                  <td>Weapon</td>
+                  <td>1</td>
+                  <td>1.2 kg</td>
+                  <td class="term-table__cell--accent">¤ 450</td>
+                </tr>
+                <tr data-item="2" class="inventory-row" onclick="selectItem(this)">
+                  <td>2</td>
+                  <td class="term-table__cell--primary">MediGel Injector</td>
+                  <td>Medical</td>
+                  <td>3</td>
+                  <td>0.3 kg</td>
+                  <td class="term-table__cell--accent">¤ 75</td>
+                </tr>
+                <tr data-item="3" class="inventory-row" onclick="selectItem(this)">
+                  <td>3</td>
+                  <td class="term-table__cell--primary">Synth-Stim Pack</td>
+                  <td>Chem</td>
+                  <td>2</td>
+                  <td>0.2 kg</td>
+                  <td class="term-table__cell--warning">¤ 120</td>
+                </tr>
+                <tr data-item="4" class="inventory-row" onclick="selectItem(this)">
+                  <td>4</td>
+                  <td class="term-table__cell--primary">EMP Grenade</td>
+                  <td>Tactical</td>
+                  <td>1</td>
+                  <td>0.5 kg</td>
+                  <td class="term-table__cell--accent">¤ 200</td>
+                </tr>
+                <tr data-item="5" class="inventory-row" onclick="selectItem(this)">
+                  <td>5</td>
+                  <td class="term-table__cell--primary">Courier Armor (Light)</td>
+                  <td>Gear</td>
+                  <td>1</td>
+                  <td>3.0 kg</td>
+                  <td class="term-table__cell--accent">¤ 350</td>
+                </tr>
+                <tr data-item="6" class="inventory-row" onclick="selectItem(this)">
+                  <td>6</td>
+                  <td class="term-table__cell--primary">Signal Jammer</td>
+                  <td>Tech</td>
+                  <td>1</td>
+                  <td>0.8 kg</td>
+                  <td class="term-table__cell--accent">¤ 180</td>
+                </tr>
+                <tr data-item="7" class="inventory-row" onclick="selectItem(this)">
+                  <td>7</td>
+                  <td class="term-table__cell--primary">Hollows Clinic Keycard</td>
+                  <td>Data</td>
+                  <td>1</td>
+                  <td>0.0 kg</td>
+                  <td class="term-table__cell--danger">QUEST</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Selected Item Detail -->
+            <div class="item-detail" id="itemDetail">
+              <div class="item-detail__header">
+                <div>
+                  <div class="item-detail__name">Kendachi Mono-Blade</div>
+                  <div class="item-detail__type">Melee Weapon | Tier 2</div>
+                </div>
+                <span class="term-status term-status--ok">EQUIPPED</span>
+              </div>
+
+              <div class="item-detail__description">
+                A precision-manufactured molecular blade from Kendachi Arms. The mono-filament
+                edge can slice through standard body armor with ease. Popular among couriers
+                who prefer silent resolution of conflicts.
+              </div>
+
+              <div class="item-detail__stats">
+                <div class="hud-data">
+                  <span class="hud-data__label">DAMAGE</span>
+                  <span class="hud-data__value">2d6+2</span>
+                </div>
+                <div class="hud-data">
+                  <span class="hud-data__label">ARMOR PEN</span>
+                  <span class="hud-data__value">+2</span>
+                </div>
+                <div class="hud-data">
+                  <span class="hud-data__label">REACH</span>
+                  <span class="hud-data__value">Short</span>
+                </div>
+                <div class="hud-data">
+                  <span class="hud-data__label">CONDITION</span>
+                  <span class="hud-data__value">87%</span>
+                </div>
+              </div>
+
+              <div class="item-detail__actions">
+                <button class="btn btn--secondary">[U] Unequip</button>
+                <button class="btn btn--secondary">[R] Repair</button>
+                <button class="btn btn--secondary">[I] Inspect</button>
+                <button class="btn btn--ghost">[D] Drop</button>
+              </div>
+            </div>
+
+            <!-- Command Input -->
+            <div class="command-area">
+              <div class="term-prompt">
+                <span class="term-prompt__user">inventory</span>
+                <span class="term-prompt__separator">:</span>
+                <span class="term-prompt__path">~/items</span>
+                <span class="term-prompt__symbol">$</span>
+                <input type="text" class="term-prompt__input" placeholder="Enter command..." aria-label="Command input">
+                <span class="term-prompt__cursor"></span>
+              </div>
+
+              <div class="term-output" style="margin-top: var(--space-2); font-size: var(--text-xs);">
+                <span class="term-output__line term-output__line--dim">Available commands: use, drop, equip, unequip, inspect, repair, sell, transfer</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <span class="terminal-titlebar__title">ACTIVITY.LOG</span>
+        <span class="terminal-titlebar__controls">
+          <span>[LIVE]</span>
+        </span>
+      </div>
+
+      <div class="term-log" style="max-height: 150px;">
+        <div class="term-log__entry">
+          <span class="term-log__time">22:47:12</span>
+          <span class="term-log__level term-log__level--info">INFO</span>
+          <span class="term-log__message">Medical Run completed. +45 credits added.</span>
+        </div>
+        <div class="term-log__entry">
+          <span class="term-log__time">22:45:03</span>
+          <span class="term-log__level term-log__level--info">INFO</span>
+          <span class="term-log__message">Hollows Clinic Keycard obtained from Dr. Tanaka.</span>
+        </div>
+        <div class="term-log__entry">
+          <span class="term-log__time">22:30:18</span>
+          <span class="term-log__level term-log__level--warn">WARN</span>
+          <span class="term-log__message">Synth-Stim effects wearing off. Consider rest period.</span>
+        </div>
+        <div class="term-log__entry">
+          <span class="term-log__time">21:55:44</span>
+          <span class="term-log__level term-log__level--info">INFO</span>
+          <span class="term-log__message">Used MediGel Injector. HP restored to full.</span>
+        </div>
+        <div class="term-log__entry">
+          <span class="term-log__time">21:32:09</span>
+          <span class="term-log__level term-log__level--debug">DBUG</span>
+          <span class="term-log__message">Entered The Hollows. Zone threat level: CAUTION.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+
+      // Update active button
+      document.querySelectorAll('.theme-switcher button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    function selectItem(row) {
+      // Remove previous selection
+      document.querySelectorAll('.inventory-row').forEach(r => {
+        r.style.background = '';
+      });
+
+      // Highlight selected row
+      row.style.background = 'var(--bg-secondary)';
+    }
+
+    // Category navigation
+    document.querySelectorAll('.category-nav .term-list__item[data-category]').forEach(item => {
+      item.addEventListener('click', () => {
+        // Update selection
+        document.querySelectorAll('.category-nav .term-list__item').forEach(i => {
+          i.classList.remove('term-list__item--selected');
+        });
+        item.classList.add('term-list__item--selected');
+      });
+    });
+
+    // Command input handling
+    document.querySelector('.term-prompt__input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = e.target.value.trim().toLowerCase();
+        if (cmd) {
+          console.log('Command:', cmd);
+          e.target.value = '';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

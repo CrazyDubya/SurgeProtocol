@@ -1,0 +1,408 @@
+/**
+ * SURGE PROTOCOL - Theme: Terminal Noir
+ * Minimal CRT/Terminal aesthetic
+ *
+ * Philosophy: Strip everything back to pure terminal.
+ * The interface IS the Algorithm - cold, efficient, watching.
+ * Green-on-black like hacking the Matrix, but bleaker.
+ */
+
+[data-theme="terminal-noir"] {
+  /* ===========================================
+     BACKGROUND COLORS
+     =========================================== */
+  --bg-primary: #0a0a0a;         /* Pure black */
+  --bg-secondary: #0f0f0f;       /* Slightly lighter */
+  --bg-tertiary: #141414;        /* Card surfaces */
+  --bg-elevated: #1a1a1a;        /* Raised elements */
+  --bg-overlay: rgba(10, 10, 10, 0.95);
+
+  /* ===========================================
+     TEXT COLORS
+     =========================================== */
+  --text-primary: #00ff88;       /* Terminal green */
+  --text-secondary: #00aa55;     /* Dimmer green */
+  --text-dim: #005533;           /* Very dim */
+  --text-inverse: #0a0a0a;       /* For light backgrounds */
+
+  /* ===========================================
+     ACCENT COLORS
+     =========================================== */
+  --accent-algorithm: #00ff88;   /* Matches text - unified */
+  --accent-secondary: #00ffff;   /* Cyan for variety */
+  --accent-tertiary: #00aa55;    /* Dim green */
+
+  --accent-warning: #ffaa00;     /* Amber warning */
+  --accent-danger: #ff0044;      /* Hot red */
+  --accent-success: #00ff88;     /* Same as primary */
+  --accent-humanity: #00ffff;    /* Cyan - humanity stands out */
+  --accent-credits: #ffff00;     /* Yellow gold */
+
+  /* ===========================================
+     FACTION COLORS (desaturated)
+     =========================================== */
+  --faction-omni: #00ff88;
+  --faction-saints: #00ffff;
+  --faction-tide: #ff0044;
+  --faction-dragons: #ffaa00;
+
+  /* ===========================================
+     TIER COLORS
+     =========================================== */
+  --tier-low: #005533;           /* Tiers 1-3 */
+  --tier-mid: #00aa55;           /* Tiers 4-6 */
+  --tier-high: #00ff88;          /* Tiers 7-8 */
+  --tier-apex: #00ffff;          /* Tiers 9-10 */
+
+  /* ===========================================
+     STATUS COLORS
+     =========================================== */
+  --status-healthy: #00ff88;
+  --status-wounded: #ffaa00;
+  --status-critical: #ff0044;
+  --status-dead: #333333;
+
+  --humanity-high: #00ffff;
+  --humanity-mid: #00aaaa;
+  --humanity-low: #006666;
+  --humanity-critical: #003333;
+
+  /* ===========================================
+     BORDER COLORS (ASCII-style)
+     =========================================== */
+  --border-subtle: #1a1a1a;
+  --border-default: #00ff8833;
+  --border-strong: #00ff8866;
+  --border-accent: var(--accent-algorithm);
+
+  /* ===========================================
+     GLOW EFFECTS
+     =========================================== */
+  --glow-primary: 0 0 10px rgba(0, 255, 136, 0.3),
+                  0 0 20px rgba(0, 255, 136, 0.1);
+
+  --glow-intense: 0 0 10px rgba(0, 255, 136, 0.5),
+                  0 0 20px rgba(0, 255, 136, 0.3),
+                  0 0 40px rgba(0, 255, 136, 0.1);
+
+  --glow-danger: 0 0 10px rgba(255, 0, 68, 0.5),
+                 0 0 20px rgba(255, 0, 68, 0.3);
+
+  --glow-warning: 0 0 10px rgba(255, 170, 0, 0.5),
+                  0 0 20px rgba(255, 170, 0, 0.3);
+
+  /* ===========================================
+     SHADOWS (minimal)
+     =========================================== */
+  --shadow-sm: none;
+  --shadow-md: 0 0 10px rgba(0, 255, 136, 0.1);
+  --shadow-lg: 0 0 20px rgba(0, 255, 136, 0.15);
+  --shadow-xl: 0 0 30px rgba(0, 255, 136, 0.2);
+
+  /* ===========================================
+     GRADIENTS (minimal)
+     =========================================== */
+  --gradient-page: var(--bg-primary);
+  --gradient-card: var(--bg-tertiary);
+  --gradient-accent: var(--accent-algorithm);
+
+  /* ===========================================
+     TYPOGRAPHY
+     =========================================== */
+  --font-ui: 'IBM Plex Mono', 'Consolas', 'Monaco', monospace;
+  --font-display: 'VT323', 'IBM Plex Mono', monospace;
+  --font-narrative: 'IBM Plex Mono', monospace;
+
+  /* ===========================================
+     SPECIAL EFFECTS
+     =========================================== */
+
+  /* CRT scanlines */
+  --scanlines: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.3) 1px,
+    rgba(0, 0, 0, 0.3) 2px
+  );
+
+  /* Screen flicker (use in animation) */
+  --flicker-opacity: 0.97;
+
+  /* Character reveal timing */
+  --char-reveal-speed: 30ms;
+}
+
+/* ===========================================
+   TERMINAL NOIR: BASE STYLES
+   =========================================== */
+
+[data-theme="terminal-noir"] {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  text-shadow: var(--glow-primary);
+}
+
+/* Subtle scanline overlay */
+[data-theme="terminal-noir"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--scanlines);
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: var(--z-fixed);
+}
+
+/* ===========================================
+   ASCII BOX DRAWING STYLES
+   =========================================== */
+
+[data-theme="terminal-noir"] .box {
+  border: 1px solid var(--text-primary);
+  padding: var(--space-4);
+  position: relative;
+}
+
+/* ASCII corners using pseudo-elements */
+[data-theme="terminal-noir"] .box--ascii::before {
+  content: '┌' attr(data-title) '─────────────────────────────┐';
+  position: absolute;
+  top: -0.5em;
+  left: 0;
+  background: var(--bg-primary);
+  padding: 0 var(--space-2);
+  font-family: var(--font-ui);
+}
+
+/* ===========================================
+   CURSOR BLINK
+   =========================================== */
+
+[data-theme="terminal-noir"] .cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.2em;
+  background: var(--text-primary);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ===========================================
+   CHARACTER-BY-CHARACTER REVEAL
+   =========================================== */
+
+[data-theme="terminal-noir"] .typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* ===========================================
+   SCREEN FLICKER
+   =========================================== */
+
+[data-theme="terminal-noir"] .flicker {
+  animation: screen-flicker 0.15s infinite;
+}
+
+@keyframes screen-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: var(--flicker-opacity); }
+}
+
+/* ===========================================
+   PROGRESS BARS (ASCII Style)
+   =========================================== */
+
+[data-theme="terminal-noir"] .progress-bar {
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+}
+
+[data-theme="terminal-noir"] .progress-bar::before {
+  content: '[';
+}
+
+[data-theme="terminal-noir"] .progress-bar::after {
+  content: ']';
+}
+
+[data-theme="terminal-noir"] .progress-bar__fill {
+  background: none;
+  color: var(--text-primary);
+}
+
+/* Example: ████████████░░░░░░░░░░ 82/82 */
+[data-theme="terminal-noir"] .progress-bar__fill::before {
+  content: '████████████████████';
+  letter-spacing: -0.1em;
+}
+
+/* ===========================================
+   BUTTONS (Terminal style)
+   =========================================== */
+
+[data-theme="terminal-noir"] .btn {
+  background: none;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-4);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: none; /* No smooth transitions - instant feedback */
+}
+
+[data-theme="terminal-noir"] .btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  text-shadow: none;
+}
+
+[data-theme="terminal-noir"] .btn:active {
+  transform: none;
+  filter: brightness(0.8);
+}
+
+[data-theme="terminal-noir"] .btn::before {
+  content: '[ ';
+}
+
+[data-theme="terminal-noir"] .btn::after {
+  content: ' ]';
+}
+
+/* ===========================================
+   INPUT FIELDS
+   =========================================== */
+
+[data-theme="terminal-noir"] .input {
+  background: var(--bg-primary);
+  border: none;
+  border-bottom: 1px solid var(--text-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  padding: var(--space-2);
+  caret-color: var(--text-primary);
+}
+
+[data-theme="terminal-noir"] .input::placeholder {
+  color: var(--text-dim);
+}
+
+[data-theme="terminal-noir"] .input:focus {
+  outline: none;
+  box-shadow: var(--glow-primary);
+}
+
+/* Command prompt style */
+[data-theme="terminal-noir"] .input--command::before {
+  content: '> ';
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   ALGORITHM VOICE (Special styling)
+   =========================================== */
+
+[data-theme="terminal-noir"] .algorithm-voice {
+  color: var(--text-secondary);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--text-dim);
+  font-style: normal;
+}
+
+[data-theme="terminal-noir"] .algorithm-voice::before {
+  content: 'ALGORITHM: ';
+  color: var(--text-dim);
+  display: block;
+  font-size: var(--text-xs);
+  margin-bottom: var(--space-1);
+}
+
+/* ===========================================
+   CARDS (ASCII Box style)
+   =========================================== */
+
+[data-theme="terminal-noir"] .card {
+  background: var(--bg-primary);
+  border: 1px solid var(--text-primary);
+  padding: var(--space-4);
+}
+
+[data-theme="terminal-noir"] .card__header {
+  border-bottom: 1px solid var(--text-dim);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+/* ===========================================
+   STATUS INDICATORS
+   =========================================== */
+
+[data-theme="terminal-noir"] .status--ok {
+  color: var(--text-primary);
+}
+
+[data-theme="terminal-noir"] .status--ok::before {
+  content: '[OK] ';
+}
+
+[data-theme="terminal-noir"] .status--warning {
+  color: var(--accent-warning);
+  text-shadow: var(--glow-warning);
+}
+
+[data-theme="terminal-noir"] .status--warning::before {
+  content: '[!] ';
+}
+
+[data-theme="terminal-noir"] .status--error {
+  color: var(--accent-danger);
+  text-shadow: var(--glow-danger);
+}
+
+[data-theme="terminal-noir"] .status--error::before {
+  content: '[ERR] ';
+}
+
+/* ===========================================
+   MISSION LIST (Terminal style)
+   =========================================== */
+
+[data-theme="terminal-noir"] .mission-list {
+  list-style: none;
+}
+
+[data-theme="terminal-noir"] .mission-list__item {
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--text-dim);
+}
+
+[data-theme="terminal-noir"] .mission-list__item::before {
+  content: '> ';
+  color: var(--text-dim);
+}
+
+[data-theme="terminal-noir"] .mission-list__item:hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="terminal-noir"] .mission-list__item:hover::before {
+  content: '>> ';
+  color: var(--text-primary);
+}

@@ -1,0 +1,16 @@
+.page {
+  /* Container */
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--accent-algorithm);
+  margin-bottom: var(--space-6);
+}
+
+.placeholder {
+  color: var(--text-secondary);
+}

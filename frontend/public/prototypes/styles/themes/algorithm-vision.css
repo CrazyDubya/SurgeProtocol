@@ -1,0 +1,620 @@
+/**
+ * SURGE PROTOCOL - Theme: Algorithm Vision
+ * See the world through the Algorithm's eyes
+ *
+ * Philosophy: You're not using a UI - you're seeing yourself
+ * the way IT sees you. Threat assessments, optimization metrics,
+ * behavioral predictions. Surveillance state made visible.
+ */
+
+[data-theme="algorithm-vision"] {
+  /* ===========================================
+     BACKGROUND COLORS
+     =========================================== */
+  --bg-primary: #000408;         /* Near black with blue tint */
+  --bg-secondary: #000810;       /* Slightly lighter */
+  --bg-tertiary: #001018;        /* Card surfaces */
+  --bg-elevated: #001520;        /* Raised elements */
+  --bg-overlay: rgba(0, 4, 8, 0.95);
+
+  /* Grid background */
+  --bg-grid: rgba(0, 60, 90, 0.15);
+  --bg-grid-size: 40px;
+
+  /* ===========================================
+     TEXT COLORS
+     =========================================== */
+  --text-primary: #ffffff;        /* Pure white for clarity */
+  --text-secondary: #88ccdd;      /* Cyan-tinted */
+  --text-dim: #446677;            /* Muted cyan */
+  --text-inverse: #000408;
+
+  /* Data colors */
+  --text-data: #00d4ff;           /* Cyan data */
+  --text-label: #668899;          /* Muted labels */
+  --text-value: #ffffff;          /* White values */
+
+  /* ===========================================
+     ACCENT COLORS (HUD-style)
+     =========================================== */
+  --accent-algorithm: #00d4ff;    /* Primary scan cyan */
+  --accent-secondary: #00aacc;    /* Secondary cyan */
+  --accent-tertiary: #006688;     /* Dim cyan */
+
+  --accent-warning: #ffcc00;      /* Yellow */
+  --accent-danger: #ff3300;       /* Red */
+  --accent-success: #00ff66;      /* Green */
+  --accent-humanity: #ff00ff;     /* Magenta - stands out */
+  --accent-credits: #00ff00;      /* Green (money = data) */
+
+  /* ===========================================
+     THREAT LEVEL COLORS
+     =========================================== */
+  --threat-none: #00ff66;         /* Green - safe */
+  --threat-low: #88ff00;          /* Yellow-green */
+  --threat-medium: #ffff00;       /* Yellow */
+  --threat-high: #ff8800;         /* Orange */
+  --threat-critical: #ff0000;     /* Red */
+
+  /* ===========================================
+     TARGET COLORS
+     =========================================== */
+  --target-locked: #ff0000;       /* Red lock */
+  --target-friendly: #00ff00;     /* Green friendly */
+  --target-neutral: #ffffff;      /* White neutral */
+  --target-hostile: #ff0000;      /* Red hostile */
+  --target-unknown: #ffff00;      /* Yellow unknown */
+
+  /* ===========================================
+     TIER COLORS
+     =========================================== */
+  --tier-low: #446677;
+  --tier-mid: #00aacc;
+  --tier-high: #00d4ff;
+  --tier-apex: #ffffff;
+
+  /* ===========================================
+     FACTION COLORS (muted in Algorithm view)
+     =========================================== */
+  --faction-omni: #00d4ff;       /* OmniDeliver - algorithm cyan */
+  --faction-saints: #cc66ff;     /* Chrome Saints - purple */
+  --faction-tide: #ff3300;       /* Red Tide - threat red */
+  --faction-dragons: #ff8800;    /* Neon Dragons - warning orange */
+
+  /* ===========================================
+     STATUS COLORS
+     =========================================== */
+  --status-healthy: #00ff66;
+  --status-wounded: #ffcc00;
+  --status-critical: #ff3300;
+  --status-dead: #333344;
+
+  --humanity-high: #ff00ff;
+  --humanity-mid: #cc00cc;
+  --humanity-low: #990099;
+  --humanity-critical: #660066;
+
+  /* ===========================================
+     BORDER COLORS
+     =========================================== */
+  --border-subtle: rgba(0, 212, 255, 0.1);
+  --border-default: rgba(0, 212, 255, 0.3);
+  --border-strong: rgba(0, 212, 255, 0.5);
+  --border-accent: var(--accent-algorithm);
+
+  /* ===========================================
+     GLOW EFFECTS (HUD style)
+     =========================================== */
+  --glow-scan: 0 0 20px rgba(0, 212, 255, 0.3),
+               0 0 40px rgba(0, 212, 255, 0.1);
+
+  --glow-target: 0 0 10px rgba(255, 0, 0, 0.5),
+                 0 0 30px rgba(255, 0, 0, 0.2);
+
+  --glow-friendly: 0 0 10px rgba(0, 255, 0, 0.5),
+                   0 0 30px rgba(0, 255, 0, 0.2);
+
+  --glow-data: 0 0 5px rgba(0, 212, 255, 0.5);
+
+  /* ===========================================
+     SHADOWS
+     =========================================== */
+  --shadow-sm: 0 0 5px rgba(0, 212, 255, 0.1);
+  --shadow-md: 0 0 10px rgba(0, 212, 255, 0.15);
+  --shadow-lg: 0 0 20px rgba(0, 212, 255, 0.2);
+  --shadow-xl: 0 0 40px rgba(0, 212, 255, 0.25);
+
+  /* ===========================================
+     GRADIENTS
+     =========================================== */
+  --gradient-page: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(0, 60, 90, 0.2) 0%,
+    var(--bg-primary) 70%
+  );
+
+  --gradient-scan: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(0, 212, 255, 0.05) 100%
+  );
+
+  --gradient-card: linear-gradient(
+    135deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+
+  /* ===========================================
+     TYPOGRAPHY
+     =========================================== */
+  --font-ui: 'Roboto Mono', 'Consolas', monospace;
+  --font-display: 'Exo 2', 'Rajdhani', sans-serif;
+  --font-narrative: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-data: 'Source Code Pro', 'Roboto Mono', monospace;
+  --font-label: 'Rajdhani', 'Roboto Condensed', sans-serif;
+
+  /* ===========================================
+     SPECIAL EFFECTS
+     =========================================== */
+
+  /* Grid pattern */
+  --grid-pattern: linear-gradient(var(--bg-grid) 1px, transparent 1px),
+                  linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+
+  /* Scan line animation */
+  --scan-line-speed: 3s;
+}
+
+/* ===========================================
+   ALGORITHM VISION: BASE STYLES
+   =========================================== */
+
+[data-theme="algorithm-vision"] {
+  background: var(--bg-primary);
+  background-image: var(--grid-pattern);
+  background-size: var(--bg-grid-size) var(--bg-grid-size);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+/* ===========================================
+   SCANNING LINE EFFECT
+   =========================================== */
+
+[data-theme="algorithm-vision"] .scan-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="algorithm-vision"] .scan-effect::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-algorithm) 50%,
+    transparent 100%
+  );
+  animation: scan-line var(--scan-line-speed) linear infinite;
+  opacity: 0.5;
+}
+
+@keyframes scan-line {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
+/* ===========================================
+   TARGET BRACKETS
+   =========================================== */
+
+[data-theme="algorithm-vision"] .target-bracket {
+  position: relative;
+  padding: var(--space-2);
+}
+
+[data-theme="algorithm-vision"] .target-bracket::before,
+[data-theme="algorithm-vision"] .target-bracket::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent-algorithm);
+}
+
+[data-theme="algorithm-vision"] .target-bracket::before {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+[data-theme="algorithm-vision"] .target-bracket::after {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+/* Target locked state */
+[data-theme="algorithm-vision"] .target-bracket--locked::before,
+[data-theme="algorithm-vision"] .target-bracket--locked::after {
+  border-color: var(--target-locked);
+  animation: target-pulse 1s ease-in-out infinite;
+}
+
+@keyframes target-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===========================================
+   DATA READOUTS
+   =========================================== */
+
+[data-theme="algorithm-vision"] .data-readout {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  color: var(--text-data);
+  text-shadow: var(--glow-data);
+}
+
+[data-theme="algorithm-vision"] .data-readout__label {
+  color: var(--text-label);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+}
+
+[data-theme="algorithm-vision"] .data-readout__value {
+  color: var(--text-value);
+  font-weight: var(--font-bold);
+}
+
+[data-theme="algorithm-vision"] .data-readout__unit {
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  margin-left: var(--space-1);
+}
+
+/* ===========================================
+   THREAT ASSESSMENT INDICATOR
+   =========================================== */
+
+[data-theme="algorithm-vision"] .threat-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+[data-theme="algorithm-vision"] .threat-indicator__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  animation: threat-blink 2s ease-in-out infinite;
+}
+
+[data-theme="algorithm-vision"] .threat-indicator--none .threat-indicator__dot {
+  background: var(--threat-none);
+  box-shadow: 0 0 10px var(--threat-none);
+}
+
+[data-theme="algorithm-vision"] .threat-indicator--low .threat-indicator__dot {
+  background: var(--threat-low);
+  box-shadow: 0 0 10px var(--threat-low);
+}
+
+[data-theme="algorithm-vision"] .threat-indicator--medium .threat-indicator__dot {
+  background: var(--threat-medium);
+  box-shadow: 0 0 10px var(--threat-medium);
+  animation-duration: 1.5s;
+}
+
+[data-theme="algorithm-vision"] .threat-indicator--high .threat-indicator__dot {
+  background: var(--threat-high);
+  box-shadow: 0 0 10px var(--threat-high);
+  animation-duration: 1s;
+}
+
+[data-theme="algorithm-vision"] .threat-indicator--critical .threat-indicator__dot {
+  background: var(--threat-critical);
+  box-shadow: var(--glow-target);
+  animation-duration: 0.5s;
+}
+
+@keyframes threat-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ===========================================
+   BIOMETRIC PANEL
+   =========================================== */
+
+[data-theme="algorithm-vision"] .biometric-panel {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  padding: var(--space-4);
+  position: relative;
+}
+
+[data-theme="algorithm-vision"] .biometric-panel__header {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="algorithm-vision"] .biometric-panel__header::before {
+  content: '[ ';
+}
+
+[data-theme="algorithm-vision"] .biometric-panel__header::after {
+  content: ' ]';
+}
+
+[data-theme="algorithm-vision"] .biometric-reading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--border-subtle);
+}
+
+[data-theme="algorithm-vision"] .biometric-reading__label {
+  color: var(--text-label);
+  font-size: var(--text-sm);
+}
+
+[data-theme="algorithm-vision"] .biometric-reading__value {
+  color: var(--text-data);
+  font-family: var(--font-data);
+  text-shadow: var(--glow-data);
+}
+
+/* ===========================================
+   PREDICTION READOUT
+   =========================================== */
+
+[data-theme="algorithm-vision"] .prediction {
+  background: rgba(0, 212, 255, 0.05);
+  border-left: 3px solid var(--accent-algorithm);
+  padding: var(--space-3);
+  margin: var(--space-4) 0;
+  font-size: var(--text-sm);
+}
+
+[data-theme="algorithm-vision"] .prediction__label {
+  color: var(--accent-algorithm);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  margin-bottom: var(--space-2);
+}
+
+[data-theme="algorithm-vision"] .prediction__value {
+  color: var(--text-primary);
+}
+
+[data-theme="algorithm-vision"] .prediction__confidence {
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  margin-top: var(--space-2);
+}
+
+/* ===========================================
+   ALGORITHM INTERFACE HEADER
+   =========================================== */
+
+[data-theme="algorithm-vision"] .algo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 212, 255, 0.1) 0%,
+    transparent 100%
+  );
+}
+
+[data-theme="algorithm-vision"] .algo-header__title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-algorithm);
+  text-shadow: var(--glow-scan);
+}
+
+[data-theme="algorithm-vision"] .algo-header__title::before {
+  content: '◢◤ ';
+}
+
+[data-theme="algorithm-vision"] .algo-header__title::after {
+  content: ' ◥◣';
+}
+
+/* ===========================================
+   PROGRESS BARS (HUD style)
+   =========================================== */
+
+[data-theme="algorithm-vision"] .progress-bar {
+  height: var(--bar-md);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="algorithm-vision"] .progress-bar__fill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  transition: width var(--duration-normal) var(--ease-out);
+  position: relative;
+}
+
+[data-theme="algorithm-vision"] .progress-bar__fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
+  animation: progress-shine 2s linear infinite;
+}
+
+@keyframes progress-shine {
+  0% { transform: translateX(-20px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(20px); opacity: 0; }
+}
+
+/* Tick marks on progress bar */
+[data-theme="algorithm-vision"] .progress-bar--ticks::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 9%,
+    var(--border-subtle) 9%,
+    var(--border-subtle) 10%
+  );
+  z-index: 1;
+}
+
+/* ===========================================
+   BUTTONS (HUD style)
+   =========================================== */
+
+[data-theme="algorithm-vision"] .btn {
+  background: transparent;
+  border: 1px solid var(--accent-algorithm);
+  color: var(--accent-algorithm);
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+[data-theme="algorithm-vision"] .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 212, 255, 0.2),
+    transparent
+  );
+  transition: left var(--duration-slow) var(--ease-out);
+}
+
+[data-theme="algorithm-vision"] .btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: var(--glow-scan);
+}
+
+[data-theme="algorithm-vision"] .btn:hover::before {
+  left: 100%;
+}
+
+/* Danger button variant */
+[data-theme="algorithm-vision"] .btn--danger {
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+[data-theme="algorithm-vision"] .btn--danger:hover {
+  background: rgba(255, 51, 0, 0.1);
+  box-shadow: var(--glow-target);
+}
+
+/* ===========================================
+   COURIER ID BADGE
+   =========================================== */
+
+[data-theme="algorithm-vision"] .courier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+}
+
+[data-theme="algorithm-vision"] .courier-badge__id {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+[data-theme="algorithm-vision"] .courier-badge__name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+}
+
+[data-theme="algorithm-vision"] .courier-badge__tier {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+}
+
+/* ===========================================
+   ANOMALY ALERT
+   =========================================== */
+
+[data-theme="algorithm-vision"] .anomaly-alert {
+  background: rgba(255, 51, 0, 0.1);
+  border: 1px solid var(--accent-danger);
+  padding: var(--space-3);
+  position: relative;
+  animation: anomaly-pulse 2s ease-in-out infinite;
+}
+
+[data-theme="algorithm-vision"] .anomaly-alert::before {
+  content: '⚠';
+  position: absolute;
+  left: var(--space-3);
+  color: var(--accent-danger);
+}
+
+[data-theme="algorithm-vision"] .anomaly-alert__text {
+  padding-left: var(--space-6);
+  color: var(--accent-danger);
+  font-size: var(--text-sm);
+}
+
+@keyframes anomaly-pulse {
+  0%, 100% { border-color: var(--accent-danger); }
+  50% { border-color: transparent; }
+}

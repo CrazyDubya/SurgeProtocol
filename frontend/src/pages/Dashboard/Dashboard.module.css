@@ -1,0 +1,54 @@
+/**
+ * Dashboard Page Styles
+ */
+
+.dashboard {
+  /* Container */
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--accent-algorithm);
+  margin-bottom: var(--space-6);
+}
+
+.placeholder {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  padding: var(--space-5);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.card:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card p {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
