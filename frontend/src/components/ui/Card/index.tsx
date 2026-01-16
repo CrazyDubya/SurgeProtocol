@@ -1,4 +1,4 @@
-import { ComponentChildren, JSX } from 'preact';
+import { ComponentChildren } from 'preact';
 import styles from './Card.module.css';
 
 export type CardVariant = 'default' | 'elevated' | 'outlined' | 'glass' | 'terminal';
@@ -54,13 +54,15 @@ export function Card({
     .filter(Boolean)
     .join(' ');
 
-  const Component = interactive ? 'button' : 'div';
-  const props: JSX.HTMLAttributes<HTMLElement> = {
-    class: classes,
-    onClick: interactive ? onClick : undefined,
-  };
+  if (interactive) {
+    return (
+      <button type="button" class={classes} onClick={onClick}>
+        {children}
+      </button>
+    );
+  }
 
-  return <Component {...props}>{children}</Component>;
+  return <div class={classes}>{children}</div>;
 }
 
 /**

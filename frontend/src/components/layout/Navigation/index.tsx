@@ -2,10 +2,11 @@ import { Link, useLocation } from 'wouter-preact';
 import styles from './Navigation.module.css';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard', icon: '◈' },
-  { path: '/missions', label: 'Missions', icon: '◎' },
-  { path: '/character', label: 'Character', icon: '◉' },
-  { path: '/inventory', label: 'Inventory', icon: '◫' },
+  { path: '/', label: 'Dashboard', icon: '◈', description: 'Overview' },
+  { path: '/missions', label: 'Missions', icon: '◎', description: 'Jobs & contracts' },
+  { path: '/algorithm', label: 'Algorithm', icon: '◇', description: 'AI handler' },
+  { path: '/character', label: 'Character', icon: '◉', description: 'Stats & augments' },
+  { path: '/inventory', label: 'Inventory', icon: '◫', description: 'Gear & items' },
 ] as const;
 
 export function Navigation() {
@@ -23,7 +24,11 @@ export function Navigation() {
               }`}
             >
               <span class={styles.icon}>{item.icon}</span>
-              <span class={styles.label}>{item.label}</span>
+              <div class={styles.text}>
+                <span class={styles.label}>{item.label}</span>
+                <span class={styles.description}>{item.description}</span>
+              </div>
+              {location === item.path && <span class={styles.indicator} />}
             </Link>
           </li>
         ))}

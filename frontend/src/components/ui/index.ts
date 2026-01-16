@@ -22,3 +22,12 @@ export type { BadgeProps, BadgeVariant, BadgeSize, BadgeGroupProps, StatusDotPro
 // Stat
 export { Stat, StatGroup, AttributeStat } from './Stat';
 export type { StatProps, StatVariant, StatSize, StatGroupProps, AttributeStatProps } from './Stat';
+
+// Skeleton
+export {
+  Skeleton,
+  SkeletonMissionCard,
+  SkeletonStat,
+  SkeletonCard,
+  SkeletonDashboard,
+} from './Skeleton';

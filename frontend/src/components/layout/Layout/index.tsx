@@ -1,6 +1,7 @@
 import { ComponentChildren } from 'preact';
 import { Header } from '../Header';
 import { Navigation } from '../Navigation';
+import { PageTransition } from '../PageTransition';
 import styles from './Layout.module.css';
 
 interface LayoutProps {
@@ -13,8 +14,17 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       <div class={styles.container}>
         <Navigation />
-        <main class={styles.main}>{children}</main>
+        <main class={styles.main}>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </main>
       </div>
+      <footer class={styles.footer}>
+        <span class={styles.footerText}>
+          Surge Protocol // Build 0.3.7 // Neural Link Active
+        </span>
+      </footer>
     </div>
   );
 }

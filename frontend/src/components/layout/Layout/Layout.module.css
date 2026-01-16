@@ -1,5 +1,6 @@
 /**
  * Layout Component Styles
+ * Main application shell with header, nav, content, and footer
  */
 
 .layout {
@@ -24,10 +25,42 @@
   min-width: 0; /* Prevent flex overflow */
 }
 
+/* Footer */
+.footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  background: var(--bg-secondary);
+}
+
+.footerText {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.footerText::before {
+  content: '◇ ';
+  color: var(--accent-algorithm);
+  animation: footerPulse 2s ease-in-out infinite;
+}
+
+@keyframes footerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* Mobile layout */
 @media (max-width: 768px) {
   .container {
-    flex-direction: column;
+    flex-direction: column-reverse;
     padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .footer {
+    padding: var(--space-2) var(--space-3);
   }
 }

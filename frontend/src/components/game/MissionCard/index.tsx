@@ -7,6 +7,7 @@ export interface MissionCardProps {
   onAccept?: () => void;
   onDecline?: () => void;
   onView?: () => void;
+  selected?: boolean;
   class?: string;
 }
 
@@ -34,6 +35,7 @@ export function MissionCard({
   onAccept,
   onDecline,
   onView,
+  selected = false,
   class: className,
 }: MissionCardProps) {
   const typeConfig = missionTypeConfig[mission.type] || { label: mission.type, variant: 'algorithm' as const };
@@ -44,6 +46,7 @@ export function MissionCard({
   const classes = [
     styles.mission,
     isActive && styles.active,
+    selected && styles.selected,
     className,
   ].filter(Boolean).join(' ');
 

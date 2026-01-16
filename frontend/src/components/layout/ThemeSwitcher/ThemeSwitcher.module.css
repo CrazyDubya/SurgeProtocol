@@ -1,0 +1,204 @@
+/**
+ * ThemeSwitcher Component Styles
+ * Visual theme selector with color swatches
+ */
+
+.switcher {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.trigger:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.triggerSwatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+}
+
+.triggerLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.triggerIcon {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.switcher.open .triggerIcon {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: var(--z-dropdown);
+}
+
+.switcher.open .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownHeader {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dropdownTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Theme list */
+.themeList {
+  padding: var(--space-2);
+}
+
+.themeItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.themeItem:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-subtle);
+}
+
+.themeItem.active {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-algorithm);
+}
+
+/* Theme swatch with multiple colors */
+.themeSwatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.swatchColor {
+  width: 100%;
+  height: 100%;
+}
+
+/* Theme info */
+.themeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.themeName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.themeItem.active .themeName {
+  color: var(--accent-algorithm);
+}
+
+.themeTier {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 1px 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.themeTier.tier1 {
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.themeDescription {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+  line-height: 1.4;
+}
+
+/* Check indicator */
+.checkIndicator {
+  color: var(--accent-algorithm);
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.themeItem.active .checkIndicator {
+  opacity: 1;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .triggerLabel {
+    display: none;
+  }
+
+  .dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%);
+  }
+
+  .switcher.open .dropdown {
+    transform: translateY(0);
+  }
+}

@@ -22,7 +22,8 @@ export function CharacterStatus({
 
   const hpPercent = (character.hp.current / character.hp.max) * 100;
   const humanityPercent = (character.humanity.current / character.humanity.max) * 100;
-  const xpToNext = character.xp.toNextLevel - character.xp.current;
+  const _xpToNext = character.xp.toNextLevel - character.xp.current;
+  void _xpToNext; // Reserved for future use
 
   return (
     <Card variant="terminal" padding={compact ? 'sm' : 'md'} class={classes}>

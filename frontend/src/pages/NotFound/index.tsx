@@ -1,42 +1,35 @@
 import { Link } from 'wouter-preact';
+import styles from './NotFound.module.css';
 
 export function NotFound() {
   return (
-    <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-      <h1 style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 'var(--text-4xl)',
-        textTransform: 'uppercase',
-        letterSpacing: 'var(--tracking-widest)',
-        color: 'var(--accent-danger)',
-        marginBottom: 'var(--space-4)'
-      }}>
-        404
-      </h1>
-      <p style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 'var(--text-xl)',
-        color: 'var(--text-secondary)',
-        marginBottom: 'var(--space-6)'
-      }}>
-        Location Not Found
-      </p>
-      <p style={{ color: 'var(--text-dim)', marginBottom: 'var(--space-6)' }}>
+    <div class={styles.page}>
+      <div class={styles.errorCode}>404</div>
+
+      <h1 class={styles.title}>Location Not Found</h1>
+
+      <p class={styles.message}>
         The Algorithm cannot locate this destination.
+        The requested coordinates may have been corrupted or do not exist in the network.
       </p>
-      <Link
-        href="/"
-        style={{
-          display: 'inline-block',
-          padding: 'var(--space-3) var(--space-6)',
-          background: 'var(--accent-algorithm)',
-          color: 'var(--bg-primary)',
-          textDecoration: 'none',
-          textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
-          fontFamily: 'var(--font-ui)'
-        }}
-      >
+
+      <div class={styles.errorDetails}>
+        <div class={styles.errorLine}>
+          <span class={styles.errorKey}>STATUS:</span>{' '}
+          <span class={styles.errorValue}>ROUTE_NOT_FOUND</span>
+        </div>
+        <div class={styles.errorLine}>
+          <span class={styles.errorKey}>CODE:</span>{' '}
+          <span class={styles.errorValue}>ERR_404_DESTINATION_UNKNOWN</span>
+        </div>
+        <div class={styles.errorLine}>
+          <span class={styles.errorKey}>ACTION:</span>{' '}
+          <span class={styles.errorValue}>RETURN_TO_SAFE_ZONE</span>
+        </div>
+      </div>
+
+      <Link href="/" class={styles.button}>
+        <span class={styles.buttonIcon}>◈</span>
         Return to Dashboard
       </Link>
     </div>
