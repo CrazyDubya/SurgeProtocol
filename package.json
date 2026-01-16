@@ -21,6 +21,7 @@
     "precommit": "npm run lint:schema && npm run test:schema"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "hono": "^4.0.0",
     "nanoid": "^5.0.0",
     "zod": "^3.22.0"

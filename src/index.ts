@@ -7,6 +7,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { tokenRoutes } from './api/tokens';
+import { authRoutes } from './api/auth';
+import { characterRoutes } from './api/character';
+import { missionRoutes } from './api/mission';
 
 // Environment bindings
 type Bindings = {
@@ -47,13 +50,11 @@ app.get('/health', (c) => {
 // TODO: Add authentication middleware for these routes
 app.route('/internal/tokens', tokenRoutes);
 
-// API routes (to be implemented)
-// app.route('/api/auth', authRoutes);
-// app.route('/api/characters', characterRoutes);
-// app.route('/api/missions', missionRoutes);
-// app.route('/api/combat', combatRoutes);
-// app.route('/api/world', worldRoutes);
-// app.route('/api/economy', economyRoutes);
+// API routes
+app.route('/api/auth', authRoutes);
+app.route('/api/characters', characterRoutes);
+app.route('/api/missions', missionRoutes);
+// app.route('/api/economy', economyRoutes); // TODO: Implement
 
 // WebSocket upgrade endpoints for Durable Objects
 app.get('/ws/combat/:combatId', async (c) => {

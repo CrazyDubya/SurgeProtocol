@@ -27,9 +27,11 @@ export {
   getEffectiveAttribute,
 
   // Missions
+  getMission,
   getAvailableMissions,
   getActiveMission,
   acceptMission,
+  createMissionInstance,
   updateMissionStatus,
 
   // Factions

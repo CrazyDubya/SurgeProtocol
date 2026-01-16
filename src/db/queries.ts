@@ -15,7 +15,6 @@ import type {
   Faction,
   CharacterReputation,
   CharacterInventory,
-  CharacterWithStats,
   MissionStatus,
   ReputationTier,
 } from './types';
@@ -305,11 +304,25 @@ export async function getEffectiveAttribute(
 // =============================================================================
 
 /**
+ * Get a mission definition by ID.
+ */
+export async function getMission(
+  db: D1Database,
+  missionId: string
+): Promise<MissionDefinition | null> {
+  return db
+    .prepare('SELECT * FROM mission_definitions WHERE id = ?')
+    .bind(missionId)
+    .first<MissionDefinition>();
+}
+
+/**
  * Get available missions for a character's tier.
  */
 export async function getAvailableMissions(
   db: D1Database,
   tier: number,
+  _rating: number,
   limit: number = 10
 ): Promise<MissionDefinition[]> {
   const result = await db
@@ -365,6 +378,31 @@ export async function acceptMission(
       ) VALUES (?, ?, ?, 'ACCEPTED', datetime('now'), ${deadline ? deadline : 'NULL'})`
     )
     .bind(id, characterId, missionId)
+    .run();
+
+  return id;
+}
+
+/**
+ * Create a mission instance (for mission_instances table).
+ */
+export async function createMissionInstance(
+  db: D1Database,
+  data: {
+    missionId: string;
+    characterId: string;
+    timeLimit?: number;
+  }
+): Promise<string> {
+  const id = generateId();
+
+  await db
+    .prepare(
+      `INSERT INTO mission_instances (
+        id, mission_id, character_id, status, time_limit_minutes, started_at
+      ) VALUES (?, ?, ?, 'IN_PROGRESS', ?, datetime('now'))`
+    )
+    .bind(id, data.missionId, data.characterId, data.timeLimit ?? null)
     .run();
 
   return id;

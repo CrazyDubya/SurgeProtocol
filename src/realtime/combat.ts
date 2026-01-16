@@ -143,6 +143,11 @@ export class CombatSession {
   }
 
   async fetch(request: Request): Promise<Response> {
+    // Restore state from storage if not in memory
+    if (!this.combatState) {
+      await this.loadState();
+    }
+
     const url = new URL(request.url);
 
     // WebSocket upgrade
