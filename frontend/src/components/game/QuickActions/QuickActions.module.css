@@ -1,0 +1,205 @@
+/**
+ * Quick Actions Component Styles
+ */
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===========================================
+   GRID
+   =========================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 2), 1fr);
+  gap: var(--space-2);
+}
+
+/* ===========================================
+   ACTION BUTTON
+   =========================================== */
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: left;
+}
+
+.actionButton:hover:not(:disabled) {
+  border-color: var(--accent-algorithm);
+  background: var(--bg-tertiary);
+}
+
+.actionButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--accent-algorithm);
+  font-size: var(--text-lg);
+}
+
+.actionContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.actionLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.actionDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   NAV ACTIONS (horizontal)
+   =========================================== */
+
+.navActions {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.navAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.navAction:hover {
+  background: var(--bg-tertiary);
+}
+
+.navAction.navActive {
+  background: var(--accent-algorithm);
+}
+
+.navLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.navActive .navLabel {
+  color: var(--bg-primary);
+}
+
+.navBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--accent-danger);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: white;
+}
+
+.navActive .navBadge {
+  background: var(--bg-primary);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   STAT ACTION
+   =========================================== */
+
+.statAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.statLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+/* Stat action variants */
+.statAction-highlight .statValue {
+  color: var(--accent-algorithm);
+}
+
+.statAction-warning .statValue {
+  color: var(--accent-warning);
+}
+
+.statAction-danger .statValue {
+  color: var(--accent-danger);
+}

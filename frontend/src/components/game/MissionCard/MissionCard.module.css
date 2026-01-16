@@ -1,0 +1,152 @@
+/**
+ * Mission Card Component Styles
+ */
+
+.mission {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mission.active {
+  border-color: var(--accent-algorithm);
+  box-shadow: 0 0 20px var(--glow-algorithm, rgba(0, 255, 157, 0.15));
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* ===========================================
+   BODY
+   =========================================== */
+
+.body {
+  padding: var(--space-4);
+  flex: 1;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.description {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-4) 0;
+}
+
+/* ===========================================
+   META INFO
+   =========================================== */
+
+.meta {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.metaLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.metaValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+/* ===========================================
+   TIMER
+   =========================================== */
+
+.timer {
+  margin-top: var(--space-3);
+}
+
+.timerLabel {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+}
+
+/* ===========================================
+   LIST ITEM (compact version)
+   =========================================== */
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.listContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.listTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listReward {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-xp, var(--accent-warning));
+  white-space: nowrap;
+}

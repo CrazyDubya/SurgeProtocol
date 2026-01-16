@@ -1,0 +1,373 @@
+/**
+ * Algorithm Panel Component Styles
+ * The Algorithm's communication interface
+ */
+
+.panel {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanline effect */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--accent-algorithm);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.headerIcon {
+  font-size: var(--text-lg);
+  color: var(--accent-algorithm);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.headerTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   CONTENT
+   =========================================== */
+
+.content {
+  padding: var(--space-4);
+  min-height: 120px;
+  position: relative;
+}
+
+.message {
+  position: relative;
+}
+
+.messageText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.cursor {
+  color: var(--accent-algorithm);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.timestamp {
+  display: block;
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   TONE VARIANTS
+   =========================================== */
+
+.neutral .messageText {
+  color: var(--text-primary);
+}
+
+.approving .messageText {
+  color: var(--accent-success);
+}
+
+.approving::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-success);
+}
+
+.disappointed .messageText {
+  color: var(--accent-warning);
+}
+
+.disappointed::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-warning);
+}
+
+.urgent {
+  animation: urgentPulse 1s ease-in-out infinite;
+}
+
+.urgent .messageText {
+  color: var(--accent-danger);
+}
+
+.urgent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-danger);
+}
+
+@keyframes urgentPulse {
+  0%, 100% {
+    background: var(--bg-secondary);
+  }
+  50% {
+    background: rgba(255, 0, 0, 0.1);
+  }
+}
+
+.cryptic .messageText {
+  color: var(--accent-humanity, #ff00ff);
+  font-style: italic;
+}
+
+.cryptic::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-humanity, #ff00ff);
+}
+
+.threatening .messageText {
+  color: var(--accent-danger);
+  text-shadow: 0 0 10px var(--accent-danger);
+}
+
+.threatening::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-danger);
+  animation: threatPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes threatPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===========================================
+   ACTIONS
+   =========================================== */
+
+.actions {
+  margin-top: var(--space-4);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 80px;
+  color: var(--text-dim);
+}
+
+.emptyIcon {
+  font-size: var(--text-2xl);
+  opacity: 0.5;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+
+.footer {
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.historyToggle {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  transition: color var(--duration-fast);
+}
+
+.historyToggle:hover {
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   HISTORY
+   =========================================== */
+
+.history {
+  border-top: 1px solid var(--border-default);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.historyItem {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.historyItem:last-child {
+  border-bottom: none;
+}
+
+.historyIcon {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.historyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.historyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.historyTimestamp {
+  display: block;
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* History tone colors */
+.history .approving .historyIcon { color: var(--accent-success); }
+.history .disappointed .historyIcon { color: var(--accent-warning); }
+.history .urgent .historyIcon { color: var(--accent-danger); }
+.history .cryptic .historyIcon { color: var(--accent-humanity, #ff00ff); }
+.history .threatening .historyIcon { color: var(--accent-danger); }
+
+/* ===========================================
+   INDICATOR (compact)
+   =========================================== */
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.indicatorIcon {
+  color: var(--accent-algorithm);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.indicatorText {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-secondary);
+}
+
+.indicatorStatus {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--accent-algorithm);
+}
+
+.indicator-processing .indicatorIcon {
+  animation: spin 1s linear infinite;
+}
+
+.indicator-alert .indicatorIcon {
+  color: var(--accent-danger);
+}
+
+.indicator-alert .indicatorStatus {
+  color: var(--accent-danger);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

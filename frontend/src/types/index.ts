@@ -15,26 +15,28 @@ export type ThemeName =
 export interface Character {
   id: string;
   name: string;
-  tier: number;
-  rating: number;
-  hp: number;
-  maxHp: number;
-  humanity: number;
-  maxHumanity: number;
-  xp: number;
-  xpToNextLevel: number;
+  alias: string;
+  level: number;
+  hp: { current: number; max: number };
+  humanity: { current: number; max: number };
+  xp: { current: number; toNextLevel: number };
   credits: number;
-  location: Location;
+  reputation: {
+    algorithm: number;
+    street: number;
+    corporate: number;
+  };
   attributes: Attributes;
   augmentations: Augmentation[];
-  factionStanding: FactionStanding[];
+  location?: Location;
 }
 
 export interface Attributes {
-  body: number;
-  mind: number;
   reflex: number;
-  presence: number;
+  tech: number;
+  cool: number;
+  body: number;
+  empathy: number;
 }
 
 export interface Augmentation {
@@ -57,13 +59,6 @@ export type AugmentationSlot =
   | 'torso'
   | 'spine';
 
-export interface FactionStanding {
-  factionId: string;
-  factionName: string;
-  standing: number;
-  status: 'hostile' | 'unfriendly' | 'neutral' | 'friendly' | 'allied';
-}
-
 // Location types
 export interface Location {
   id: string;
@@ -82,60 +77,37 @@ export interface Mission {
   status: MissionStatus;
   difficulty: MissionDifficulty;
   timeLimit?: number; // in seconds
-  distance: number; // in km
   reward: MissionReward;
-  ratingImpact: number;
-  requirements?: MissionRequirement[];
-  origin: Location;
-  destination: Location;
-  package?: Package;
+  origin?: Location;
+  destination?: Location;
 }
 
 export type MissionType =
-  | 'standard'
-  | 'express'
-  | 'fragile'
-  | 'escort'
-  | 'gray_market'
-  | 'corporate'
-  | 'medical';
+  | 'delivery'
+  | 'extraction'
+  | 'infiltration'
+  | 'sabotage'
+  | 'courier'
+  | 'escort';
 
 export type MissionStatus =
   | 'available'
-  | 'accepted'
-  | 'in_progress'
+  | 'active'
   | 'completed'
   | 'failed'
   | 'abandoned';
 
 export type MissionDifficulty =
-  | 'routine'
-  | 'standard'
-  | 'challenging'
-  | 'dangerous'
-  | 'suicide';
+  | 'easy'
+  | 'medium'
+  | 'hard'
+  | 'extreme';
 
 export interface MissionReward {
-  creditsMin: number;
-  creditsMax: number;
-  bonusCredits?: number;
+  credits: number;
+  xp?: number;
+  reputation?: number;
   items?: string[];
-}
-
-export interface MissionRequirement {
-  type: 'tier' | 'rating' | 'faction' | 'item' | 'augmentation';
-  value: string | number;
-  met: boolean;
-}
-
-export interface Package {
-  id: string;
-  type: string;
-  weight: number;
-  integrity: number;
-  temperatureSensitive?: boolean;
-  fragile?: boolean;
-  contraband?: boolean;
 }
 
 // Inventory types
@@ -173,22 +145,36 @@ export interface ItemEffect {
 export interface AlgorithmMessage {
   id: string;
   content: string;
-  timestamp: number;
+  timestamp: string | Date;
   tone: AlgorithmTone;
+  acknowledged: boolean;
   options?: AlgorithmOption[];
 }
 
 export type AlgorithmTone =
-  | 'distant'
-  | 'observant'
-  | 'familiar'
-  | 'intimate'
-  | 'unified';
+  | 'neutral'
+  | 'approving'
+  | 'disappointed'
+  | 'urgent'
+  | 'cryptic'
+  | 'threatening';
 
 export interface AlgorithmOption {
   id: string;
   text: string;
   consequence?: string;
+}
+
+// Quick Action type (for UI)
+export interface QuickAction {
+  id: string;
+  label: string;
+  icon?: string;
+  description?: string;
+  badge?: string;
+  badgeVariant?: 'default' | 'primary' | 'danger' | 'warning' | 'success';
+  disabled?: boolean;
+  onClick: () => void;
 }
 
 // UI State types
