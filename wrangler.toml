@@ -1,0 +1,58 @@
+# Surge Protocol - Wrangler Configuration
+# See: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "surge-protocol"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables (non-secret)
+[vars]
+ENVIRONMENT = "development"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "surge-protocol-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace after: wrangler d1 create surge-protocol-db
+
+# KV Namespace binding
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID"  # Replace after: wrangler kv:namespace create CACHE
+
+# R2 Bucket binding
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "surge-assets"
+
+# Durable Objects
+[[durable_objects.bindings]]
+name = "COMBAT_SESSION"
+class_name = "CombatSession"
+
+[[durable_objects.bindings]]
+name = "WAR_THEATER"
+class_name = "WarTheater"
+
+[[durable_objects.bindings]]
+name = "WORLD_CLOCK"
+class_name = "WorldClock"
+
+# Durable Object migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["CombatSession", "WarTheater", "WorldClock"]
+
+# Secrets (set via wrangler secret put)
+# - JWT_SECRET: For JWT token signing
+# - CF_MASTER_TOKEN: Master API token for creating child tokens
+# - CF_ACCOUNT_ID: Cloudflare account ID
+
+# Production environment overrides
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Staging environment overrides
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
