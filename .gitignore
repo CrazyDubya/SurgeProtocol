@@ -10,12 +10,14 @@ pnpm-lock.yaml
 dist/
 build/
 *.tsbuildinfo
+.wrangler/
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.*.local
-.DS_Store
+.dev.vars
+wrangler.toml.bak
 
 # IDE
 .vscode/
@@ -24,11 +26,14 @@ build/
 *.swo
 *.iml
 
-# Cloudflare
-.wrangler/
-wrangler.toml.bak
+# OS
+.DS_Store
+Thumbs.db
 
-# Testing
+# Logs
+*.log
+
+# Test coverage
 coverage/
 .nyc_output/
 

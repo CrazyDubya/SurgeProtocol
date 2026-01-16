@@ -4,6 +4,7 @@
 name = "surge-protocol-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 account_id = "18e002ebc857b38bc8fd572fee926f75"
 
 # D1 Database binding
@@ -23,9 +24,32 @@ id = "651042312ee340a097b3cb41cd7c3262"
 binding = "ASSETS"
 bucket_name = "surge-protocol-assets"
 
+# Durable Objects
+[[durable_objects.bindings]]
+name = "COMBAT_SESSION"
+class_name = "CombatSession"
+
+[[durable_objects.bindings]]
+name = "WAR_THEATER"
+class_name = "WarTheater"
+
+[[durable_objects.bindings]]
+name = "WORLD_CLOCK"
+class_name = "WorldClock"
+
+# Durable Object migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["CombatSession", "WarTheater", "WorldClock"]
+
 # Environment variables
 [vars]
 ENVIRONMENT = "development"
+
+# Secrets (set via wrangler secret put)
+# - JWT_SECRET: For JWT token signing
+# - CF_MASTER_TOKEN: Master API token for creating child tokens
+# - CF_ACCOUNT_ID: Cloudflare account ID
 
 # Development environment
 [env.development]
@@ -45,15 +69,6 @@ d1_databases = [
   { binding = "DB", database_name = "surge-protocol-db-prod", database_id = "TBD" }
 ]
 
-# Durable Objects (for real-time features)
-# [durable_objects]
-# bindings = [
-#   { name = "COMBAT_SESSION", class_name = "CombatSession" },
-#   { name = "WAR_THEATER", class_name = "WarTheater" },
-#   { name = "WORLD_CLOCK", class_name = "WorldClock" }
-# ]
-
 # Build configuration
 [build]
 command = "npm run build"
-

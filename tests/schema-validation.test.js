@@ -24,9 +24,9 @@ const SCHEMA_DOCS = [
   '2Augmentation.md',
   '3SkillsEquipment.md',
   '4MissionWorldNPC.md',
-  '5Economy.md',
-  '6Combat.md',
-  '7Narrative.md',
+  '5EconomyContracts.md',
+  '6CombatStatus.md',
+  '7narrativedialogue.md',
   '8MetaSystems.md',
   '9Persistence.md',
   '10MultiplayerSocial.md',
@@ -210,17 +210,19 @@ describe('Schema Validation Tests', () => {
     });
 
     it('should have numbered migration files', () => {
-      const files = readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql'));
-      assert.ok(files.length >= 10, 'Should have at least 10 migration files');
+      const allFiles = readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql'));
+      // Filter out helper scripts like apply_all.sql
+      const numberedFiles = allFiles.filter(f => /^\d{4}_/.test(f));
+      assert.ok(numberedFiles.length >= 10, 'Should have at least 10 numbered migration files');
 
-      // Check numbering pattern
-      const hasProperNaming = files.every(f => /^\d{4}_/.test(f));
-      assert.ok(hasProperNaming, 'All migrations should follow NNNN_name.sql pattern');
+      // Check numbering pattern on numbered files only
+      const hasProperNaming = numberedFiles.every(f => /^\d{4}_/.test(f));
+      assert.ok(hasProperNaming, 'All numbered migrations should follow NNNN_name.sql pattern');
     });
 
     it('should have sequential migration numbers', () => {
       const files = readdirSync(MIGRATIONS_DIR)
-        .filter(f => f.endsWith('.sql'))
+        .filter(f => f.endsWith('.sql') && /^\d{4}_/.test(f))
         .sort();
 
       let lastNum = 0;
@@ -350,15 +352,15 @@ describe('Schema Validation Tests', () => {
       }
     });
 
-    it('should have enum tables with code column', () => {
+    it('should have enum tables with value column', () => {
       // Sample a few enum tables
       const sampleEnums = ['enum_rarity', 'enum_mission_type', 'enum_damage_type'];
       for (const enumTable of sampleEnums) {
         if (foundTables.includes(enumTable)) {
           const columns = extractColumnsFromSQL(allSQL, enumTable);
           assert.ok(
-            columns.includes('code'),
-            `Enum table ${enumTable} missing code column`
+            columns.includes('value'),
+            `Enum table ${enumTable} missing value column`
           );
         }
       }

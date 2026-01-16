@@ -49,18 +49,24 @@ fi
 echo -e "\n${YELLOW}[CHECK]${NC} Validating migration file naming..."
 
 if [ -d "$ROOT_DIR/migrations" ]; then
+    NAMING_FAILED=0
     for file in "$ROOT_DIR"/migrations/*.sql; do
         if [ -f "$file" ]; then
             filename=$(basename "$file")
+            # Skip helper scripts like apply_all.sql
+            if [[ $filename == "apply_all.sql" ]]; then
+                continue
+            fi
             if ! [[ $filename =~ ^[0-9]{4}_ ]]; then
                 echo -e "${RED}[ERROR]${NC} Invalid migration filename: $filename"
                 echo "  Migration files must start with 4 digits (e.g., 0001_name.sql)"
+                NAMING_FAILED=1
                 FAILED=1
             fi
         fi
     done
 
-    if [ $FAILED -eq 0 ]; then
+    if [ $NAMING_FAILED -eq 0 ]; then
         echo -e "${GREEN}[OK]${NC} All migration filenames valid"
     fi
 fi
@@ -164,9 +170,9 @@ SCHEMA_DOCS=(
     "2Augmentation.md"
     "3SkillsEquipment.md"
     "4MissionWorldNPC.md"
-    "5Economy.md"
-    "6Combat.md"
-    "7Narrative.md"
+    "5EconomyContracts.md"
+    "6CombatStatus.md"
+    "7narrativedialogue.md"
     "8MetaSystems.md"
     "9Persistence.md"
     "10MultiplayerSocial.md"
@@ -187,6 +193,34 @@ if [ ${#MISSING_DOCS[@]} -gt 0 ]; then
     done
 else
     echo -e "${GREEN}[OK]${NC} All schema documentation present"
+fi
+
+# 9. TypeScript type checking (if src files are staged)
+STAGED_TS=$(git diff --cached --name-only | grep "^src/.*\.ts$" || true)
+
+if [ -n "$STAGED_TS" ] && [ -f "$ROOT_DIR/tsconfig.json" ] && command -v npx &> /dev/null; then
+    echo -e "\n${YELLOW}[CHECK]${NC} Running TypeScript type check..."
+
+    if npx tsc --noEmit 2>/dev/null; then
+        echo -e "${GREEN}[OK]${NC} TypeScript check passed"
+    else
+        echo -e "${RED}[ERROR]${NC} TypeScript type errors found"
+        FAILED=1
+    fi
+fi
+
+# 10. Run unit tests for modified modules
+STAGED_MECHANICS=$(git diff --cached --name-only | grep "^src/game/mechanics/.*\.ts$" || true)
+
+if [ -n "$STAGED_MECHANICS" ] && [ -f "$ROOT_DIR/vitest.config.ts" ] && command -v npx &> /dev/null; then
+    echo -e "\n${YELLOW}[CHECK]${NC} Running unit tests for game mechanics..."
+
+    if npx vitest run --reporter=dot 2>/dev/null; then
+        echo -e "${GREEN}[OK]${NC} Unit tests passed"
+    else
+        echo -e "${RED}[ERROR]${NC} Unit tests failed"
+        FAILED=1
+    fi
 fi
 
 # Final result
