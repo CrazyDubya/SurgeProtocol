@@ -14,6 +14,7 @@ import { factionRoutes } from './api/faction';
 import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
+import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
 // Environment bindings
 type Bindings = {
@@ -36,10 +37,18 @@ type Bindings = {
   ENVIRONMENT: string;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+// Context variables set by middleware
+type Variables = {
+  requestId: string;
+  logger: Logger;
+  timer: RequestTimer;
+};
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // Global middleware
 app.use('*', cors());
+app.use('*', loggingMiddleware());
 
 // Rate limiting for API routes
 app.use('/api/*', dynamicRateLimit());
@@ -116,10 +125,13 @@ app.all('/api/wars/:warId/*', async (c) => {
 
 // 404 handler
 app.notFound((c) => {
+  const requestId = c.get('requestId');
+
   return c.json(
     {
       success: false,
       errors: [{ code: 'NOT_FOUND', message: 'Route not found' }],
+      ...(requestId && { requestId }),
     },
     404
   );
@@ -127,11 +139,21 @@ app.notFound((c) => {
 
 // Error handler
 app.onError((err, c) => {
-  console.error('Unhandled error:', err);
+  // Use structured logger if available, fallback to console
+  const logger = c.get('logger');
+  const requestId = c.get('requestId');
+
+  if (logger) {
+    logger.error('Unhandled error', err instanceof Error ? err : new Error(String(err)));
+  } else {
+    console.error('Unhandled error:', err);
+  }
+
   return c.json(
     {
       success: false,
       errors: [{ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }],
+      ...(requestId && { requestId }),
     },
     500
   );
