@@ -15,6 +15,7 @@ Surge Protocol is a text-based multiplayer RPG where players take on the role of
 - **Faction Wars**: Real-time faction conflicts with territory control
 - **Cyberpunk Combat**: Turn-based tactical combat with augments and gear
 - **Character Progression**: Skills, attributes, and convergence paths
+- **Consciousness Mechanics**: Humanity system with cyberpsychosis and consciousness splitting
 
 ## Tech Stack
 
@@ -26,13 +27,37 @@ Surge Protocol is a text-based multiplayer RPG where players take on the role of
 - **Framework**: Hono (Web framework)
 - **Language**: TypeScript
 
+## Documentation
+
+### For New Developers
+
+1. **Start here**: [INFRASTRUCTURE_EXAMINATION.md](./INFRASTRUCTURE_EXAMINATION.md) - Complete architectural overview
+2. **Quick reference**: [REALTIME_MONITORING_GUIDE.md](./REALTIME_MONITORING_GUIDE.md) - Monitoring, tokens, troubleshooting
+3. **API details**: [API_SPECIFICATION.md](./API_SPECIFICATION.md) - Full endpoint documentation
+4. **Setup guide**: [Claude.md](./Claude.md) - Development guidelines
+
+### Game Design & Rules
+
+- [RULES_ENGINE.md](./RULES_ENGINE.md) - 2d6 system and game mechanics
+- [ENTITY_BESTIARY.md](./ENTITY_BESTIARY.md) - NPC and creature definitions
+- [FACTION_WARFARE.md](./FACTION_WARFARE.md) - War system mechanics
+- [SURGE_STORIES_BY_TIER.md](./SURGE_STORIES_BY_TIER.md) - Narrative content by tier
+- [FORK_DIVERGENCE.md](./FORK_DIVERGENCE.md) - Consciousness branching system
+- [UI_WIREFRAMES.md](./UI_WIREFRAMES.md) - User interface designs
+
+### Reference Documentation
+
+- [documentation/schema/](./documentation/schema/) - Detailed system specifications (11 files)
+- [API_ROUTES.md](./API_ROUTES.md) - Complete API route reference
+- [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) - Development roadmap
+
 ## Project Structure
 
 ```
 src/
 ├── api/                 # REST API routes
-│   ├── auth/           # Authentication
-│   ├── character/      # Character management
+│   ├── auth/           # Authentication endpoints
+│   ├── character/      # Character CRUD operations
 │   ├── mission/        # Mission system
 │   ├── faction/        # Faction & war system
 │   └── admin/          # Internal admin routes
@@ -53,9 +78,10 @@ src/
 ├── utils/             # Utilities & helpers
 └── index.ts           # Main entry point
 
-migrations/            # D1 database migrations
+migrations/            # D1 database migrations (270 tables, 10 files)
 scripts/              # Development scripts
 tests/                # Unit & integration tests
+documentation/       # Design docs and architecture
 ```
 
 ## Getting Started
@@ -175,7 +201,31 @@ npm run test:coverage
 
 # Run integration tests (requires running server)
 API_BASE_URL=http://localhost:8787 npx tsx scripts/test-flows.ts
+
+# Run schema validation
+npm run lint:schema
 ```
+
+## Real-time Features
+
+### Durable Objects
+
+Three Durable Objects provide real-time game state:
+
+1. **CombatSession** - Turn-based combat with WebSocket connections
+   - Initiative calculation (2d6 + VEL)
+   - Action resolution and logging
+   - Real-time battlefield state
+
+2. **WarTheater** - Server-wide faction warfare
+   - Territory control tracking
+   - War score calculations
+   - Player contribution aggregation
+
+3. **WorldClock** - Shared game time and environment
+   - Game time progression (1 real second = 60 game seconds)
+   - Dynamic weather system
+   - Environmental effects on gameplay
 
 ## Deployment
 
@@ -198,53 +248,91 @@ wrangler deploy --env staging
 - [ ] Durable Objects migrations complete
 - [ ] Custom domain configured (optional)
 
-### Post-Deployment
+## Database Schema
+
+The project uses 270 tables across 10 D1 migrations covering:
+
+- **Character System**: Progression, attributes, rating mechanics
+- **Augmentation**: Cybernetics, humanity tracking
+- **Combat**: Initiative, turns, conditions, status effects
+- **Economy**: Currency, contracts, vendors, debts
+- **Missions**: Objectives, complications, rewards
+- **Factions**: Reputation, territory control, wars
+- **Narrative**: Story arcs, dialogue trees, quests
+- **Social**: Crews, leaderboards, analytics
+- **Persistence**: Saves, profiles, game configuration
+
+See [documentation/schema/](./documentation/schema/) for detailed specifications.
+
+## Monitoring & Debugging
+
+### Real-time Monitoring
 
 ```bash
-# Warm cache with game data
-curl -X POST https://your-worker.workers.dev/internal/admin/cache/warm
+# Quick infrastructure check
+bash scripts/realtime-monitor.sh
 
-# Verify deployment
-curl https://your-worker.workers.dev/health
+# Full dashboard
+node /tmp/realtime-monitor.js
+
+# Infrastructure status page
+node /tmp/surge-dashboard.js
 ```
 
-## Game Systems
-
-### Dice Engine
-Core resolution uses 2d6 + modifiers vs target number:
-- **CATASTROPHE**: Snake eyes (1, 1)
-- **MISS**: Below target by 5+
-- **GRAZE**: Below target by 1-4
-- **HIT**: Meet or exceed target
-- **PERFECT**: Exceed by 5+ or boxcars (6, 6)
-
-### Rating System
-10-tier weighted scoring:
-- Speed (20%): Delivery time efficiency
-- Care (20%): Package condition
-- Reliability (25%): Completion rate
-- Customer (15%): User ratings
-- Hidden (20%): Corporate compliance
-
-### Combat
-Turn-based tactical combat:
-- Initiative: 2d6 + VEL + PRC
-- Attack: 2d6 + skill vs Defense
-- Defense: 8 + AGI + armor + cover
-- Damage: Weapon dice + margin - armor
+See [REALTIME_MONITORING_GUIDE.md](./REALTIME_MONITORING_GUIDE.md) for detailed commands.
 
 ## Contributing
 
+When adding features:
+
 1. Create a feature branch from `main`
-2. Write tests for new functionality
-3. Ensure TypeScript compiles without errors
-4. Run the test suite
-5. Submit a pull request
+2. Name it: `claude/<feature-name>-<session-id>`
+3. Implement with tests
+4. Ensure all schema validations pass
+5. Create PR with detailed description
+6. Get code review approval
+7. Squash and merge to main
+
+## Development Phases
+
+**Phase 1: Foundation** ✅ Complete
+- D1 database schema (270 tables)
+- Durable Objects architecture
+- Core API handlers
+- Authentication system
+
+**Phase 2: Core Systems** ✅ Complete
+- Character creation and progression
+- Mission system with complications
+- Combat mechanics (2d6, initiative)
+- Economy and faction systems
+- Narrative/dialogue
+
+**Phase 3: Real-time Features** ✅ In Progress
+- WebSocket integration
+- Real-time combat
+- Faction wars
+- Dynamic world state
+
+**Phase 4: Optimization & Scaling**
+- Load testing
+- Performance optimization
+- Analytics implementation
+- Production deployment
 
 ## License
 
-[License details here]
+Proprietary - Surge Protocol
+
+## Support
+
+For questions or issues:
+- Check [INFRASTRUCTURE_EXAMINATION.md](./INFRASTRUCTURE_EXAMINATION.md) for architecture questions
+- Review [REALTIME_MONITORING_GUIDE.md](./REALTIME_MONITORING_GUIDE.md) for operational questions
+- See [Claude.md](./Claude.md) for development guidelines
 
 ---
 
-*"Efficiency rating: PENDING. Complete your deliveries."*
+**Current Status**: Implementation Phase
+**Last Updated**: 2026-01-16
+**Deployed Version**: TBD
