@@ -1,6 +1,12 @@
+/**
+ * Missions Page - Browse and manage missions
+ *
+ * Integrates with stores for real-time data.
+ */
+
 import { useState, useMemo } from 'preact/hooks';
 import type { Mission, MissionType, MissionDifficulty } from '@/types';
-import { Card, Badge } from '@components/ui';
+import { Card, Badge, Skeleton } from '@components/ui';
 import {
   MissionFilters,
   MissionCard,
@@ -8,82 +14,24 @@ import {
   ActiveMissionTracker,
 } from '@components/game';
 import type { MissionSortOption } from '@components/game';
+import { useMissionData } from '@/hooks';
+import {
+  availableMissions,
+  activeMission,
+  canAcceptNew,
+  missionError,
+} from '@/stores/missionStore';
 import styles from './Missions.module.css';
 
-// Mock data - will be replaced with API calls
-const mockActiveMission: Mission = {
-  id: 'active-1',
-  title: 'Data Package Alpha',
-  description: 'Deliver encrypted data core to Sector 7 drop point. Avoid corporate scanners.',
-  type: 'delivery',
-  difficulty: 'medium',
-  status: 'active',
-  reward: { credits: 5000, xp: 150, reputation: 5 },
-  timeLimit: 1847,
-};
-
-const mockMissions: Mission[] = [
-  {
-    id: 'm1',
-    title: 'Corporate Extraction',
-    description: 'Extract a defecting executive from Arasaka Tower lobby. High security presence expected.',
-    type: 'extraction',
-    difficulty: 'hard',
-    status: 'available',
-    reward: { credits: 12000, xp: 350, reputation: 15 },
-    origin: { id: 'loc1', name: 'Arasaka Tower', zone: 'Corporate District', threatLevel: 'dangerous' },
-    destination: { id: 'loc2', name: 'Safe House Delta', zone: 'Watson', threatLevel: 'safe' },
-  },
-  {
-    id: 'm2',
-    title: 'Dead Drop Courier',
-    description: 'Pick up package from Night Market, deliver to unknown recipient. No questions asked.',
-    type: 'courier',
-    difficulty: 'easy',
-    status: 'available',
-    reward: { credits: 2500, xp: 75 },
-    timeLimit: 3600,
-  },
-  {
-    id: 'm3',
-    title: 'Sabotage Run',
-    description: 'Infiltrate Militech facility and disable their tracking network. Stealth required.',
-    type: 'sabotage',
-    difficulty: 'extreme',
-    status: 'available',
-    reward: { credits: 25000, xp: 500, reputation: 25 },
-  },
-  {
-    id: 'm4',
-    title: 'Medical Supply Run',
-    description: 'Deliver temperature-sensitive medical supplies to street clinic. Time critical.',
-    type: 'delivery',
-    difficulty: 'medium',
-    status: 'available',
-    reward: { credits: 4000, xp: 100, reputation: 10 },
-    timeLimit: 1800,
-  },
-  {
-    id: 'm5',
-    title: 'VIP Escort',
-    description: 'Escort high-profile client through contested territory to secure location.',
-    type: 'escort',
-    difficulty: 'hard',
-    status: 'available',
-    reward: { credits: 8000, xp: 200, reputation: 12 },
-  },
-  {
-    id: 'm6',
-    title: 'Data Infiltration',
-    description: 'Access Kang Tao systems and extract prototype schematics. Zero trace required.',
-    type: 'infiltration',
-    difficulty: 'hard',
-    status: 'available',
-    reward: { credits: 15000, xp: 400, reputation: 20 },
-  },
-];
-
 export function Missions() {
+  // Load mission data via hook
+  const {
+    isLoading,
+    acceptMission,
+    abandonMission,
+    refresh,
+  } = useMissionData();
+
   // Filter state
   const [selectedTypes, setSelectedTypes] = useState<MissionType[]>([]);
   const [selectedDifficulties, setSelectedDifficulties] = useState<MissionDifficulty[]>([]);
@@ -92,6 +40,39 @@ export function Missions() {
 
   // Selected mission for detail view
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+
+  // Transform store data to component format (store uses 'title' and 'missionType')
+  const missionList: Mission[] = availableMissions.value.map((m) => ({
+    id: m.id,
+    title: m.title,
+    description: m.description || '',
+    type: m.missionType.toLowerCase() as MissionType,
+    difficulty: m.difficulty.toLowerCase() as MissionDifficulty,
+    status: 'available',
+    reward: {
+      credits: m.baseCredits,
+      xp: m.baseXp,
+      reputation: m.baseReputation,
+    },
+    timeLimit: m.timeLimit ? m.timeLimit * 60 : undefined, // Convert minutes to seconds
+  }));
+
+  // Transform active mission (using nested structure)
+  const activeMissionData: Mission | null = activeMission.value
+    ? {
+        id: activeMission.value.instance.id,
+        title: activeMission.value.definition.title,
+        description: activeMission.value.definition.description || '',
+        type: activeMission.value.definition.missionType.toLowerCase() as MissionType,
+        difficulty: activeMission.value.definition.difficulty.toLowerCase() as MissionDifficulty,
+        status: 'active',
+        reward: {
+          credits: activeMission.value.definition.baseCredits || 0,
+          xp: activeMission.value.definition.baseXp || 0,
+        },
+        timeLimit: activeMission.value.definition.timeLimit,
+      }
+    : null;
 
   // Filter handlers
   const handleTypeToggle = (type: MissionType) => {
@@ -114,7 +95,7 @@ export function Missions() {
 
   // Filter and sort missions
   const filteredMissions = useMemo(() => {
-    let result = [...mockMissions];
+    let result = [...missionList];
 
     // Filter by type
     if (selectedTypes.length > 0) {
@@ -142,8 +123,8 @@ export function Missions() {
         case 'reward':
           return b.reward.credits - a.reward.credits;
         case 'difficulty': {
-          const diffOrder = { easy: 0, medium: 1, hard: 2, extreme: 3 };
-          return diffOrder[a.difficulty] - diffOrder[b.difficulty];
+          const diffOrder: Record<string, number> = { easy: 0, trivial: 0, medium: 1, hard: 2, extreme: 3, nightmare: 4 };
+          return (diffOrder[a.difficulty] ?? 1) - (diffOrder[b.difficulty] ?? 1);
         }
         case 'time':
           return (a.timeLimit || Infinity) - (b.timeLimit || Infinity);
@@ -153,29 +134,78 @@ export function Missions() {
     });
 
     return result;
-  }, [mockMissions, selectedTypes, selectedDifficulties, searchQuery, sortBy]);
+  }, [missionList, selectedTypes, selectedDifficulties, searchQuery, sortBy]);
 
   // Mission action handlers
-  const handleAcceptMission = (missionId: string) => {
-    console.log('Accept mission:', missionId);
+  const handleAcceptMission = async (missionId: string) => {
+    const success = await acceptMission(missionId);
+    if (success) {
+      setSelectedMission(null);
+    }
+  };
+
+  const handleDeclineMission = (_missionId: string) => {
     setSelectedMission(null);
   };
 
-  const handleDeclineMission = (missionId: string) => {
-    console.log('Decline mission:', missionId);
-    setSelectedMission(null);
+  const handleAbandonMission = async () => {
+    const success = await abandonMission();
+    if (success) {
+      setSelectedMission(null);
+    }
   };
+
+  // Loading state
+  if (isLoading && missionList.length === 0) {
+    return (
+      <div class={styles.missions}>
+        <aside class={styles.sidebar}>
+          <Skeleton variant="card" height="200px" />
+          <Skeleton variant="card" height="300px" />
+        </aside>
+        <main class={styles.main}>
+          <Skeleton variant="card" height="60px" />
+          <div class={styles.grid}>
+            <Skeleton variant="card" height="200px" />
+            <Skeleton variant="card" height="200px" />
+            <Skeleton variant="card" height="200px" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error state
+  if (missionError.value && missionList.length === 0) {
+    return (
+      <div class={styles.missions}>
+        <Card variant="outlined" padding="lg">
+          <p>Error loading missions: {missionError.value}</p>
+          <button onClick={refresh}>Retry</button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div class={styles.missions}>
       {/* Sidebar: Active Mission & Filters */}
       <aside class={styles.sidebar}>
         {/* Active Mission Tracker */}
-        <ActiveMissionTracker
-          mission={mockActiveMission}
-          onView={() => setSelectedMission(mockActiveMission)}
-          onAbandon={() => console.log('Abandon mission')}
-        />
+        {activeMissionData ? (
+          <ActiveMissionTracker
+            mission={activeMissionData}
+            onView={() => setSelectedMission(activeMissionData)}
+            onAbandon={handleAbandonMission}
+          />
+        ) : (
+          <Card variant="outlined" padding="md">
+            <h3 class={styles.noActiveTitle}>No Active Mission</h3>
+            <p class={styles.noActiveText}>
+              Select a mission from the board to get started.
+            </p>
+          </Card>
+        )}
 
         {/* Filters */}
         <MissionFilters
@@ -200,7 +230,15 @@ export function Missions() {
             <Badge variant="default" size="sm">
               {filteredMissions.length} Available
             </Badge>
+            {!canAcceptNew.value && (
+              <Badge variant="warning" size="sm">
+                Complete current mission first
+              </Badge>
+            )}
           </div>
+          <button class={styles.refreshButton} onClick={refresh} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
         </header>
 
         {/* Mission Detail (when selected) */}
@@ -208,7 +246,11 @@ export function Missions() {
           <div class={styles.detailPanel}>
             <MissionDetail
               mission={selectedMission}
-              onAccept={() => handleAcceptMission(selectedMission.id)}
+              onAccept={
+                canAcceptNew.value && selectedMission.status === 'available'
+                  ? () => handleAcceptMission(selectedMission.id)
+                  : undefined
+              }
               onDecline={() => handleDeclineMission(selectedMission.id)}
               onClose={() => setSelectedMission(null)}
             />
@@ -220,17 +262,27 @@ export function Missions() {
           {filteredMissions.length === 0 ? (
             <Card variant="outlined" padding="lg" class={styles.emptyState}>
               <span class={styles.emptyIcon}>◇</span>
-              <p class={styles.emptyText}>No missions match your filters</p>
-              <button class={styles.emptyButton} onClick={handleClearFilters}>
-                Clear Filters
-              </button>
+              <p class={styles.emptyText}>
+                {missionList.length === 0
+                  ? 'No missions available at your current tier'
+                  : 'No missions match your filters'}
+              </p>
+              {missionList.length > 0 && (
+                <button class={styles.emptyButton} onClick={handleClearFilters}>
+                  Clear Filters
+                </button>
+              )}
             </Card>
           ) : (
             filteredMissions.map((mission) => (
               <MissionCard
                 key={mission.id}
                 mission={mission}
-                onAccept={() => handleAcceptMission(mission.id)}
+                onAccept={
+                  canAcceptNew.value && !activeMissionData
+                    ? () => handleAcceptMission(mission.id)
+                    : undefined
+                }
                 onView={() => setSelectedMission(mission)}
                 selected={selectedMission?.id === mission.id}
               />

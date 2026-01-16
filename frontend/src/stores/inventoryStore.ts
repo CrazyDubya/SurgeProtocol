@@ -16,18 +16,17 @@ import { signal, computed } from '@preact/signals';
 
 export interface InventoryItem {
   id: string;
-  instanceId: string;
-  itemId: string;
+  itemId?: string;
   name: string;
-  description: string;
+  description?: string;
   itemType: ItemType;
   rarity: ItemRarity;
   quantity: number;
-  maxStack: number;
-  weight: number;
-  baseValue: number;
-  condition: number;
-  maxCondition: number;
+  maxStack?: number;
+  weight?: number;
+  baseValue?: number;
+  condition?: number;
+  maxCondition?: number;
   isEquipped: boolean;
   equippedSlot?: string;
   effects?: ItemEffect[];
@@ -128,7 +127,7 @@ export const filteredItems = computed(() => {
       const search = filter.search.toLowerCase();
       if (
         !item.name.toLowerCase().includes(search) &&
-        !item.description.toLowerCase().includes(search)
+        !(item.description || '').toLowerCase().includes(search)
       ) {
         return false;
       }
@@ -151,13 +150,13 @@ export const filteredItems = computed(() => {
         comparison = getRarityOrder(a.rarity) - getRarityOrder(b.rarity);
         break;
       case 'value':
-        comparison = a.baseValue - b.baseValue;
+        comparison = (a.baseValue || 0) - (b.baseValue || 0);
         break;
       case 'weight':
-        comparison = a.weight - b.weight;
+        comparison = (a.weight || 0) - (b.weight || 0);
         break;
       case 'condition':
-        comparison = a.condition - b.condition;
+        comparison = (a.condition || 0) - (b.condition || 0);
         break;
     }
 
@@ -174,7 +173,7 @@ export const equippedItems = computed(() =>
 
 /** Selected item details */
 export const selectedItem = computed(() =>
-  items.value.find((item) => item.instanceId === selectedItemId.value) || null
+  items.value.find((item) => item.id === selectedItemId.value) || null
 );
 
 /** Weight usage percentage */
@@ -203,7 +202,7 @@ export const itemCountsByType = computed(() => {
 
 /** Total inventory value */
 export const totalInventoryValue = computed(() =>
-  items.value.reduce((sum, item) => sum + item.baseValue * item.quantity, 0)
+  items.value.reduce((sum, item) => sum + (item.baseValue || 0) * item.quantity, 0)
 );
 
 /** Unique item types in inventory */
@@ -251,9 +250,9 @@ export function addItem(item: InventoryItem): void {
 /**
  * Remove item from inventory
  */
-export function removeItem(instanceId: string): void {
-  items.value = items.value.filter((item) => item.instanceId !== instanceId);
-  if (selectedItemId.value === instanceId) {
+export function removeItem(itemId: string): void {
+  items.value = items.value.filter((item) => item.id !== itemId);
+  if (selectedItemId.value === itemId) {
     selectedItemId.value = null;
   }
   recalculateWeight();
@@ -262,9 +261,9 @@ export function removeItem(instanceId: string): void {
 /**
  * Update item quantity
  */
-export function updateItemQuantity(instanceId: string, quantity: number): void {
+export function updateItemQuantity(itemId: string, quantity: number): void {
   items.value = items.value.map((item) =>
-    item.instanceId === instanceId ? { ...item, quantity } : item
+    item.id === itemId ? { ...item, quantity } : item
   );
   recalculateWeight();
 }
@@ -272,9 +271,9 @@ export function updateItemQuantity(instanceId: string, quantity: number): void {
 /**
  * Equip item
  */
-export function equipItem(instanceId: string, slot: string): void {
+export function equipItem(itemId: string, slot?: string): void {
   items.value = items.value.map((item) =>
-    item.instanceId === instanceId
+    item.id === itemId
       ? { ...item, isEquipped: true, equippedSlot: slot }
       : item
   );
@@ -283,9 +282,9 @@ export function equipItem(instanceId: string, slot: string): void {
 /**
  * Unequip item
  */
-export function unequipItem(instanceId: string): void {
+export function unequipItem(itemId: string): void {
   items.value = items.value.map((item) =>
-    item.instanceId === instanceId
+    item.id === itemId
       ? { ...item, isEquipped: false, equippedSlot: undefined }
       : item
   );
@@ -294,8 +293,8 @@ export function unequipItem(instanceId: string): void {
 /**
  * Select item for details view
  */
-export function selectItem(instanceId: string | null): void {
-  selectedItemId.value = instanceId;
+export function selectItem(itemId: string | null): void {
+  selectedItemId.value = itemId;
 }
 
 /**
@@ -333,7 +332,8 @@ export function toggleSortOrder(): void {
 /**
  * Set weight capacity
  */
-export function setWeightCapacity(max: number): void {
+export function setWeightCapacity(current: number, max: number): void {
+  currentWeight.value = current;
   maxWeight.value = max;
 }
 
@@ -342,7 +342,7 @@ export function setWeightCapacity(max: number): void {
  */
 export function recalculateWeight(): void {
   currentWeight.value = items.value.reduce(
-    (sum, item) => sum + item.weight * item.quantity,
+    (sum, item) => sum + (item.weight || 0) * item.quantity,
     0
   );
 }

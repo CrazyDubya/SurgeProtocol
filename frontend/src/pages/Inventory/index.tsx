@@ -1,165 +1,158 @@
-import { useState } from 'preact/hooks';
-import type { InventoryItem } from '@/types';
-import { Button } from '@components/ui';
+/**
+ * Inventory Page - Manage character items and equipment
+ *
+ * Integrates with stores for real-time data.
+ */
+
+import type { InventoryItem as InventoryItemType } from '@/types';
+import { Button, Card, Skeleton } from '@components/ui';
 import { InventoryGrid, ItemDetail } from '@components/game';
+import { useInventoryData } from '@/hooks';
+import {
+  items,
+  equippedItems,
+  currentWeight,
+  maxWeight,
+  weightPercent,
+  isOverEncumbered,
+  isNearCapacity,
+  totalInventoryValue,
+  selectItem,
+  selectedItem,
+} from '@/stores/inventoryStore';
 import styles from './Inventory.module.css';
 
-// Mock data
-const mockItems: InventoryItem[] = [
-  {
-    id: 'i1',
-    name: 'Militech M-76 Omaha',
-    description: 'Standard issue corporate sidearm. Reliable, accurate, and completely legal in most sectors.',
-    type: 'weapon',
-    quantity: 1,
-    weight: 1.2,
-    value: 1500,
-    equipped: true,
-    condition: 85,
-    effects: [{ stat: 'Damage', modifier: 8 }],
-  },
-  {
-    id: 'i2',
-    name: 'Armored Courier Vest',
-    description: 'Reinforced ballistic weave designed for urban delivery operations. Discrete protection.',
-    type: 'armor',
-    quantity: 1,
-    weight: 3.5,
-    value: 2500,
-    equipped: true,
-    condition: 72,
-    effects: [{ stat: 'Armor', modifier: 4 }],
-  },
-  {
-    id: 'i3',
-    name: 'Bounce Back Mk.1',
-    description: 'Fast-acting medical injection. Restores health quickly but causes brief disorientation.',
-    type: 'medical',
-    quantity: 3,
-    weight: 0.2,
-    value: 150,
-    effects: [{ stat: 'HP', modifier: 25 }],
-  },
-  {
-    id: 'i4',
-    name: 'Black Lace',
-    description: 'Combat stimulant. Increases reflexes but has highly addictive properties.',
-    type: 'chemical',
-    quantity: 2,
-    weight: 0.1,
-    value: 500,
-    effects: [{ stat: 'Reflex', modifier: 2, duration: 300 }],
-  },
-  {
-    id: 'i5',
-    name: 'Encrypted Data Shard',
-    description: 'Contains unknown encrypted data. Could be valuable to the right buyer.',
-    type: 'data',
-    quantity: 1,
-    weight: 0.01,
-    value: 2000,
-  },
-  {
-    id: 'i6',
-    name: 'Techie Toolkit',
-    description: 'Portable electronics repair kit. Essential for field maintenance.',
-    type: 'tech',
-    quantity: 1,
-    weight: 2.0,
-    value: 800,
-    condition: 90,
-    effects: [{ stat: 'Tech checks', modifier: 1 }],
-  },
-  {
-    id: 'i7',
-    name: 'Sector 7 Keycard',
-    description: 'Access keycard for restricted areas in Sector 7. May have limited uses.',
-    type: 'key',
-    quantity: 1,
-    weight: 0.01,
-    value: 0,
-  },
-  {
-    id: 'i8',
-    name: 'Protein Bar',
-    description: 'Tasteless but nutritious. Standard courier rations.',
-    type: 'consumable',
-    quantity: 5,
-    weight: 0.1,
-    value: 10,
-    effects: [{ stat: 'Stamina', modifier: 10 }],
-  },
-  {
-    id: 'i9',
-    name: 'Neural Disruptor',
-    description: 'Compact EMP device. Disables electronics in a small radius.',
-    type: 'tech',
-    quantity: 1,
-    weight: 0.5,
-    value: 3000,
-    condition: 100,
-  },
-  {
-    id: 'i10',
-    name: 'Contraband Package',
-    description: 'Sealed package marked for delivery. Contents unknown. Do not open.',
-    type: 'misc',
-    quantity: 1,
-    weight: 1.0,
-    value: 0,
-  },
-];
-
-const MAX_WEIGHT = 50;
-
 export function Inventory() {
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  // Load data via hook
+  const {
+    isLoading,
+    error,
+    refresh,
+    equip,
+    unequip,
+    useItem,
+    discardItem,
+  } = useInventoryData();
 
-  const totalWeight = mockItems.reduce((sum, item) => sum + item.weight * item.quantity, 0);
-  const totalValue = mockItems.reduce((sum, item) => sum + item.value * item.quantity, 0);
-  const totalItems = mockItems.reduce((sum, item) => sum + item.quantity, 0);
+  // Transform store data to component format
+  const inventoryItems: InventoryItemType[] = items.value.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    type: item.itemType.toLowerCase() as InventoryItemType['type'],
+    quantity: item.quantity,
+    weight: item.weight || 0,
+    value: item.baseValue || 0,
+    equipped: item.isEquipped,
+    condition: item.condition,
+    effects: [],
+  }));
 
-  const weightPercent = (totalWeight / MAX_WEIGHT) * 100;
-  const isOverweight = weightPercent > 90;
-  const isNearLimit = weightPercent > 70;
+  // Transform equipped items
+  const equippedList: InventoryItemType[] = equippedItems.value.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    type: item.itemType.toLowerCase() as InventoryItemType['type'],
+    quantity: item.quantity,
+    weight: item.weight || 0,
+    value: item.baseValue || 0,
+    equipped: true,
+    condition: item.condition,
+    effects: [],
+  }));
 
-  const equippedItems = mockItems.filter((item) => item.equipped);
+  // Get selected item in component format
+  const selectedInventoryItem: InventoryItemType | null = selectedItem.value
+    ? {
+        id: selectedItem.value.id,
+        name: selectedItem.value.name,
+        description: selectedItem.value.description || '',
+        type: selectedItem.value.itemType.toLowerCase() as InventoryItemType['type'],
+        quantity: selectedItem.value.quantity,
+        weight: selectedItem.value.weight || 0,
+        value: selectedItem.value.baseValue || 0,
+        equipped: selectedItem.value.isEquipped,
+        condition: selectedItem.value.condition,
+        effects: [],
+      }
+    : null;
 
-  const handleUse = () => {
-    if (selectedItem) {
-      console.log('Use item:', selectedItem.id);
+  const totalItems = items.value.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleSelect = (item: InventoryItemType | null) => {
+    selectItem(item?.id || null);
+  };
+
+  const handleUse = async () => {
+    if (selectedItem.value) {
+      await useItem(selectedItem.value.id);
     }
   };
 
-  const handleEquip = () => {
-    if (selectedItem) {
-      console.log('Equip/Unequip item:', selectedItem.id);
+  const handleEquip = async () => {
+    if (selectedItem.value) {
+      if (selectedItem.value.isEquipped) {
+        await unequip(selectedItem.value.id);
+      } else {
+        // Default slot based on item type
+        const slot = getSlotForType(selectedItem.value.itemType);
+        await equip(selectedItem.value.id, slot);
+      }
     }
   };
 
-  const handleDrop = () => {
-    if (selectedItem) {
-      console.log('Drop item:', selectedItem.id);
-      setSelectedItem(null);
+  const handleDrop = async () => {
+    if (selectedItem.value) {
+      await discardItem(selectedItem.value.id);
+      selectItem(null);
     }
   };
 
-  const handleSell = () => {
-    if (selectedItem) {
-      console.log('Sell item:', selectedItem.id);
-      setSelectedItem(null);
+  const handleSell = async () => {
+    // TODO: Open vendor sell modal
+    if (selectedItem.value) {
+      console.log('Sell item:', selectedItem.value.id);
     }
   };
+
+  // Loading state
+  if (isLoading && inventoryItems.length === 0) {
+    return (
+      <div class={styles.inventory}>
+        <div class={styles.main}>
+          <Skeleton variant="card" height="400px" />
+        </div>
+        <aside class={styles.sidebar}>
+          <Skeleton variant="card" height="100px" />
+          <Skeleton variant="card" height="80px" />
+          <Skeleton variant="card" height="200px" />
+        </aside>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && inventoryItems.length === 0) {
+    return (
+      <div class={styles.inventory}>
+        <Card variant="outlined" padding="lg">
+          <p>Error loading inventory: {error}</p>
+          <button onClick={refresh}>Retry</button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div class={styles.inventory}>
       {/* Main Content - Inventory Grid */}
       <div class={styles.main}>
         <InventoryGrid
-          items={mockItems}
-          selectedId={selectedItem?.id}
-          onSelect={setSelectedItem}
-          maxWeight={MAX_WEIGHT}
+          items={inventoryItems}
+          selectedId={selectedInventoryItem?.id}
+          onSelect={handleSelect}
+          maxWeight={maxWeight.value}
           showFilters
         />
       </div>
@@ -172,18 +165,18 @@ export function Inventory() {
             <span class={styles.capacityLabel}>Carry Capacity</span>
             <span
               class={`${styles.capacityValue} ${
-                isOverweight ? styles.full : isNearLimit ? styles.warning : ''
+                isOverEncumbered.value ? styles.full : isNearCapacity.value ? styles.warning : ''
               }`}
             >
-              {totalWeight.toFixed(1)} / {MAX_WEIGHT} kg
+              {currentWeight.value.toFixed(1)} / {maxWeight.value} kg
             </span>
           </div>
           <div class={styles.capacityBar}>
             <div
               class={`${styles.capacityFill} ${
-                isOverweight ? styles.full : isNearLimit ? styles.warning : ''
+                isOverEncumbered.value ? styles.full : isNearCapacity.value ? styles.warning : ''
               }`}
-              style={{ width: `${Math.min(weightPercent, 100)}%` }}
+              style={{ width: `${Math.min(weightPercent.value, 100)}%` }}
             />
           </div>
         </div>
@@ -197,14 +190,14 @@ export function Inventory() {
           <div class={styles.quickStat}>
             <span class={styles.quickStatLabel}>Total Value</span>
             <span class={`${styles.quickStatValue} ${styles.highlight}`}>
-              ¥{totalValue.toLocaleString()}
+              ₡{totalInventoryValue.value.toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Selected Item Detail */}
         <ItemDetail
-          item={selectedItem}
+          item={selectedInventoryItem}
           onUse={handleUse}
           onEquip={handleEquip}
           onDrop={handleDrop}
@@ -215,12 +208,12 @@ export function Inventory() {
         <div class={styles.equippedSection}>
           <h3 class={styles.sectionTitle}>Equipped</h3>
           <div class={styles.equippedList}>
-            {equippedItems.length > 0 ? (
-              equippedItems.map((item) => (
+            {equippedList.length > 0 ? (
+              equippedList.map((item) => (
                 <div
                   key={item.id}
                   class={styles.equippedItem}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={() => handleSelect(item)}
                 >
                   <span class={styles.equippedIcon}>
                     {item.type === 'weapon' ? '⚔' : '◆'}
@@ -239,14 +232,24 @@ export function Inventory() {
 
         {/* Quick Actions */}
         <div class={styles.actions}>
-          <Button variant="secondary" fullWidth>
-            Sort Inventory
-          </Button>
-          <Button variant="ghost" fullWidth>
-            Sell All Junk
+          <Button variant="secondary" fullWidth onClick={refresh}>
+            Refresh
           </Button>
         </div>
       </aside>
     </div>
   );
+}
+
+// Helper to determine equipment slot based on item type
+function getSlotForType(itemType: string): string {
+  const slotMap: Record<string, string> = {
+    weapon: 'hand_right',
+    armor: 'torso',
+    helmet: 'head',
+    boots: 'feet',
+    gloves: 'hands',
+    cyberware: 'neural',
+  };
+  return slotMap[itemType.toLowerCase()] || 'accessory';
 }

@@ -263,3 +263,320 @@
   background: var(--accent-algorithm);
   color: var(--bg-primary);
 }
+
+/* ===========================================
+   ID BADGE
+   =========================================== */
+
+.idBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.idLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.idValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ===========================================
+   RATING CARD
+   =========================================== */
+
+.ratingCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-algorithm);
+  border-radius: var(--radius-md);
+}
+
+.ratingLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.ratingValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   ATTRIBUTE GRID
+   =========================================== */
+
+.attributeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .attributeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.attributeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.attrCode {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.attrValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+.attrName {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+/* ===========================================
+   SKILL GRID
+   =========================================== */
+
+.skillGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skillCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.skillName {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.skillLevel {
+  display: flex;
+  gap: 2px;
+}
+
+.skillPip {
+  width: 8px;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+}
+
+.skillPip.filled {
+  background: var(--accent-algorithm);
+}
+
+.skillValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ===========================================
+   FACTION GRID
+   =========================================== */
+
+.factionGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.factionCard {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.factionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.factionName {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.memberBadge {
+  padding: var(--space-1) var(--space-2);
+  background: var(--accent-algorithm);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--bg-primary);
+}
+
+.factionRep {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.repTier {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+.repBar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.repFill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: 4px;
+}
+
+.repValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  min-width: 32px;
+  text-align: right;
+}
+
+.factionType {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   CONDITIONS
+   =========================================== */
+
+.conditionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.conditionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-warning);
+  border-radius: var(--radius-md);
+}
+
+.conditionName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--accent-warning);
+}
+
+.conditionEffect {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+/* ===========================================
+   QUICK STATS
+   =========================================== */
+
+.quickStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.quickStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.quickStatLabel {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.quickStatValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.emptyState {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  text-align: center;
+  margin: 0;
+}

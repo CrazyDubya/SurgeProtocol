@@ -19,43 +19,39 @@ export interface CharacterData {
   legalName: string;
   streetName?: string;
   handle?: string;
+  omniDeliverId?: string;
   currentTier: number;
   carrierRating: number;
+  currentXp?: number;
   currentHealth: number;
   maxHealth: number;
   currentHumanity: number;
   maxHumanity: number;
   isActive: boolean;
   isDead: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CharacterAttribute {
   code: string;
   name: string;
-  baseValue: number;
-  currentValue: number;
-  bonusFromAugments: number;
-  bonusFromItems: number;
-  bonusFromConditions: number;
-  effectiveValue: number;
+  value: number;
 }
 
 export interface CharacterSkill {
   code: string;
   name: string;
-  currentLevel: number;
-  xpInvested: number;
+  level: number;
 }
 
 export interface FactionStanding {
   factionId: string;
-  factionName: string;
+  name: string;
   factionType: string;
-  reputationValue: number;
-  reputationTier: string;
-  isHostileDefault: boolean;
+  reputation: number;
+  tier: string;
+  isMember: boolean;
 }
 
 export interface CharacterFinances {
@@ -76,6 +72,7 @@ export interface CharacterCondition {
 
 export interface EquippedItem {
   slot: string;
+  itemId?: string;
   itemName: string;
   itemType: string;
   rarity: string;
@@ -133,14 +130,14 @@ export const getAttributeByCode = (code: string) =>
 export const primaryAttributes = computed(() => {
   const attrs = attributes.value;
   return {
-    PWR: attrs.find((a) => a.code === 'PWR')?.effectiveValue ?? 0,
-    AGI: attrs.find((a) => a.code === 'AGI')?.effectiveValue ?? 0,
-    END: attrs.find((a) => a.code === 'END')?.effectiveValue ?? 0,
-    VEL: attrs.find((a) => a.code === 'VEL')?.effectiveValue ?? 0,
-    INT: attrs.find((a) => a.code === 'INT')?.effectiveValue ?? 0,
-    WIS: attrs.find((a) => a.code === 'WIS')?.effectiveValue ?? 0,
-    EMP: attrs.find((a) => a.code === 'EMP')?.effectiveValue ?? 0,
-    PRC: attrs.find((a) => a.code === 'PRC')?.effectiveValue ?? 0,
+    PWR: attrs.find((a) => a.code === 'PWR')?.value ?? 0,
+    AGI: attrs.find((a) => a.code === 'AGI')?.value ?? 0,
+    END: attrs.find((a) => a.code === 'END')?.value ?? 0,
+    VEL: attrs.find((a) => a.code === 'VEL')?.value ?? 0,
+    INT: attrs.find((a) => a.code === 'INT')?.value ?? 0,
+    WIS: attrs.find((a) => a.code === 'WIS')?.value ?? 0,
+    EMP: attrs.find((a) => a.code === 'EMP')?.value ?? 0,
+    PRC: attrs.find((a) => a.code === 'PRC')?.value ?? 0,
   };
 });
 
