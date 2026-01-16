@@ -404,14 +404,15 @@ export function applyDeathSpiralProtection(
 ): number {
   if (proposedChange >= 0) return proposedChange; // Only protect against losses
 
-  if (currentRating < 60) {
-    // Reduce negative impact by 50% when struggling
-    return proposedChange * 0.5;
-  }
-
+  // Check most restrictive condition first
   if (currentRating < 40) {
     // Reduce negative impact by 75% when critically low
     return proposedChange * 0.25;
+  }
+
+  if (currentRating < 60) {
+    // Reduce negative impact by 50% when struggling
+    return proposedChange * 0.5;
   }
 
   return proposedChange;

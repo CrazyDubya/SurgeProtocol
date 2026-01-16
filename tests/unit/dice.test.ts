@@ -298,8 +298,9 @@ describe('Extended Checks', () => {
 describe('Probability Calculation', () => {
   describe('calculateSuccessProbability', () => {
     it('should return 100% for trivial checks', () => {
-      // With +6 total modifier, need to roll 2+ on 2d6 (guaranteed)
-      const prob = calculateSuccessProbability(14, 2, 2, 10);
+      // With +6 total modifier (+2 attr, +2 skill, +2 sit), TN 8 → need to roll 2+ on 2d6
+      // targetRoll = 8 - 6 = 2, which is guaranteed on 2d6
+      const prob = calculateSuccessProbability(14, 2, 2, 8);
       expect(prob).toBe(100);
     });
 
