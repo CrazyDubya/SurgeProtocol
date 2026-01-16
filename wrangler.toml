@@ -1,0 +1,59 @@
+# SURGE PROTOCOL - Cloudflare Workers Configuration
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "surge-protocol-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+account_id = "18e002ebc857b38bc8fd572fee926f75"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "surge-protocol-db"
+database_id = "d72bdef1-8719-4820-b906-d751414cdd86"
+migrations_dir = "migrations"
+
+# KV Namespace binding
+[[kv_namespaces]]
+binding = "CACHE"
+id = "651042312ee340a097b3cb41cd7c3262"
+
+# R2 Bucket binding
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "surge-protocol-assets"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+
+# Development environment
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+d1_databases = [
+  { binding = "DB", database_name = "surge-protocol-db-staging", database_id = "TBD" }
+]
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+d1_databases = [
+  { binding = "DB", database_name = "surge-protocol-db-prod", database_id = "TBD" }
+]
+
+# Durable Objects (for real-time features)
+# [durable_objects]
+# bindings = [
+#   { name = "COMBAT_SESSION", class_name = "CombatSession" },
+#   { name = "WAR_THEATER", class_name = "WarTheater" },
+#   { name = "WORLD_CLOCK", class_name = "WorldClock" }
+# ]
+
+# Build configuration
+[build]
+command = "npm run build"
+
