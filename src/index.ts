@@ -10,6 +10,7 @@ import { tokenRoutes } from './api/tokens';
 import { authRoutes } from './api/auth';
 import { characterRoutes } from './api/character';
 import { missionRoutes } from './api/mission';
+import { factionRoutes } from './api/faction';
 
 // Environment bindings
 type Bindings = {
@@ -54,6 +55,7 @@ app.route('/internal/tokens', tokenRoutes);
 app.route('/api/auth', authRoutes);
 app.route('/api/characters', characterRoutes);
 app.route('/api/missions', missionRoutes);
+app.route('/api/factions', factionRoutes);
 // app.route('/api/economy', economyRoutes); // TODO: Implement
 
 // WebSocket upgrade endpoints for Durable Objects
@@ -92,6 +94,14 @@ app.all('/api/world/*', async (c) => {
   return stub.fetch(new Request(url.toString(), c.req.raw));
 });
 
+app.all('/api/wars/:warId/*', async (c) => {
+  const id = c.env.WAR_THEATER.idFromName(c.req.param('warId'));
+  const stub = c.env.WAR_THEATER.get(id);
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace(`/api/wars/${c.req.param('warId')}`, '');
+  return stub.fetch(new Request(url.toString(), c.req.raw));
+});
+
 // 404 handler
 app.notFound((c) => {
   return c.json(
@@ -120,4 +130,4 @@ export default app;
 // Durable Object exports
 export { CombatSession } from './realtime/combat';
 export { WorldClock } from './realtime/world';
-// export { WarTheater } from './realtime/war'; // TODO: Implement
+export { WarTheater } from './realtime/war';
