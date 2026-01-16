@@ -200,10 +200,11 @@ describe('Overall Rating Calculation', () => {
 
       const result = calculateRating(components, 1);
 
-      // At tier 1 (1.0 multiplier), max weighted score is 100
-      expect(result.rawScore).toBe(100);
+      // At tier 1, ALGO (2.5%) and NET (2.5%) are not included,
+      // so max weighted score is 95% (the other 8 components)
+      expect(result.rawScore).toBe(95);
       expect(result.tierMultiplier).toBe(1.0);
-      expect(result.finalRating).toBe(100);
+      expect(result.finalRating).toBe(95);
     });
 
     it('should apply tier multiplier', () => {
@@ -218,9 +219,10 @@ describe('Overall Rating Calculation', () => {
         ['SPECIAL', 100],
       ]);
 
+      // Tier 5 still excludes ALGO (T7+) and NET (T9+), so raw score is 95
       const tier5Result = calculateRating(components, 5);
       expect(tier5Result.tierMultiplier).toBe(1.4);
-      expect(tier5Result.finalRating).toBe(140); // 100 * 1.4
+      expect(tier5Result.finalRating).toBe(133); // 95 * 1.4 = 133
     });
 
     it('should only include T7+ components at high tiers', () => {

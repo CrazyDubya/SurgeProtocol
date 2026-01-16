@@ -12,6 +12,8 @@ import { characterRoutes } from './api/character';
 import { missionRoutes } from './api/mission';
 import { factionRoutes } from './api/faction';
 import { adminRoutes } from './api/admin';
+import { economyRoutes } from './api/economy';
+import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 
 // Environment bindings
 type Bindings = {
@@ -39,6 +41,9 @@ const app = new Hono<{ Bindings: Bindings }>();
 // Global middleware
 app.use('*', cors());
 
+// Rate limiting for API routes
+app.use('/api/*', dynamicRateLimit());
+
 // Health check
 app.get('/health', (c) => {
   return c.json({
@@ -57,7 +62,13 @@ app.route('/api/auth', authRoutes);
 app.route('/api/characters', characterRoutes);
 app.route('/api/missions', missionRoutes);
 app.route('/api/factions', factionRoutes);
-// app.route('/api/economy', economyRoutes); // TODO: Implement
+
+// Economy routes with stricter rate limiting for transactions
+app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
+app.use('/api/economy/vendors/*/sell', expensiveRateLimit());
+app.use('/api/economy/vendors/*/haggle', expensiveRateLimit());
+app.use('/api/economy/transfer', expensiveRateLimit());
+app.route('/api/economy', economyRoutes);
 
 // WebSocket upgrade endpoints for Durable Objects
 app.get('/ws/combat/:combatId', async (c) => {

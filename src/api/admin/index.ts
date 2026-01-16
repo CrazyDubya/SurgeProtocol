@@ -6,33 +6,38 @@
  * - Cache management
  * - System diagnostics
  *
- * These routes should be protected in production.
+ * All routes require admin authentication.
  */
 
 import { Hono } from 'hono';
 import { seedAll } from '../../db/seed';
 import { GameCache } from '../../cache';
+import { adminMiddleware, requireNonProduction } from '../../middleware/admin';
 
 type Bindings = {
   DB: D1Database;
   CACHE: KVNamespace;
   ENVIRONMENT: string;
+  CF_MASTER_TOKEN: string;
+  JWT_SECRET: string;
 };
 
-export const adminRoutes = new Hono<{ Bindings: Bindings }>();
+type Variables = {
+  userId?: string;
+  isAdmin?: boolean;
+};
+
+export const adminRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Apply admin authentication to all routes
+adminRoutes.use('*', adminMiddleware());
 
 /**
  * POST /admin/seed
  * Seed the database with initial game data.
+ * Requires non-production environment.
  */
-adminRoutes.post('/seed', async (c) => {
-  // Only allow in development
-  if (c.env.ENVIRONMENT === 'production') {
-    return c.json({
-      success: false,
-      errors: [{ code: 'FORBIDDEN', message: 'Seeding disabled in production' }],
-    }, 403);
-  }
+adminRoutes.post('/seed', requireNonProduction(), async (c) => {
 
   try {
     const cache = new GameCache(c.env.CACHE);
@@ -97,16 +102,9 @@ adminRoutes.post('/cache/warm', async (c) => {
 /**
  * DELETE /admin/cache
  * Clear all cache entries.
+ * Requires non-production environment.
  */
-adminRoutes.delete('/cache', async (c) => {
-  // Only allow in development
-  if (c.env.ENVIRONMENT === 'production') {
-    return c.json({
-      success: false,
-      errors: [{ code: 'FORBIDDEN', message: 'Cache clear disabled in production' }],
-    }, 403);
-  }
-
+adminRoutes.delete('/cache', requireNonProduction(), async (c) => {
   try {
     const cache = new GameCache(c.env.CACHE);
 

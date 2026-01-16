@@ -692,6 +692,233 @@ Revoke a CF API token.
 
 ---
 
+## Economy
+
+### GET /api/economy/currencies
+List all available currencies.
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "currencies": [
+      {
+        "id": "curr_credits",
+        "code": "CREDITS",
+        "name": "Neo Credits",
+        "symbol": "₡",
+        "is_primary": 1,
+        "exchange_rate_to_primary": 1.0
+      }
+    ]
+  }
+}
+```
+
+### GET /api/economy/balance
+Get character's current balances. Requires character selection.
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "wallet": { "primary": 1000, "currencies": {} },
+    "bank": {},
+    "crypto": {},
+    "stashes": {},
+    "stats": {
+      "totalEarnedCareer": 0,
+      "totalSpentCareer": 0,
+      "totalDebt": 0,
+      "creditScore": 500,
+      "creditLimit": 1000,
+      "creditUtilized": 0
+    }
+  }
+}
+```
+
+### GET /api/economy/transactions
+Get transaction history (paginated). Requires character selection.
+
+**Query Parameters:**
+- `limit` (optional): Number of results (1-100, default 20)
+- `offset` (optional): Starting offset (default 0)
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "transactions": [
+      {
+        "id": "txn_abc123",
+        "occurred_at": "2026-01-20T12:00:00.000Z",
+        "transaction_type": "PURCHASE",
+        "amount": 500,
+        "is_income": 0,
+        "description": "Purchased 1x Stim Pack"
+      }
+    ],
+    "pagination": { "limit": 20, "offset": 0, "total": 1 }
+  }
+}
+```
+
+### POST /api/economy/transfer
+Transfer funds between accounts. Requires character selection.
+
+**Request Body:**
+```json
+{
+  "amount": 500,
+  "fromAccount": "wallet",
+  "toAccount": "bank",
+  "description": "Savings deposit"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "transactionId": "txn_abc123",
+    "amount": 500,
+    "from": "wallet",
+    "to": "bank",
+    "message": "Transferred 500 credits from wallet to bank"
+  }
+}
+```
+
+### GET /api/economy/vendors
+List vendors near character's location. Requires character selection.
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "vendors": [
+      {
+        "id": "vendor_abc",
+        "vendor_type": "GENERAL",
+        "specialization": "Medical",
+        "npc_name": "Doc Sully",
+        "location_name": "Back Alley Clinic"
+      }
+    ],
+    "location": "loc_downtown_01"
+  }
+}
+```
+
+### GET /api/economy/vendors/:id
+Get vendor details and inventory. Requires character selection.
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "vendor": {
+      "id": "vendor_abc",
+      "type": "GENERAL",
+      "buyPriceModifier": 1.1,
+      "sellPriceModifier": 0.5,
+      "haggleDifficulty": 8,
+      "acceptsStolen": false,
+      "acceptsContraband": false,
+      "npc": { "id": "npc_123", "name": "Doc Sully" }
+    },
+    "inventory": {
+      "base": [{ "itemId": "item_001", "quantity": 10, "price": 55, "item": {...} }],
+      "rotating": [],
+      "limited": []
+    }
+  }
+}
+```
+
+### POST /api/economy/vendors/:id/buy
+Purchase item from vendor. Requires character selection.
+
+**Request Body:**
+```json
+{
+  "itemId": "item_001",
+  "quantity": 2,
+  "paymentMethod": "wallet"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "transactionId": "txn_abc123",
+    "inventoryId": "inv_xyz789",
+    "item": { "id": "item_001", "name": "Stim Pack", "quantity": 2 },
+    "price": { "unitPrice": 55, "quantity": 2, "total": 110 },
+    "paymentMethod": "wallet"
+  }
+}
+```
+
+### POST /api/economy/vendors/:id/sell
+Sell item to vendor. Requires character selection.
+
+**Request Body:**
+```json
+{
+  "inventoryItemId": "inv_xyz789",
+  "quantity": 1
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "transactionId": "txn_abc124",
+    "item": { "id": "item_001", "name": "Stim Pack", "quantity": 1 },
+    "price": { "unitPrice": 25, "quantity": 1, "total": 25 }
+  }
+}
+```
+
+### POST /api/economy/vendors/:id/haggle
+Attempt to negotiate a better price. Requires character selection.
+
+**Request Body:**
+```json
+{
+  "itemId": "item_001",
+  "action": "buy",
+  "proposedPrice": 45
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "haggleResult": "SUCCESS",
+    "roll": { "dice": 9, "modifier": 1, "total": 10, "target": 8 },
+    "prices": { "original": 55, "proposed": 45, "final": 50, "discount": 5 },
+    "vendorReaction": "The vendor sighs and nods reluctantly."
+  }
+}
+```
+
+---
+
 ## Error Codes
 
 | Code | Description |
