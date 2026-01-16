@@ -1,0 +1,284 @@
+/**
+ * Progress Component Styles
+ * Supports linear and circular progress indicators
+ */
+
+/* ===========================================
+   LINEAR PROGRESS
+   =========================================== */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.track {
+  position: relative;
+  width: 100%;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: var(--radius-sm);
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+.value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+/* ===========================================
+   SIZE VARIANTS
+   =========================================== */
+
+.xs .track {
+  height: 4px;
+}
+
+.xs .value {
+  display: none;
+}
+
+.sm .track {
+  height: 8px;
+}
+
+.sm .value {
+  font-size: 6px;
+}
+
+.md .track {
+  height: 16px;
+}
+
+.lg .track {
+  height: 24px;
+}
+
+.lg .value {
+  font-size: var(--text-sm);
+}
+
+/* ===========================================
+   COLOR VARIANTS
+   =========================================== */
+
+/* Default - Algorithm accent */
+.default .fill {
+  background: var(--accent-algorithm);
+}
+
+/* Health - Red to green gradient */
+.health .fill {
+  background: var(--accent-health, var(--accent-success));
+}
+
+/* Humanity - Magenta/purple */
+.humanity .fill {
+  background: var(--accent-humanity, #ff00ff);
+}
+
+/* XP - Gold/yellow */
+.xp .fill {
+  background: var(--accent-xp, var(--accent-warning));
+}
+
+/* Time - Cyan/blue */
+.time .fill {
+  background: var(--accent-time, #00ffff);
+}
+
+/* Danger - Red */
+.danger .fill {
+  background: var(--accent-danger);
+}
+
+/* Warning - Orange */
+.warning .fill {
+  background: var(--accent-warning);
+}
+
+/* Success - Green */
+.success .fill {
+  background: var(--accent-success);
+}
+
+/* ===========================================
+   ANIMATED STATE
+   =========================================== */
+
+.animated .fill {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ===========================================
+   STRIPED PATTERN
+   =========================================== */
+
+.striped .fill {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: stripes 1s linear infinite;
+}
+
+@keyframes stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 1rem 0;
+  }
+}
+
+/* ===========================================
+   GLOW EFFECT
+   =========================================== */
+
+.glow .fill {
+  box-shadow: 0 0 10px currentColor;
+}
+
+.glow.default .fill {
+  box-shadow: 0 0 10px var(--accent-algorithm);
+}
+
+.glow.health .fill {
+  box-shadow: 0 0 10px var(--accent-health, var(--accent-success));
+}
+
+.glow.humanity .fill {
+  box-shadow: 0 0 10px var(--accent-humanity, #ff00ff);
+}
+
+.glow.xp .fill {
+  box-shadow: 0 0 10px var(--accent-xp, var(--accent-warning));
+}
+
+.glow.time .fill {
+  box-shadow: 0 0 10px var(--accent-time, #00ffff);
+}
+
+.glow.danger .fill {
+  box-shadow: 0 0 10px var(--accent-danger);
+}
+
+/* ===========================================
+   CIRCULAR PROGRESS
+   =========================================== */
+
+.circular {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circularTrack {
+  fill: none;
+  stroke: var(--bg-tertiary);
+}
+
+.circularFill {
+  fill: none;
+  stroke: var(--accent-algorithm);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--duration-normal) var(--ease-out);
+}
+
+.circularLabel {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+}
+
+/* Circular color variants */
+.circular.health .circularFill {
+  stroke: var(--accent-health, var(--accent-success));
+}
+
+.circular.humanity .circularFill {
+  stroke: var(--accent-humanity, #ff00ff);
+}
+
+.circular.xp .circularFill {
+  stroke: var(--accent-xp, var(--accent-warning));
+}
+
+.circular.time .circularFill {
+  stroke: var(--accent-time, #00ffff);
+}
+
+.circular.danger .circularFill {
+  stroke: var(--accent-danger);
+}
+
+.circular.warning .circularFill {
+  stroke: var(--accent-warning);
+}
+
+.circular.success .circularFill {
+  stroke: var(--accent-success);
+}
+
+/* ===========================================
+   STAT BAR LAYOUT (label + progress + value)
+   =========================================== */
+
+.statBar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.statBar .label {
+  min-width: 60px;
+}
+
+.statBar .value {
+  position: static;
+  transform: none;
+  min-width: 50px;
+  text-align: right;
+}
