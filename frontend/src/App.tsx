@@ -1,37 +1,45 @@
 /**
  * Surge Protocol - Main Application
+ *
+ * Performance optimizations:
+ * - Lazy loading for route components
+ * - Suspense boundaries for loading states
  */
 
+import { lazy, Suspense } from 'preact/compat';
 import { Router, Route, Switch } from 'wouter-preact';
 import { ThemeProvider } from '@components/layout/ThemeProvider';
 import { Layout } from '@components/layout/Layout';
 import { ProtectedRoute } from '@components/layout/ProtectedRoute';
+import { PageLoader } from '@components/ui/PageLoader';
 
-// Auth pages (public)
+// Auth pages (loaded immediately - critical path)
 import { Login } from '@pages/Login';
 import { Register } from '@pages/Register';
 import { CharacterSelect } from '@pages/CharacterSelect';
 
-// Protected pages
-import { Dashboard } from '@pages/Dashboard';
-import { Missions } from '@pages/Missions';
-import { Algorithm } from '@pages/Algorithm';
-import { Character } from '@pages/Character';
-import { Inventory } from '@pages/Inventory';
-import { NotFound } from '@pages/NotFound';
+// Protected pages (lazy loaded for code splitting)
+const Dashboard = lazy(() => import('@pages/Dashboard').then((m) => ({ default: m.Dashboard })));
+const Missions = lazy(() => import('@pages/Missions').then((m) => ({ default: m.Missions })));
+const Algorithm = lazy(() => import('@pages/Algorithm').then((m) => ({ default: m.Algorithm })));
+const Character = lazy(() => import('@pages/Character').then((m) => ({ default: m.Character })));
+const Inventory = lazy(() => import('@pages/Inventory').then((m) => ({ default: m.Inventory })));
+const NotFound = lazy(() => import('@pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 /**
- * Protected page wrapper - applies Layout and ProtectedRoute
+ * Protected page wrapper - applies Layout, ProtectedRoute, and Suspense
  */
 function ProtectedPage({
   component: Component,
 }: {
-  component: () => preact.JSX.Element;
+  component: preact.ComponentType;
 }) {
   return (
     <Layout>
       <ProtectedRoute>
-        <Component />
+        <Suspense fallback={<PageLoader />}>
+          <Component />
+        </Suspense>
       </ProtectedRoute>
     </Layout>
   );
@@ -76,7 +84,9 @@ export function App() {
           <Route>
             {() => (
               <Layout>
-                <NotFound />
+                <Suspense fallback={<PageLoader />}>
+                  <NotFound />
+                </Suspense>
               </Layout>
             )}
           </Route>

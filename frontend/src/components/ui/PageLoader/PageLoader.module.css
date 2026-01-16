@@ -1,0 +1,93 @@
+/**
+ * PageLoader styles - Cyberpunk themed loading indicator
+ */
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  width: 100%;
+  background: var(--color-bg-primary);
+}
+
+.container.minimal {
+  background: transparent;
+  min-height: 200px;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.spinner {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+}
+
+.ring:nth-child(1) {
+  border-top-color: var(--color-accent-cyan);
+  animation: spin 1.2s linear infinite;
+}
+
+.ring:nth-child(2) {
+  border-right-color: var(--color-accent-magenta);
+  animation: spin 1.5s linear infinite reverse;
+  inset: 8px;
+}
+
+.ring:nth-child(3) {
+  border-bottom-color: var(--color-accent-yellow);
+  animation: spin 1s linear infinite;
+  inset: 16px;
+}
+
+.message {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation-duration: 3s;
+  }
+  .message {
+    animation: none;
+    opacity: 1;
+  }
+}

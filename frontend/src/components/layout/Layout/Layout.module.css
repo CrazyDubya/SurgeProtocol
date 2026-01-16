@@ -1,7 +1,36 @@
 /**
  * Layout Component Styles
  * Main application shell with header, nav, content, and footer
+ *
+ * Accessibility features:
+ * - Skip link for keyboard navigation
+ * - Focus visible styles
+ * - Reduced motion support
  */
+
+/* Skip link - visible only when focused */
+.skipLink {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: top 0.2s ease;
+}
+
+.skipLink:focus {
+  top: var(--space-2);
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+}
 
 .layout {
   min-height: 100vh;
