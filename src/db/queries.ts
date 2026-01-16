@@ -729,3 +729,359 @@ export async function getTopCarriers(
 
   return result.results;
 }
+
+// =============================================================================
+// COMBAT QUERIES
+// =============================================================================
+
+/** Combat attributes for a character */
+export interface CharacterCombatData {
+  id: string;
+  name: string;
+  currentHealth: number;
+  maxHealth: number;
+  currentTier: number;
+  attributes: {
+    PWR: number;
+    AGI: number;
+    END: number;
+    VEL: number;
+    PRC: number;
+  };
+  skills: {
+    melee: number;
+    firearms: number;
+  };
+  equippedWeapon: {
+    id: string;
+    name: string;
+    type: 'MELEE' | 'RANGED';
+    baseDamage: string;
+    attackMod: number;
+  } | null;
+  equippedArmor: {
+    id: string;
+    name: string;
+    value: number;
+    agiPenalty: number;
+  } | null;
+}
+
+/**
+ * Get character's combat-relevant data.
+ */
+export async function getCharacterCombatData(
+  db: D1Database,
+  characterId: string
+): Promise<CharacterCombatData | null> {
+  // Get base character data
+  const character = await db
+    .prepare(
+      `SELECT id, street_name, legal_name, current_health, max_health, current_tier
+       FROM characters WHERE id = ?`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      street_name: string | null;
+      legal_name: string;
+      current_health: number;
+      max_health: number;
+      current_tier: number;
+    }>();
+
+  if (!character) return null;
+
+  // Get attributes
+  const attributes = await db
+    .prepare(
+      `SELECT ad.code, ca.current_value + ca.bonus_from_augments + ca.bonus_from_items +
+              ca.bonus_from_conditions + ca.temporary_modifier as value
+       FROM character_attributes ca
+       JOIN attribute_definitions ad ON ca.attribute_id = ad.id
+       WHERE ca.character_id = ? AND ad.code IN ('PWR', 'AGI', 'END', 'VEL', 'PRC')`
+    )
+    .bind(characterId)
+    .all<{ code: string; value: number }>();
+
+  const attrMap: Record<string, number> = {};
+  for (const attr of attributes.results) {
+    attrMap[attr.code] = attr.value;
+  }
+
+  // Get combat skills
+  const skills = await db
+    .prepare(
+      `SELECT sd.code, cs.current_level
+       FROM character_skills cs
+       JOIN skill_definitions sd ON cs.skill_id = sd.id
+       WHERE cs.character_id = ? AND sd.code IN ('melee_combat', 'firearms')`
+    )
+    .bind(characterId)
+    .all<{ code: string; current_level: number }>();
+
+  const skillMap: Record<string, number> = { melee: 0, firearms: 0 };
+  for (const skill of skills.results) {
+    if (skill.code === 'melee_combat') skillMap.melee = skill.current_level;
+    if (skill.code === 'firearms') skillMap.firearms = skill.current_level;
+  }
+
+  // Get equipped weapon
+  const weapon = await db
+    .prepare(
+      `SELECT id.id, id.name, id.item_type, id.base_value,
+              COALESCE(json_extract(id.properties, '$.damage'), '1d6') as damage,
+              COALESCE(json_extract(id.properties, '$.attackMod'), 0) as attackMod
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND id.item_type IN ('WEAPON_MELEE', 'WEAPON_RANGED')
+       LIMIT 1`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      name: string;
+      item_type: string;
+      base_value: number;
+      damage: string;
+      attackMod: number;
+    }>();
+
+  // Get equipped armor
+  const armor = await db
+    .prepare(
+      `SELECT id.id, id.name,
+              COALESCE(json_extract(id.properties, '$.armorValue'), 0) as armorValue,
+              COALESCE(json_extract(id.properties, '$.agiPenalty'), 0) as agiPenalty
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND id.item_type = 'ARMOR'
+       LIMIT 1`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      name: string;
+      armorValue: number;
+      agiPenalty: number;
+    }>();
+
+  return {
+    id: character.id,
+    name: character.street_name || character.legal_name,
+    currentHealth: character.current_health ?? character.max_health ?? 30,
+    maxHealth: character.max_health ?? 30,
+    currentTier: character.current_tier,
+    attributes: {
+      PWR: attrMap.PWR ?? 10,
+      AGI: attrMap.AGI ?? 10,
+      END: attrMap.END ?? 10,
+      VEL: attrMap.VEL ?? 10,
+      PRC: attrMap.PRC ?? 10,
+    },
+    skills: skillMap as { melee: number; firearms: number },
+    equippedWeapon: weapon
+      ? {
+          id: weapon.id,
+          name: weapon.name,
+          type: weapon.item_type === 'WEAPON_MELEE' ? 'MELEE' : 'RANGED',
+          baseDamage: weapon.damage,
+          attackMod: weapon.attackMod,
+        }
+      : null,
+    equippedArmor: armor
+      ? {
+          id: armor.id,
+          name: armor.name,
+          value: armor.armorValue,
+          agiPenalty: armor.agiPenalty,
+        }
+      : null,
+  };
+}
+
+/** NPC combat data from definitions */
+export interface NPCCombatData {
+  id: string;
+  code: string;
+  name: string;
+  threatLevel: number;
+  combatStyle: string | null;
+  skills: Record<string, number>;
+  equipment: Array<{ type: string; name: string; stats: Record<string, unknown> }>;
+}
+
+/**
+ * Get NPC definition for combat.
+ */
+export async function getNPCCombatData(
+  db: D1Database,
+  npcCode: string
+): Promise<NPCCombatData | null> {
+  const npc = await db
+    .prepare(
+      `SELECT id, code, name, threat_level, combat_style, skills, typical_equipment
+       FROM npc_definitions
+       WHERE code = ? AND combat_capable = 1`
+    )
+    .bind(npcCode)
+    .first<{
+      id: string;
+      code: string;
+      name: string;
+      threat_level: number;
+      combat_style: string | null;
+      skills: string | null;
+      typical_equipment: string | null;
+    }>();
+
+  if (!npc) return null;
+
+  return {
+    id: npc.id,
+    code: npc.code,
+    name: npc.name,
+    threatLevel: npc.threat_level,
+    combatStyle: npc.combat_style,
+    skills: npc.skills ? JSON.parse(npc.skills) : {},
+    equipment: npc.typical_equipment ? JSON.parse(npc.typical_equipment) : [],
+  };
+}
+
+/** Weapon subtype union */
+type WeaponSubtype = 'LIGHT_PISTOL' | 'HEAVY_PISTOL' | 'SMG' | 'ASSAULT_RIFLE' | 'SHOTGUN' | 'SNIPER' | 'LIGHT_MELEE' | 'HEAVY_MELEE' | 'UNARMED';
+
+/** Generated enemy combatant */
+export interface GeneratedEnemy {
+  id: string;
+  name: string;
+  attributes: { PWR: number; AGI: number; END: number; VEL: number; PRC: number };
+  skills: { melee: number; firearms: number };
+  hp: number;
+  hpMax: number;
+  armor: { id: string; name: string; value: number; agiPenalty: number; velPenalty: number } | null;
+  weapon: {
+    id: string;
+    name: string;
+    type: 'MELEE' | 'RANGED';
+    subtype: WeaponSubtype;
+    baseDamage: string;
+    scalingAttribute: 'PWR' | 'VEL';
+    scalingDivisor: number;
+    attackMod: number;
+  };
+  cover: null;
+  augmentBonuses: { initiative: number; attack: number; defense: number; damage: number };
+  conditions: string[];
+}
+
+/**
+ * Generate a procedural enemy combatant based on mission tier.
+ * Used when no specific NPC is defined for the encounter.
+ */
+export function generateProceduralEnemy(
+  missionTier: number,
+  enemyType: 'GANGER' | 'CORPORATE' | 'DRONE' | 'BEAST' | 'BOSS' = 'GANGER'
+): GeneratedEnemy {
+  // Base stats scale with tier
+  const baseAttr = 8 + Math.floor(missionTier * 0.5);
+  const baseSkill = Math.floor(missionTier * 0.8);
+  const baseHP = 15 + missionTier * 5;
+
+  // Enemy type modifiers
+  const gangerNames = ['Street Punk', 'Gang Enforcer', 'Crew Lieutenant', 'Gang Boss'] as const;
+  const corpNames = ['Security Guard', 'Corporate Soldier', 'Elite Operative', 'Black Ops Agent'] as const;
+  const droneNames = ['Patrol Drone', 'Combat Drone', 'Hunter-Killer', 'Assault Platform'] as const;
+  const beastNames = ['Cyber-Rat', 'Street Hound', 'Mutant Beast', 'Apex Predator'] as const;
+  const bossNames = ['Gang Leader', 'Corporate Executive', 'Cyberpsycho', 'Legendary Fixer'] as const;
+
+  const nameIndex = Math.min(Math.floor(missionTier / 3), 3);
+
+  const typeConfigs = {
+    GANGER: {
+      name: gangerNames[nameIndex],
+      attrMod: { PWR: 1, AGI: 0, END: 0, VEL: 0, PRC: -1 },
+      weapon: { name: 'Street Iron', type: 'RANGED' as const, damage: '2d6', attackMod: 0, subtype: 'HEAVY_PISTOL' as const },
+      armor: missionTier >= 3 ? { name: 'Leather Jacket', value: 1, agiPenalty: 0 } : null,
+    },
+    CORPORATE: {
+      name: corpNames[nameIndex],
+      attrMod: { PWR: 0, AGI: 1, END: 0, VEL: 1, PRC: 1 },
+      weapon: { name: 'Militech Sidearm', type: 'RANGED' as const, damage: '2d6+1', attackMod: 1, subtype: 'HEAVY_PISTOL' as const },
+      armor: { name: 'Corporate Armor', value: 2 + Math.floor(missionTier / 3), agiPenalty: 1 },
+    },
+    DRONE: {
+      name: droneNames[nameIndex],
+      attrMod: { PWR: 2, AGI: -1, END: 2, VEL: 0, PRC: 2 },
+      weapon: { name: 'Integrated Weapon', type: 'RANGED' as const, damage: '2d6+2', attackMod: 2, subtype: 'SMG' as const },
+      armor: { name: 'Armor Plating', value: 3 + Math.floor(missionTier / 2), agiPenalty: 0 },
+    },
+    BEAST: {
+      name: beastNames[nameIndex],
+      attrMod: { PWR: 2, AGI: 2, END: 1, VEL: 1, PRC: 0 },
+      weapon: { name: 'Claws/Fangs', type: 'MELEE' as const, damage: '2d6+1', attackMod: 1, subtype: 'UNARMED' as const },
+      armor: null,
+    },
+    BOSS: {
+      name: bossNames[nameIndex],
+      attrMod: { PWR: 2, AGI: 2, END: 2, VEL: 2, PRC: 2 },
+      weapon: { name: 'Custom Weapon', type: 'RANGED' as const, damage: '3d6', attackMod: 2, subtype: 'ASSAULT_RIFLE' as const },
+      armor: { name: 'Heavy Armor', value: 4 + Math.floor(missionTier / 2), agiPenalty: 2 },
+    },
+  };
+
+  const config = typeConfigs[enemyType];
+  const enemyId = `enemy_${enemyType.toLowerCase()}_${generateId()}`;
+  const enemyName = config.name ?? 'Unknown Enemy';
+
+  const attributes = {
+    PWR: baseAttr + config.attrMod.PWR,
+    AGI: baseAttr + config.attrMod.AGI,
+    END: baseAttr + config.attrMod.END,
+    VEL: baseAttr + config.attrMod.VEL,
+    PRC: baseAttr + config.attrMod.PRC,
+  };
+
+  const hpMax = baseHP + (enemyType === 'BOSS' ? missionTier * 10 : 0);
+
+  return {
+    id: enemyId,
+    name: enemyName,
+    attributes,
+    skills: {
+      melee: baseSkill + (config.weapon.type === 'MELEE' ? 2 : 0),
+      firearms: baseSkill + (config.weapon.type === 'RANGED' ? 2 : 0),
+    },
+    hp: hpMax,
+    hpMax,
+    armor: config.armor
+      ? {
+          id: `armor_${enemyId}`,
+          name: config.armor.name,
+          value: config.armor.value,
+          agiPenalty: config.armor.agiPenalty,
+          velPenalty: 0,
+        }
+      : null,
+    weapon: {
+      id: `weapon_${enemyId}`,
+      name: config.weapon.name,
+      type: config.weapon.type,
+      subtype: config.weapon.subtype,
+      baseDamage: config.weapon.damage,
+      scalingAttribute: config.weapon.type === 'MELEE' ? 'PWR' : 'VEL',
+      scalingDivisor: 2,
+      attackMod: config.weapon.attackMod,
+    },
+    cover: null,
+    augmentBonuses: {
+      initiative: enemyType === 'BOSS' ? 2 : 0,
+      attack: enemyType === 'BOSS' ? 1 : 0,
+      defense: enemyType === 'DRONE' ? 1 : 0,
+      damage: enemyType === 'BOSS' ? 1 : 0,
+    },
+    conditions: [],
+  };
+}

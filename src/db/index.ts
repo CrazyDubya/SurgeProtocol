@@ -50,4 +50,12 @@ export {
 
   // Leaderboards
   getTopCarriers,
+
+  // Combat
+  getCharacterCombatData,
+  getNPCCombatData,
+  generateProceduralEnemy,
+  type CharacterCombatData,
+  type NPCCombatData,
+  type GeneratedEnemy,
 } from './queries';

@@ -25,7 +25,10 @@ import {
   getActiveMission,
   createMissionInstance,
   getCharacter,
+  getCharacterCombatData,
+  generateProceduralEnemy,
 } from '../../db';
+import type { Combatant } from '../../game/mechanics/combat';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -35,6 +38,7 @@ type Bindings = {
   DB: D1Database;
   CACHE: KVNamespace;
   JWT_SECRET: string;
+  COMBAT_SESSION: DurableObjectNamespace;
 };
 
 // =============================================================================
@@ -415,6 +419,9 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
     }, 400);
   }
 
+  // Get mission definition for tier info
+  const missionDef = await getMission(c.env.DB, instance.mission_id as string);
+
   // Process action based on type
   let result: {
     success: boolean;
@@ -431,6 +438,16 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
       break;
     case 'INTERACT':
       result = await processInteraction(c.env.DB, instanceId, characterId, action.targetId, action.parameters);
+      break;
+    case 'COMBAT':
+      result = await processCombatAction(
+        c.env.DB,
+        c.env.COMBAT_SESSION,
+        instanceId,
+        characterId,
+        missionDef?.tier_minimum ?? 1,
+        action.parameters
+      );
       break;
     default:
       result = {
@@ -633,6 +650,147 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
         : completion.outcome === 'PARTIAL'
           ? 'Partial completion noted. Reduced payment processed.'
           : 'Mission failed. The Algorithm has taken note.',
+    },
+  });
+});
+
+/**
+ * POST /missions/:id/combat/resolve
+ * Resolve an active combat session and update mission state.
+ */
+missionRoutes.post('/:id/combat/resolve', async (c) => {
+  const instanceId = c.req.param('id');
+  const characterId = c.get('characterId')!;
+
+  // Verify mission ownership
+  const instance = await c.env.DB
+    .prepare(
+      `SELECT * FROM mission_instances
+       WHERE id = ? AND character_id = ? AND status = 'IN_PROGRESS'`
+    )
+    .bind(instanceId, characterId)
+    .first();
+
+  if (!instance) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSION_NOT_ACTIVE', message: 'No active mission with this ID' }],
+    }, 404);
+  }
+
+  // Get combat session ID from mission state
+  const currentState = instance.current_state
+    ? JSON.parse(instance.current_state as string)
+    : {};
+
+  const combatId = currentState.activeCombatId;
+  if (!combatId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NO_COMBAT', message: 'No active combat session for this mission' }],
+    }, 400);
+  }
+
+  // Get combat state from Durable Object
+  const doId = c.env.COMBAT_SESSION.idFromName(combatId);
+  const stub = c.env.COMBAT_SESSION.get(doId);
+
+  const combatResponse = await stub.fetch(
+    new Request('https://combat/state', { method: 'GET' })
+  );
+
+  if (!combatResponse.ok) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_ERROR', message: 'Failed to get combat state' }],
+    }, 500);
+  }
+
+  const combatState = await combatResponse.json() as {
+    phase: string;
+    endReason?: string;
+    combatants: Array<[string, { id: string; hp: number; hpMax: number }]>;
+  };
+
+  // Check if combat is finished
+  if (combatState.phase !== 'COMBAT_END') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_IN_PROGRESS', message: 'Combat is still in progress' }],
+    }, 400);
+  }
+
+  const endReason = combatState.endReason;
+
+  // Update character health based on combat outcome
+  const playerCombatant = combatState.combatants.find(([id]) => !id.startsWith('enemy_'));
+  if (playerCombatant) {
+    const [, combatant] = playerCombatant;
+    await c.env.DB
+      .prepare(
+        `UPDATE characters SET current_health = ?, updated_at = datetime('now') WHERE id = ?`
+      )
+      .bind(Math.max(0, combatant.hp), characterId)
+      .run();
+  }
+
+  // Clear active combat from mission state
+  delete currentState.activeCombatId;
+  currentState.lastCombatResult = endReason;
+
+  await c.env.DB
+    .prepare(
+      `UPDATE mission_instances SET current_state = ? WHERE id = ?`
+    )
+    .bind(JSON.stringify(currentState), instanceId)
+    .run();
+
+  // Handle combat outcome
+  let missionUpdate = {};
+  let checkpointCompleted = false;
+
+  if (endReason === 'VICTORY') {
+    // Check if this completes a combat checkpoint
+    const combatCheckpoint = await c.env.DB
+      .prepare(
+        `SELECT id FROM mission_checkpoints
+         WHERE mission_instance_id = ? AND checkpoint_type = 'COMBAT'
+         AND is_completed = 0
+         LIMIT 1`
+      )
+      .bind(instanceId)
+      .first<{ id: string }>();
+
+    if (combatCheckpoint) {
+      await c.env.DB
+        .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+        .bind(combatCheckpoint.id)
+        .run();
+      checkpointCompleted = true;
+    }
+
+    missionUpdate = { outcome: 'VICTORY', checkpointCompleted };
+  } else if (endReason === 'DEFEAT') {
+    // Player was defeated - mission may fail or allow retry
+    missionUpdate = { outcome: 'DEFEAT', canRetry: true };
+  } else if (endReason === 'ESCAPE') {
+    missionUpdate = { outcome: 'ESCAPED' };
+  }
+
+  // Log combat resolution
+  await c.env.DB
+    .prepare(
+      `INSERT INTO mission_log (id, mission_instance_id, event_type, event_data, created_at)
+       VALUES (?, ?, 'COMBAT_RESOLVED', ?, datetime('now'))`
+    )
+    .bind(nanoid(), instanceId, JSON.stringify({ combatId, endReason, ...missionUpdate }))
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combatResult: endReason,
+      ...missionUpdate,
     },
   });
 });
@@ -856,5 +1014,157 @@ async function processInteraction(
     success: true,
     outcome: 'INTERACTED',
     details: { targetId },
+  };
+}
+
+/**
+ * Process a COMBAT mission action.
+ * Creates a combat session and returns WebSocket connection info.
+ */
+async function processCombatAction(
+  db: D1Database,
+  combatDO: DurableObjectNamespace,
+  instanceId: string,
+  characterId: string,
+  missionTier: number,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  // Check if there's already an active combat
+  const instance = await db
+    .prepare('SELECT current_state FROM mission_instances WHERE id = ?')
+    .bind(instanceId)
+    .first<{ current_state: string | null }>();
+
+  const currentState = instance?.current_state
+    ? JSON.parse(instance.current_state)
+    : {};
+
+  if (currentState.activeCombatId) {
+    return {
+      success: false,
+      outcome: 'COMBAT_ALREADY_ACTIVE',
+      details: {
+        combatId: currentState.activeCombatId,
+        message: 'Resolve current combat before starting another',
+      },
+    };
+  }
+
+  // Get character combat data
+  const characterData = await getCharacterCombatData(db, characterId);
+  if (!characterData) {
+    return {
+      success: false,
+      outcome: 'CHARACTER_ERROR',
+      details: { error: 'Could not load character combat data' },
+    };
+  }
+
+  // Convert character to Combatant format
+  const playerCombatant: Combatant = {
+    id: characterData.id,
+    name: characterData.name,
+    attributes: characterData.attributes,
+    skills: characterData.skills,
+    hp: characterData.currentHealth,
+    hpMax: characterData.maxHealth,
+    armor: characterData.equippedArmor
+      ? {
+          id: characterData.equippedArmor.id,
+          name: characterData.equippedArmor.name,
+          value: characterData.equippedArmor.value,
+          agiPenalty: characterData.equippedArmor.agiPenalty,
+          velPenalty: 0,
+        }
+      : null,
+    weapon: characterData.equippedWeapon
+      ? {
+          id: characterData.equippedWeapon.id,
+          name: characterData.equippedWeapon.name,
+          type: characterData.equippedWeapon.type,
+          subtype: characterData.equippedWeapon.type === 'MELEE' ? 'LIGHT_MELEE' as const : 'HEAVY_PISTOL' as const,
+          baseDamage: characterData.equippedWeapon.baseDamage,
+          scalingAttribute: characterData.equippedWeapon.type === 'MELEE' ? 'PWR' : 'VEL',
+          scalingDivisor: 2,
+          attackMod: characterData.equippedWeapon.attackMod,
+        }
+      : null,
+    cover: null,
+    augmentBonuses: { initiative: 0, attack: 0, defense: 0, damage: 0 },
+    conditions: [],
+  };
+
+  // Determine enemy type from parameters or default based on mission
+  const enemyType = (params?.enemyType as 'GANGER' | 'CORPORATE' | 'DRONE' | 'BEAST' | 'BOSS') ?? 'GANGER';
+  const enemyCount = Math.min((params?.enemyCount as number) ?? 1, 3); // Max 3 enemies
+
+  // Generate enemies
+  const enemies: Combatant[] = [];
+  for (let i = 0; i < enemyCount; i++) {
+    const enemy = generateProceduralEnemy(missionTier, enemyType);
+    enemies.push(enemy);
+  }
+
+  // Create unique combat ID tied to mission
+  const combatId = `mission_${instanceId}_combat_${nanoid(8)}`;
+
+  // Initialize combat session via Durable Object
+  const doId = combatDO.idFromName(combatId);
+  const stub = combatDO.get(doId);
+
+  const initResponse = await stub.fetch(
+    new Request('https://combat/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        combatId,
+        combatants: [playerCombatant, ...enemies],
+        arenaId: currentState.location ?? 'unknown',
+        environment: {
+          lighting: 'DIM',
+          weather: 'CLEAR',
+          hazards: [],
+        },
+      }),
+    })
+  );
+
+  if (!initResponse.ok) {
+    const error = await initResponse.text();
+    return {
+      success: false,
+      outcome: 'COMBAT_INIT_FAILED',
+      details: { error },
+    };
+  }
+
+  // Store combat session ID in mission state
+  currentState.activeCombatId = combatId;
+  await db
+    .prepare(
+      `UPDATE mission_instances SET current_state = ? WHERE id = ?`
+    )
+    .bind(JSON.stringify(currentState), instanceId)
+    .run();
+
+  return {
+    success: true,
+    outcome: 'COMBAT_STARTED',
+    details: {
+      combatId,
+      websocketUrl: `/ws/combat/${combatId}?combatantId=${characterId}`,
+      enemies: enemies.map(e => ({
+        id: e.id,
+        name: e.name,
+        hp: e.hp,
+        hpMax: e.hpMax,
+      })),
+      player: {
+        id: playerCombatant.id,
+        name: playerCombatant.name,
+        hp: playerCombatant.hp,
+        hpMax: playerCombatant.hpMax,
+      },
+    },
   };
 }
