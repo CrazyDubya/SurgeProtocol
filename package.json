@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Surge Protocol - Cyberpunk Courier RPG Backend",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "wrangler dev",
     "build": "esbuild src/index.ts --bundle --outdir=dist --format=esm",
@@ -12,23 +13,30 @@
     "db:migrate": "wrangler d1 execute surge-protocol-db --file=migrations/apply_all.sql",
     "db:migrate:local": "wrangler d1 execute surge-protocol-db --local --file=migrations/apply_all.sql",
     "db:reset": "wrangler d1 execute surge-protocol-db --command='SELECT 1'",
+    "typecheck": "tsc --noEmit",
     "test": "node --test tests/**/*.test.js",
     "test:schema": "node tests/schema-validation.test.js",
     "test:tokens": "node --test tests/design-tokens.test.js",
     "test:frontend": "npm run test:tokens && npm run lint:frontend",
+    "test:unit": "vitest",
     "lint:schema": "node scripts/validate-schema.js",
     "lint:frontend": "node scripts/validate-frontend.js",
     "validate:all": "npm run lint:schema && npm run test:schema && npm run lint:frontend && npm run test:tokens",
     "precommit": "npm run validate:all"
   },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "hono": "^4.0.0",
+    "nanoid": "^5.0.0",
+    "zod": "^3.22.0"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240117.0",
+    "@types/node": "^20.11.0",
     "esbuild": "^0.20.0",
     "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
     "wrangler": "^3.28.0"
-  },
-  "dependencies": {
-    "hono": "^4.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
