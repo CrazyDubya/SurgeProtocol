@@ -1,0 +1,383 @@
+/**
+ * Mission Detail Component Styles
+ */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.titleArea {
+  flex: 1;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.closeButton:hover {
+  border-color: var(--accent-algorithm);
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   DESCRIPTION
+   =========================================== */
+
+.description {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===========================================
+   INFO GRID
+   =========================================== */
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.infoLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.infoValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.infoValue.highlight {
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+.infoValue.danger {
+  color: var(--accent-danger);
+}
+
+.infoValue.success {
+  color: var(--accent-success);
+}
+
+/* ===========================================
+   LOCATIONS
+   =========================================== */
+
+.locations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.locationsHeader {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.locationPath {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.location {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.locationLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+}
+
+.locationName {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.locationZone {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.pathArrow {
+  font-size: var(--text-xl);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   REQUIREMENTS
+   =========================================== */
+
+.requirements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.requirementsHeader {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.requirementsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.requirementIcon {
+  font-size: var(--text-base);
+}
+
+.requirement.met .requirementIcon {
+  color: var(--accent-success);
+}
+
+.requirement.unmet .requirementIcon {
+  color: var(--accent-danger);
+}
+
+.requirementText {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.requirement.unmet .requirementText {
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   REWARDS
+   =========================================== */
+
+.rewards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rewardsHeader {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.rewardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-3);
+}
+
+.rewardItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.rewardIcon {
+  font-size: var(--text-2xl);
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+.rewardValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.rewardLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   ACTIONS
+   =========================================== */
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.actions > * {
+  flex: 1;
+}
+
+/* ===========================================
+   STATUS BANNER
+   =========================================== */
+
+.statusBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.statusBanner.active {
+  background: rgba(0, 255, 157, 0.1);
+  border: 1px solid var(--accent-algorithm);
+}
+
+.statusBanner.completed {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid var(--accent-success);
+}
+
+.statusBanner.failed {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid var(--accent-danger);
+}
+
+.statusIcon {
+  font-size: var(--text-xl);
+}
+
+.statusBanner.active .statusIcon {
+  color: var(--accent-algorithm);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.statusBanner.completed .statusIcon {
+  color: var(--accent-success);
+}
+
+.statusBanner.failed .statusIcon {
+  color: var(--accent-danger);
+}
+
+.statusContent {
+  flex: 1;
+}
+
+.statusTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.statusSubtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

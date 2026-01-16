@@ -1,0 +1,369 @@
+/**
+ * Active Mission Tracker Component Styles
+ */
+
+.tracker {
+  position: relative;
+  overflow: hidden;
+}
+
+.tracker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent-algorithm);
+  animation: trackerPulse 2s ease-in-out infinite;
+}
+
+@keyframes trackerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusIcon {
+  font-size: var(--text-lg);
+  color: var(--accent-algorithm);
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.statusText {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   CONTENT
+   =========================================== */
+
+.content {
+  padding: var(--space-4);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.type {
+  margin-bottom: var(--space-4);
+}
+
+/* ===========================================
+   PROGRESS SECTION
+   =========================================== */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.progressRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.progressLabelText {
+  color: var(--text-secondary);
+}
+
+.progressLabelValue {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.progressBar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+.progressFill.time {
+  background: var(--accent-time, #00ffff);
+}
+
+.progressFill.distance {
+  background: var(--accent-algorithm);
+}
+
+.progressFill.urgent {
+  background: var(--accent-danger);
+  animation: urgentPulse 1s ease-in-out infinite;
+}
+
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===========================================
+   TIMER
+   =========================================== */
+
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.timerIcon {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+}
+
+.timerValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.timer.urgent .timerIcon,
+.timer.urgent .timerValue {
+  color: var(--accent-danger);
+}
+
+.timer.urgent {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid var(--accent-danger);
+  animation: timerUrgent 1s ease-in-out infinite;
+}
+
+@keyframes timerUrgent {
+  0%, 100% { background: rgba(255, 0, 0, 0.1); }
+  50% { background: rgba(255, 0, 0, 0.2); }
+}
+
+/* ===========================================
+   OBJECTIVES
+   =========================================== */
+
+.objectives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.objectivesLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+.objective {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.objectiveIcon {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.objective.complete .objectiveIcon {
+  color: var(--accent-success);
+}
+
+.objective.current .objectiveIcon {
+  color: var(--accent-algorithm);
+}
+
+.objectiveText {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.objective.complete .objectiveText {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.objective.current .objectiveText {
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   REWARD PREVIEW
+   =========================================== */
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.rewardLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+.rewardValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+/* ===========================================
+   ACTIONS
+   =========================================== */
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.actions > * {
+  flex: 1;
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: var(--text-3xl);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   COMPACT MODE
+   =========================================== */
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.compact::before {
+  display: none;
+}
+
+.compactInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.compactTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.compactMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.compactTimer {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.compact.urgent .compactTimer {
+  color: var(--accent-danger);
+}
