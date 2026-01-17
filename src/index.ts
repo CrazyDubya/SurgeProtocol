@@ -17,6 +17,7 @@ import { itemRoutes } from './api/items';
 import { augmentationRoutes } from './api/augmentations';
 import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
+import { questRoutes } from './api/quests';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -79,6 +80,7 @@ app.route('/api/skills', skillRoutes);
 app.route('/api/world', worldRoutes);
 app.route('/api/items', itemRoutes);
 app.route('/api/augmentations', augmentationRoutes);
+app.route('/api/quests', questRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
