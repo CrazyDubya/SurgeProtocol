@@ -20,7 +20,8 @@ import {
   requireCharacterMiddleware,
   type AuthVariables,
 } from '../../middleware/auth';
-import type { SaveGame, DifficultyLevel } from '../../db/types';
+import type { SaveGame, SaveDataChunk, DifficultyLevel } from '../../db/types';
+import { createSaveSerializer } from '../../game/saves/serializer';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -346,6 +347,16 @@ saveRoutes.post('/', requireCharacterMiddleware(), zValidator('json', createSave
     )
     .run();
 
+  // Serialize and store character data chunks
+  try {
+    const serializer = createSaveSerializer(c.env.DB);
+    const chunks = await serializer.serializeCharacterState(characterId, saveId);
+    await serializer.storeChunks(chunks);
+  } catch (err) {
+    // Log error but don't fail the save - chunks are supplementary
+    console.error('Failed to serialize save chunks:', err);
+  }
+
   // Retrieve the created save
   const save = await c.env.DB
     .prepare('SELECT * FROM save_games WHERE id = ?')
@@ -356,6 +367,7 @@ saveRoutes.post('/', requireCharacterMiddleware(), zValidator('json', createSave
     success: true,
     data: {
       save,
+      chunksCreated: true,
       message: 'Game saved successfully.',
     },
   }, 201);
@@ -417,6 +429,15 @@ saveRoutes.post('/quicksave', requireCharacterMiddleware(), async (c) => {
     )
     .run();
 
+  // Serialize and store character data chunks
+  try {
+    const serializer = createSaveSerializer(c.env.DB);
+    const chunks = await serializer.serializeCharacterState(characterId, saveId);
+    await serializer.storeChunks(chunks);
+  } catch (err) {
+    console.error('Failed to serialize quicksave chunks:', err);
+  }
+
   const save = await c.env.DB
     .prepare('SELECT * FROM save_games WHERE id = ?')
     .bind(saveId)
@@ -426,6 +447,7 @@ saveRoutes.post('/quicksave', requireCharacterMiddleware(), async (c) => {
     success: true,
     data: {
       save,
+      chunksCreated: true,
       message: 'Quicksave created.',
     },
   }, 201);
@@ -640,6 +662,15 @@ saveRoutes.post('/auto', requireCharacterMiddleware(), async (c) => {
     )
     .run();
 
+  // Serialize and store character data chunks
+  try {
+    const serializer = createSaveSerializer(c.env.DB);
+    const chunks = await serializer.serializeCharacterState(characterId, saveId);
+    await serializer.storeChunks(chunks);
+  } catch (err) {
+    console.error('Failed to serialize auto-save chunks:', err);
+  }
+
   const save = await c.env.DB
     .prepare('SELECT * FROM save_games WHERE id = ?')
     .bind(saveId)
@@ -649,7 +680,57 @@ saveRoutes.post('/auto', requireCharacterMiddleware(), async (c) => {
     success: true,
     data: {
       save,
+      chunksCreated: true,
       message: 'Auto-save created.',
     },
   }, 201);
+});
+
+/**
+ * GET /saves/:id/chunks
+ * Get the data chunks for a specific save.
+ */
+saveRoutes.get('/:id/chunks', async (c) => {
+  const userId = c.get('userId')!;
+  const saveId = c.req.param('id');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  // Load chunks
+  const serializer = createSaveSerializer(c.env.DB);
+  const chunks = await serializer.loadChunks(saveId);
+
+  // Parse chunk data for response (hide raw data, include metadata)
+  const chunkSummary = chunks.map(chunk => ({
+    id: chunk.id,
+    chunk_type: chunk.chunk_type,
+    data_version: chunk.data_version,
+    compressed: chunk.compressed === 1,
+    compressed_size_bytes: chunk.compressed_size_bytes,
+    uncompressed_size_bytes: chunk.uncompressed_size_bytes,
+    is_valid: chunk.is_valid === 1,
+    load_priority: chunk.load_priority,
+    checksum: chunk.checksum,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      saveId,
+      chunks: chunkSummary,
+      totalChunks: chunks.length,
+      allValid: chunks.every(c => c.is_valid === 1),
+    },
+  });
 });
