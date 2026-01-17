@@ -35,6 +35,8 @@ function isValidTheme(theme: string): theme is ThemeName {
     'algorithm-vision',
     'brutalist-cargo',
     'worn-chrome',
+    'blood-circuit',
+    'ghost-protocol',
   ].includes(theme);
 }
 
@@ -83,6 +85,18 @@ export const THEMES: readonly {
     name: 'Worn Chrome',
     tier: 2,
     description: 'Used future with stickers and scratches',
+  },
+  {
+    id: 'blood-circuit',
+    name: 'Blood Circuit',
+    tier: 2,
+    description: 'Aggressive red/black, for the shadows',
+  },
+  {
+    id: 'ghost-protocol',
+    name: 'Ghost Protocol',
+    tier: 2,
+    description: 'Ethereal pale blues, you were never here',
   },
 ] as const;
 

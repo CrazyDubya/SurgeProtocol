@@ -9,7 +9,9 @@ export type ThemeName =
   | 'terminal-noir'
   | 'algorithm-vision'
   | 'brutalist-cargo'
-  | 'worn-chrome';
+  | 'worn-chrome'
+  | 'blood-circuit'
+  | 'ghost-protocol';
 
 // Character types
 export interface Character {

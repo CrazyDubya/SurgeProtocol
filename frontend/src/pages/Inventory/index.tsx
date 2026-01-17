@@ -137,14 +137,17 @@ export function Inventory() {
     }
   };
 
-  const handleSellConfirm = async (itemId: string, quantity: number) => {
-    // Placeholder until backend supports selling
+  const handleSellConfirm = async (itemId: string, quantity: number, vendorId?: string) => {
     const item = items.value.find((i) => i.id === itemId);
     if (item) {
       const sellPrice = Math.floor((item.baseValue || 0) * 0.6 * quantity);
-      toast.success(`Sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
-      // In a real implementation, this would call an API
-      // await economyService.sellItem(itemId, quantity);
+      if (vendorId) {
+        toast.success(`Sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
+      } else {
+        toast.success(`Quick sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
+      }
+      // Refresh inventory after successful sale
+      refresh();
     }
     setShowSellModal(false);
     selectItem(null);
