@@ -122,13 +122,125 @@ Central registry of all NPCs in Surge Protocol narrative system. Tracks main cas
 
 ---
 
+## GENERAL NPCs - TIER 3 (6 Characters)
+
+*Added: Phase 6 Day 6*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| Dr. Kenji Sato | Chrome Clinic Technician | Hollows Chrome Clinic | `/tier_1-3_npcs/tier_3_contacts.md` |
+| Marcus Cole "The Skeptic" | Algorithm Skeptic / Activist | Community Center | `/tier_1-3_npcs/tier_3_contacts.md` |
+| Elena Vasquez | Recent Integrator | Chen's waiting area | `/tier_1-3_npcs/tier_3_contacts.md` |
+| Victor Huang | Corporate Headhunter | Uptown cafes | `/tier_1-3_npcs/tier_3_contacts.md` |
+| "Ghost" (Marcus Webb) | Underground Doc | Hollows basement | `/tier_1-3_npcs/tier_3_contacts.md` |
+| Sister Algorithm | Resistance Cell Contact | Hollows safehouse | `/tier_1-3_npcs/tier_3_contacts.md` |
+
+### Tier 3 NPC Purpose
+- Each represents a perspective on Algorithm integration
+- Player can consult multiple before deciding
+- All six provide different valid viewpoints
+
+---
+
+## GENERAL NPCs - TIER 4 (6 Characters)
+
+*Added: Phase 6 Day 7*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| Marcus "Gray" Whitfield | Gray Market Broker | Rotating/secure | `/tier_4-6_npcs/gray_zone_contacts.md` |
+| Constance Reyes | Ethical Courier | Chen's office | `/tier_4-6_npcs/gray_zone_contacts.md` |
+| Jerome Blackwell | Corporate Mole Handler | Secure meetings | `/tier_4-6_npcs/gray_zone_contacts.md` |
+| "Captain" Vera Santos | Smuggler Captain | Red Harbor docks | `/tier_4-6_npcs/gray_zone_contacts.md` |
+| Agent Kenji Nakahara | Information Dealer | Encrypted contact | `/tier_4-6_npcs/gray_zone_contacts.md` |
+| Mother Mercy | Hollows Elder | Community Center | `/tier_4-6_npcs/gray_zone_contacts.md` |
+
+### Tier 4 NPC Relationships
+- Gray Whitfield ↔ Constance Reyes (contrast pair)
+- Jerome Blackwell ↔ Agent Nakahara (mission vs amoral)
+- Captain Santos ↔ Mother Mercy (code vs ethics)
+
+---
+
+## GENERAL NPCs - TIER 5 (6 Characters)
+
+*Added: Phase 6 Day 8*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| Echo | Interstitial Guide | Interstitial access points | `/tier_4-6_npcs/interstitial_contacts.md` |
+| Dr. Iris Chen | Data Ghost / Researcher | Interstitial digital ruins | `/tier_4-6_npcs/interstitial_contacts.md` |
+| Jasper | Former Eighth Aspirant | Interstitial edges | `/tier_4-6_npcs/interstitial_contacts.md` |
+| The Archivist | Hidden Archive Keeper | Interstitial archive | `/tier_4-6_npcs/interstitial_contacts.md` |
+| Maya-2 | Network Node Personality | Network junctions | `/tier_4-6_npcs/interstitial_contacts.md` |
+| The Skeptic's Ghost | Convergence Skeptic | Interstitial edges | `/tier_4-6_npcs/interstitial_contacts.md` |
+
+### Tier 5 NPC Guidance Hierarchy
+1. Echo: Practical navigation
+2. Dr. Iris Chen: Academic understanding
+3. The Archivist: Historical knowledge
+4. Maya-2: Network navigation
+5. Jasper: What not to do
+6. The Skeptic's Ghost: Existential questions
+
+---
+
+## LOCATION NPCs - RED HARBOR (8 Characters)
+
+*Added: Phase 6 Day 9*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| "Old Salt" Viktor Petrov | Retired Dockmaster | Harbor overlook | `/location_npcs/red_harbor_residents.md` |
+| Marina Costa | Union Steward | Dock workers' hall | `/location_npcs/red_harbor_residents.md` |
+| Chen Xi | Dock Crane Operator | Crane 7 | `/location_npcs/red_harbor_residents.md` |
+| "Fish" Antonio Reyes | Fishing Boat Captain | Pier 12 | `/location_npcs/red_harbor_residents.md` |
+| Dr. Nadia Okoye | Harbor Clinic Doctor | Industrial Medical Center | `/location_npcs/red_harbor_residents.md` |
+| Tommy "Wheels" Nakamura | Mechanic | Harbor garage | `/location_npcs/red_harbor_residents.md` |
+| Mother Li | Harbor Temple Keeper | Harbor shrine | `/location_npcs/red_harbor_residents.md` |
+| Detective Liang | Harbor Beat Cop | Harbor streets | `/location_npcs/red_harbor_residents.md` |
+
+---
+
+## LOCATION NPCs - HOLLOWS (8 Characters)
+
+*Added: Phase 6 Day 9*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| Auntie Mae | Street Food Vendor | Hollows Market | `/location_npcs/hollows_residents.md` |
+| Razor | Chrome Saints Affiliate | Saints territory | `/location_npcs/hollows_residents.md` |
+| Dr. Amara Osei | Underground Clinic Operator | Basement clinic | `/location_npcs/hollows_residents.md` |
+| Prophet | Street Preacher | Central plaza | `/location_npcs/hollows_residents.md` |
+| Tiny | Hollows Enforcer | Market security | `/location_npcs/hollows_residents.md` |
+| Whisper | Information Broker | Back alleys | `/location_npcs/hollows_residents.md` |
+| Grandmother Yun | Hollows Elder | Residential | `/location_npcs/hollows_residents.md` |
+| Spark | Tunnel Guide | Tunnel network | `/location_npcs/hollows_residents.md` |
+
+---
+
+## LOCATION NPCs - UPTOWN (6 Characters)
+
+*Added: Phase 6 Day 9*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| David Park | Corporate Receptionist | Nakamura Tower lobby | `/location_npcs/uptown_residents.md` |
+| Officer Chen | Corporate Security | Uptown checkpoints | `/location_npcs/uptown_residents.md` |
+| Miranda Cole | Executive Assistant | Executive floors | `/location_npcs/uptown_residents.md` |
+| Lucia Santos | Maintenance Worker | Service corridors | `/location_npcs/uptown_residents.md` |
+| Dr. James Richardson | Corporate Wellness Officer | Health Center | `/location_npcs/uptown_residents.md` |
+| The Shadow | Corporate Spy | Various | `/location_npcs/uptown_residents.md` |
+
+---
+
 ## NPC TOTALS BY PHASE
 
 | Phase | NPCs Added | Running Total |
 |-------|------------|---------------|
 | Phases 1-5 | 9 (main cast) | 9 |
 | Phase 6 Week 1 | 13 (general) + 30 (procedural) | 52 |
-| Phase 6 Week 2 | (pending) | — |
+| Phase 6 Week 2 | 40 (18 tier + 22 location) | 92 |
 | Phase 6 Week 3 | (pending) | — |
 | Phase 6 Week 4 | (pending) | — |
 
@@ -212,6 +324,97 @@ COMPASS_FIRST_DELIVERY / COMPASS_FIRST_FAILURE
 
 ---
 
+## FLAG REGISTRY - NEW FLAGS (Week 2)
+
+### Tier 3 NPC Flags
+```
+MET_DR_SATO
+SATO_CONSULTATION_COMPLETE
+MET_SKEPTIC_MARCUS
+HEARD_ALGORITHM_WARNING
+ANTI_ALGORITHM_PAMPHLET
+MET_ELENA_INTEGRATOR
+HEARD_POSITIVE_INTEGRATION_STORY
+MET_VICTOR_HEADHUNTER
+NAKAMURA_OFFER_MADE / ACCEPTED / DECLINED
+MET_GHOST_DOC
+UNDERGROUND_INTEGRATION_AVAILABLE
+INTEGRATED_OFF_GRID
+MET_SISTER_ALGORITHM
+RESISTANCE_CONTACT
+REMOVAL_OPTION_KNOWN
+```
+
+### Tier 4 NPC Flags
+```
+MET_GRAY_WHITFIELD
+GRAY_MARKET_ACCESS
+GRAY_JOBS_COMPLETED (integer)
+MET_CONSTANCE_ETHICAL
+ETHICAL_PATH_SHOWN
+CONSTANCE_RELATIONSHIP (integer)
+MET_JEROME_BLACKWELL
+WHISTLEBLOWER_NETWORK_ACCESS
+CORPORATE_EXPOSURES (integer)
+MET_CAPTAIN_SANTOS
+SMUGGLER_NETWORK_ACCESS
+ESPERANZA_RUNS_COMPLETED (integer)
+MET_AGENT_NAKAHARA
+INFORMATION_NETWORK_ACCESS
+DATA_RUNS_COMPLETED (integer)
+MET_MOTHER_MERCY
+MERCY_CONVERSATIONS (integer)
+```
+
+### Tier 5 NPC Flags
+```
+MET_ECHO_GUIDE
+ECHO_TEACHINGS (integer)
+MET_DR_IRIS_CHEN
+INTERSTITIAL_RESEARCH_KNOWN
+IRIS_CONVERSATIONS (integer)
+MET_JASPER_EIGHTH
+EIGHTH_WARNING_HEARD
+FOUND_INTERSTITIAL_ARCHIVE
+MET_ARCHIVIST
+ARCHIVE_QUERIES (integer)
+MET_MAYA_TWO
+MAYA_FRIENDSHIP (integer)
+MET_SKEPTICS_GHOST
+EXISTENTIAL_CRISIS_WITNESSED
+```
+
+### Tier 5 Quest Flags
+```
+INTERSTITIAL_NAVIGATION_LEARNED
+IRIS_MESSAGE_DELIVERED
+LILY_BELIEVES / LILY_DOUBTS
+ARCHIVE_FRAGMENTS_RECOVERED
+ALGORITHM_ORIGINS_AVAILABLE
+FIRST_COURIER_DISCOVERED
+KIRA_SANTIAGO_KNOWN
+KIRA_MEMORIAL
+```
+
+### Tier 3 Quest Flags
+```
+SECOND_OPINION_COMPLETE
+INTEGRATION_HORROR_HEARD
+CLEAN_CHROME_FOUND
+INTEGRATION_CEREMONY_ATTENDED
+```
+
+### Tier 4 Quest Flags
+```
+MEDICINE_RUN_COMPLETE / REFUSED
+WHISTLEBLOWER_PROTECTED / BETRAYED
+CARGO_ACCEPTED / REFUSED
+DATA_DELIVERED / DELETED
+GANG_PEACE_NEGOTIATED / FAILED
+```
+
+---
+
 ## VOICE CASTING NOTES
 
 ### Priority Groups
@@ -235,23 +438,47 @@ COMPASS_FIRST_DELIVERY / COMPASS_FIRST_FAILURE
 - 30 client types × ~10 lines each = 300 base lines
 - 3-5 voice variants per archetype recommended
 
+**Group E - Tier 3-5 NPCs** (Medium sessions, Week 2):
+- Dr. Sato, Marcus Cole, Elena Vasquez, Victor Huang, Ghost, Sister Algorithm
+- Gray Whitfield, Constance, Jerome, Captain Santos, Nakahara, Mother Mercy
+- Echo, Dr. Iris Chen, Jasper, Archivist, Maya-2, Skeptic's Ghost
+- ~50-100 lines each
+
+**Group F - Location NPCs** (Short sessions, Week 2):
+- Red Harbor: Viktor, Marina, Chen Xi, Fish Antonio, Dr. Okoye, Tommy Wheels, Mother Li, Detective Liang
+- Hollows: Auntie Mae, Razor, Dr. Osei, Prophet, Tiny, Whisper, Grandmother Yun, Spark
+- Uptown: David Park, Officer Chen, Miranda Cole, Lucia Santos, Dr. Richardson, The Shadow
+- ~25-50 lines each
+
 ---
 
 ## CROSS-REFERENCE NOTES
 
 ### Name Disambiguation
-- **Chen Wei** (Dispatcher) vs **Sunny Chen** (Vendor) - No relation
+- **Chen Wei** (Dispatcher) vs **Sunny Chen** (Vendor) vs **Dr. Iris Chen** (Interstitial) vs **Chen Xi** (Harbor) - No relations
 - **Dr. Yuki Tanaka** (Main cast) vs **Yuki Tanaka** (Uptown) - No relation
 - **Solomon Okonkwo** (Main cast) vs **Vera Okonkwo** (Super) - Possible distant relation?
+- **Officer Chen** (Uptown Security) - Another Chen, no relation
+- **Marcus Cole** (Skeptic) vs **Miranda Cole** (Uptown) - No relation
 
 ### NPC Growth Arcs
 - **Tomas Vega**: Can grow into competent courier or fail out
 - **Static**: Can become major fixer or stay minor
 - **Compass**: Dreams of becoming courier
 - **Hayes**: Bitter rival can become reluctant ally
+- **Jasper**: Warning example, could potentially recover with player help
+- **Maya-2**: Young entity, could become ally or something else
+
+### Cross-District Connections (Week 2)
+- **Captain Santos** (Tier 4) connects to **Old Salt Viktor** and **Fish Antonio** (Red Harbor)
+- **Mother Mercy** (Tier 4) parallels **Grandmother Yun** (Hollows elder)
+- **Dr. Osei** (Hollows clinic) parallels **Ghost Doc** (Tier 3 underground)
+- **Tommy Wheels** (Harbor) parallels **Rosa Delgado** (Main cast mechanic)
+- **Whisper** (Hollows) parallels **Agent Nakahara** (Tier 4 info dealer)
 
 ---
 
-*NPC Registry v1.0*
-*Phase 6 Week 1 Integration*
+*NPC Registry v2.0*
+*Phase 6 Week 2 Integration*
 *Updated: 2026-01-17*
+*92 NPCs tracked*
