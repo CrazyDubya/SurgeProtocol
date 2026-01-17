@@ -4,10 +4,12 @@
  * Integrates with stores for real-time data.
  */
 
+import { useState } from 'preact/hooks';
 import type { InventoryItem as InventoryItemType } from '@/types';
 import { Button, Card, Skeleton } from '@components/ui';
-import { InventoryGrid, ItemDetail } from '@components/game';
+import { InventoryGrid, ItemDetail, VendorSellModal } from '@components/game';
 import { useInventoryData } from '@/hooks';
+import { toast } from '@/stores/uiStore';
 import {
   items,
   equippedItems,
@@ -23,6 +25,9 @@ import {
 import styles from './Inventory.module.css';
 
 export function Inventory() {
+  // Local state
+  const [showSellModal, setShowSellModal] = useState(false);
+
   // Load data via hook
   const {
     isLoading,
@@ -86,7 +91,12 @@ export function Inventory() {
 
   const handleUse = async () => {
     if (selectedItem.value) {
-      await useItem(selectedItem.value.id);
+      try {
+        await useItem(selectedItem.value.id);
+        toast.success(`Used ${selectedItem.value.name}`);
+      } catch {
+        toast.error('Unable to use item - feature coming soon');
+      }
     }
   };
 
@@ -104,16 +114,33 @@ export function Inventory() {
 
   const handleDrop = async () => {
     if (selectedItem.value) {
-      await discardItem(selectedItem.value.id);
-      selectItem(null);
+      try {
+        await discardItem(selectedItem.value.id);
+        toast.success(`Discarded ${selectedItem.value.name}`);
+        selectItem(null);
+      } catch {
+        toast.error('Unable to discard item - feature coming soon');
+      }
     }
   };
 
-  const handleSell = async () => {
-    // TODO: Open vendor sell modal
+  const handleSell = () => {
     if (selectedItem.value) {
-      console.log('Sell item:', selectedItem.value.id);
+      setShowSellModal(true);
     }
+  };
+
+  const handleSellConfirm = async (itemId: string, quantity: number) => {
+    // Placeholder until backend supports selling
+    const item = items.value.find((i) => i.id === itemId);
+    if (item) {
+      const sellPrice = Math.floor((item.baseValue || 0) * 0.6 * quantity);
+      toast.success(`Sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
+      // In a real implementation, this would call an API
+      // await economyService.sellItem(itemId, quantity);
+    }
+    setShowSellModal(false);
+    selectItem(null);
   };
 
   // Loading state
@@ -237,6 +264,15 @@ export function Inventory() {
           </Button>
         </div>
       </aside>
+
+      {/* Vendor Sell Modal */}
+      {showSellModal && selectedInventoryItem && (
+        <VendorSellModal
+          item={selectedInventoryItem}
+          onSell={handleSellConfirm}
+          onClose={() => setShowSellModal(false)}
+        />
+      )}
     </div>
   );
 }

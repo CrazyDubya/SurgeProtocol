@@ -26,6 +26,8 @@ const Missions = lazy(() => import('@pages/Missions').then((m) => ({ default: m.
 const Algorithm = lazy(() => import('@pages/Algorithm').then((m) => ({ default: m.Algorithm })));
 const Character = lazy(() => import('@pages/Character').then((m) => ({ default: m.Character })));
 const Inventory = lazy(() => import('@pages/Inventory').then((m) => ({ default: m.Inventory })));
+const Factions = lazy(() => import('@pages/Factions').then((m) => ({ default: m.Factions })));
+const CharacterCreate = lazy(() => import('@pages/CharacterCreate').then((m) => ({ default: m.CharacterCreate })));
 const NotFound = lazy(() => import('@pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 /**
@@ -81,6 +83,20 @@ export function App() {
           </Route>
           <Route path="/inventory">
             {() => <ProtectedPage component={Inventory} />}
+          </Route>
+          <Route path="/factions">
+            {() => <ProtectedPage component={Factions} />}
+          </Route>
+
+          {/* Character creation - requires auth but not character */}
+          <Route path="/create-character">
+            {() => (
+              <ProtectedRoute requireCharacter={false}>
+                <Suspense fallback={<PageLoader />}>
+                  <CharacterCreate />
+                </Suspense>
+              </ProtectedRoute>
+            )}
           </Route>
 
           {/* 404 */}

@@ -114,20 +114,20 @@ export function useInventoryData() {
 
   /**
    * Use a consumable item
+   * Note: Backend support pending - throws error to allow caller to handle gracefully
    */
   const useItem = useCallback(async (_itemId: string) => {
-    // TODO: Implement when backend supports it
-    toast.info('Item use not yet implemented');
-    return false;
+    // Backend endpoint not yet available
+    throw new Error('Item use requires backend support');
   }, []);
 
   /**
    * Drop/discard an item
+   * Note: Backend support pending - throws error to allow caller to handle gracefully
    */
   const discardItem = useCallback(async (_itemId: string, _quantity: number = 1) => {
-    // TODO: Implement when backend supports it
-    toast.info('Item discard not yet implemented');
-    return false;
+    // Backend endpoint not yet available
+    throw new Error('Item discard requires backend support');
   }, []);
 
   /**

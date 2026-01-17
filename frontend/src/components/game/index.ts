@@ -62,3 +62,6 @@ export type { ItemDetailProps } from './ItemDetail';
 // Quick Actions
 export { QuickActions, NavActions, StatAction } from './QuickActions';
 export type { QuickActionsProps, QuickAction, NavActionsProps, NavAction, StatActionProps } from './QuickActions';
+
+// Vendor Sell Modal
+export { VendorSellModal } from './VendorSellModal';
