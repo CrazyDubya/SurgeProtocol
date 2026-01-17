@@ -157,7 +157,7 @@ export const turnOrder = computed(() =>
 
 /** Active combatants (not defeated) */
 export const activeCombatants = computed(() =>
-  combatants.value.filter((c) => c.status !== 'defeated')
+  combatants.value.filter((c) => c.hp > 0)
 );
 
 /** Recent action log (last 5 entries) */

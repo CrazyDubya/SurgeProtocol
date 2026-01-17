@@ -393,7 +393,7 @@ export {
   // Helpers
   getFaction,
   // Actions
-  setFactions,
+  setFactions as setWarFactions,
   setTerritories,
   setWars,
   addEvent,
