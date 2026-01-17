@@ -376,12 +376,28 @@ export class MockD1Database {
           const valuesStr = inMatch[3]!;
           const rowValue = row[col];
 
-          // Count placeholders in the IN clause
+          // Check if using placeholders or literal values
           const placeholderCount = (valuesStr.match(/\?/g) || []).length;
-          const values = params.slice(paramIndex, paramIndex + placeholderCount);
-          paramIndex += placeholderCount;
-
-          return values.includes(rowValue);
+          if (placeholderCount > 0) {
+            // Placeholders - get values from params
+            const values = params.slice(paramIndex, paramIndex + placeholderCount);
+            paramIndex += placeholderCount;
+            return values.includes(rowValue);
+          } else {
+            // Literal string values - parse them from the SQL
+            // Matches 'value' or "value" patterns
+            const literalMatches = valuesStr.match(/'([^']+)'|"([^"]+)"/g);
+            if (literalMatches) {
+              const values = literalMatches.map(v => v.slice(1, -1)); // Remove quotes
+              return values.includes(rowValue as string);
+            }
+            // Try numeric values
+            const numericValues = valuesStr.split(',').map(v => v.trim()).filter(v => !isNaN(Number(v))).map(Number);
+            if (numericValues.length > 0) {
+              return numericValues.includes(rowValue as number);
+            }
+          }
+          return false;
         }
 
         // Handle IS NOT NULL
