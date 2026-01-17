@@ -184,6 +184,68 @@ interface CharacterAddiction {
   cravings_succumbed: number;
 }
 
+interface HumanityThreshold {
+  id: string;
+  threshold_value: number;
+  threshold_name: string;
+  description: string | null;
+  condition_id: string | null;
+  behavioral_changes: string | null;
+  dialogue_changes: string | null;
+  ability_unlocks: string | null;
+  ability_locks: string | null;
+  can_recover: number;
+  recovery_methods: string | null;
+  permanent_effects: string | null;
+}
+
+interface CyberpsychosisEpisode {
+  id: string;
+  character_id: string;
+  occurred_at: string;
+  trigger_type: string | null;
+  trigger_source_id: string | null;
+  humanity_at_trigger: number | null;
+  severity: number;
+  duration_minutes: number;
+  episode_type: string | null;
+  actions_during: string | null;
+  npcs_harmed: string | null;
+  property_destroyed: string | null;
+  memories_lost: string | null;
+  resolution_method: string | null;
+  resolved_by_npc_id: string | null;
+  humanity_after: number | null;
+  permanent_effects: string | null;
+  legal_consequences: string | null;
+  reputation_impacts: string | null;
+  relationship_impacts: string | null;
+  narrative_flags_set: string | null;
+}
+
+interface HumanityEvent {
+  id: string;
+  character_id: string;
+  occurred_at: string;
+  humanity_before: number | null;
+  humanity_after: number | null;
+  change_amount: number | null;
+  change_source: string | null;
+  source_id: string | null;
+  crossed_threshold: number | null;
+  triggered_condition_id: string | null;
+  episode_severity: number | null;
+  therapy_applied: number;
+  anchor_used: number;
+  narrative_event_id: string | null;
+}
+
+interface Character {
+  id: string;
+  current_humanity: number;
+  max_humanity: number;
+}
+
 // =============================================================================
 // ROUTER
 // =============================================================================
@@ -3825,6 +3887,483 @@ combatRoutes.post('/instances/:id/withdrawal-check', async (c) => {
         totalPenalty,
         maxLethalityRisk,
       },
+    },
+  });
+});
+
+// =============================================================================
+// DAY 7: CYBERPSYCHOSIS SYSTEM
+// =============================================================================
+
+/**
+ * GET /combat/cyberpsychosis
+ * Get cyberpsychosis system information (thresholds, effects).
+ */
+combatRoutes.get('/cyberpsychosis', async (c) => {
+  const db = c.env.DB;
+
+  // Get all humanity thresholds
+  const thresholdsResult = await db
+    .prepare(`SELECT * FROM humanity_thresholds ORDER BY threshold_value DESC`)
+    .all<HumanityThreshold>();
+
+  const thresholds = thresholdsResult.results.map(t => ({
+    id: t.id,
+    value: t.threshold_value,
+    name: t.threshold_name,
+    description: t.description,
+    effects: {
+      conditionId: t.condition_id,
+      behavioralChanges: t.behavioral_changes,
+      dialogueChanges: t.dialogue_changes ? JSON.parse(t.dialogue_changes) : [],
+      abilityUnlocks: t.ability_unlocks ? JSON.parse(t.ability_unlocks) : [],
+      abilityLocks: t.ability_locks ? JSON.parse(t.ability_locks) : [],
+    },
+    recovery: {
+      canRecover: t.can_recover === 1,
+      methods: t.recovery_methods ? JSON.parse(t.recovery_methods) : [],
+      permanentEffects: t.permanent_effects ? JSON.parse(t.permanent_effects) : [],
+    },
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      thresholds,
+      count: thresholds.length,
+      info: {
+        maxHumanity: 100,
+        cyberpsychosisThreshold: thresholds.find(t => t.name?.toLowerCase().includes('psychosis'))?.value || 0,
+        warningThresholds: thresholds.filter(t => t.value > 0 && t.value <= 40).map(t => t.value),
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/characters/:characterId/cyberpsychosis
+ * Get a character's cyberpsychosis state and history.
+ */
+combatRoutes.get('/characters/:characterId/cyberpsychosis', async (c) => {
+  const db = c.env.DB;
+  const characterId = c.req.param('characterId');
+
+  // Get character's current humanity
+  const character = await db
+    .prepare(`SELECT id, current_humanity, max_humanity FROM characters WHERE id = ?`)
+    .bind(characterId)
+    .first<Character>();
+
+  if (!character) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
+    }, 404);
+  }
+
+  // Get applicable thresholds
+  const thresholdsResult = await db
+    .prepare(`SELECT * FROM humanity_thresholds WHERE threshold_value >= ? ORDER BY threshold_value DESC`)
+    .bind(character.current_humanity)
+    .all<HumanityThreshold>();
+
+  // Get recent humanity events
+  const eventsResult = await db
+    .prepare(`
+      SELECT * FROM humanity_events
+      WHERE character_id = ?
+      ORDER BY occurred_at DESC
+      LIMIT 10
+    `)
+    .bind(characterId)
+    .all<HumanityEvent>();
+
+  // Get cyberpsychosis episodes
+  const episodesResult = await db
+    .prepare(`
+      SELECT * FROM cyberpsychosis_episodes
+      WHERE character_id = ?
+      ORDER BY occurred_at DESC
+    `)
+    .bind(characterId)
+    .all<CyberpsychosisEpisode>();
+
+  // Determine current state
+  const currentThreshold = thresholdsResult.results[0];
+  const humanityPercent = Math.floor((character.current_humanity / character.max_humanity) * 100);
+  const isAtRisk = character.current_humanity <= 40;
+  const isCritical = character.current_humanity <= 20;
+  const isCyberpsycho = character.current_humanity <= 0;
+
+  const recentEvents = eventsResult.results.map(e => ({
+    id: e.id,
+    occurredAt: e.occurred_at,
+    humanityBefore: e.humanity_before,
+    humanityAfter: e.humanity_after,
+    change: e.change_amount,
+    source: e.change_source,
+    sourceId: e.source_id,
+    crossedThreshold: e.crossed_threshold,
+    episodeSeverity: e.episode_severity,
+  }));
+
+  const episodes = episodesResult.results.map(ep => ({
+    id: ep.id,
+    occurredAt: ep.occurred_at,
+    trigger: {
+      type: ep.trigger_type,
+      sourceId: ep.trigger_source_id,
+      humanityAtTrigger: ep.humanity_at_trigger,
+    },
+    severity: ep.severity,
+    durationMinutes: ep.duration_minutes,
+    type: ep.episode_type,
+    effects: {
+      actionsDuring: ep.actions_during ? JSON.parse(ep.actions_during) : [],
+      npcsHarmed: ep.npcs_harmed ? JSON.parse(ep.npcs_harmed) : [],
+      propertyDestroyed: ep.property_destroyed ? JSON.parse(ep.property_destroyed) : [],
+      memoriesLost: ep.memories_lost ? JSON.parse(ep.memories_lost) : [],
+    },
+    resolution: {
+      method: ep.resolution_method,
+      resolvedByNpcId: ep.resolved_by_npc_id,
+      humanityAfter: ep.humanity_after,
+      permanentEffects: ep.permanent_effects ? JSON.parse(ep.permanent_effects) : [],
+    },
+    consequences: {
+      legal: ep.legal_consequences ? JSON.parse(ep.legal_consequences) : [],
+      reputation: ep.reputation_impacts ? JSON.parse(ep.reputation_impacts) : [],
+      relationships: ep.relationship_impacts ? JSON.parse(ep.relationship_impacts) : [],
+    },
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      character: characterId,
+      humanity: {
+        current: character.current_humanity,
+        max: character.max_humanity,
+        percent: humanityPercent,
+      },
+      status: {
+        isAtRisk,
+        isCritical,
+        isCyberpsycho,
+        currentThreshold: currentThreshold ? {
+          name: currentThreshold.threshold_name,
+          value: currentThreshold.threshold_value,
+          effects: currentThreshold.behavioral_changes,
+        } : null,
+      },
+      recentEvents,
+      episodes,
+      statistics: {
+        totalEpisodes: episodes.length,
+        totalHumanityLost: recentEvents.reduce((sum, e) => sum + Math.abs(Math.min(0, e.change || 0)), 0),
+        lastEvent: recentEvents[0]?.occurredAt || null,
+        lastEpisode: episodes[0]?.occurredAt || null,
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/humanity-check
+ * Check and apply humanity changes, detecting threshold crossings.
+ */
+combatRoutes.post('/instances/:id/humanity-check', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    characterId: string;
+    humanityChange: number;
+    source: string;
+    sourceId?: string;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { characterId, humanityChange, source, sourceId } = body;
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CHARACTER', message: 'characterId is required' }],
+    }, 400);
+  }
+
+  if (humanityChange === undefined || humanityChange === null) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CHANGE', message: 'humanityChange is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get character
+  const character = await db
+    .prepare(`SELECT id, current_humanity, max_humanity FROM characters WHERE id = ?`)
+    .bind(characterId)
+    .first<Character>();
+
+  if (!character) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }],
+    }, 404);
+  }
+
+  const humanityBefore = character.current_humanity;
+  const humanityAfter = Math.max(0, Math.min(character.max_humanity, humanityBefore + humanityChange));
+  const actualChange = humanityAfter - humanityBefore;
+
+  // Check for threshold crossings
+  const crossedThresholds = await db
+    .prepare(`
+      SELECT * FROM humanity_thresholds
+      WHERE threshold_value <= ? AND threshold_value > ?
+      ORDER BY threshold_value DESC
+    `)
+    .bind(humanityBefore, humanityAfter)
+    .all<HumanityThreshold>();
+
+  // Update character humanity
+  await db
+    .prepare(`UPDATE characters SET current_humanity = ? WHERE id = ?`)
+    .bind(humanityAfter, characterId)
+    .run();
+
+  // Record the event
+  const eventId = `hum-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const crossedThreshold = crossedThresholds.results[0]?.threshold_value || null;
+  const episodeSeverity = crossedThreshold !== null && crossedThreshold <= 20 ? Math.ceil((20 - crossedThreshold) / 5) + 1 : null;
+
+  await db
+    .prepare(`INSERT INTO humanity_events (
+      id, character_id, humanity_before, humanity_after, change_amount,
+      change_source, source_id, crossed_threshold, episode_severity
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(
+      eventId,
+      characterId,
+      humanityBefore,
+      humanityAfter,
+      actualChange,
+      source,
+      sourceId || combatId,
+      crossedThreshold,
+      episodeSeverity
+    )
+    .run();
+
+  const thresholdsCrossed = crossedThresholds.results.map(t => ({
+    value: t.threshold_value,
+    name: t.threshold_name,
+    effects: t.behavioral_changes,
+    conditionId: t.condition_id,
+  }));
+
+  const shouldTriggerEpisode = humanityAfter <= 0 || (crossedThreshold !== null && crossedThreshold <= 10);
+
+  return c.json({
+    success: true,
+    data: {
+      character: characterId,
+      humanity: {
+        before: humanityBefore,
+        after: humanityAfter,
+        change: actualChange,
+        percent: Math.floor((humanityAfter / character.max_humanity) * 100),
+      },
+      thresholdsCrossed,
+      warnings: {
+        atRisk: humanityAfter <= 40,
+        critical: humanityAfter <= 20,
+        cyberpsychosis: humanityAfter <= 0,
+        shouldTriggerEpisode,
+        suggestedSeverity: episodeSeverity,
+      },
+      eventId,
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/cyberpsychosis-trigger
+ * Trigger a cyberpsychosis episode for a character.
+ */
+combatRoutes.post('/instances/:id/cyberpsychosis-trigger', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    characterId: string;
+    triggerType: string;
+    triggerSourceId?: string;
+    severity?: number;
+    episodeType?: string;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { characterId, triggerType, triggerSourceId, severity = 1, episodeType = 'COMBAT_RAGE' } = body;
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CHARACTER', message: 'characterId is required' }],
+    }, 400);
+  }
+
+  if (!triggerType) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_TRIGGER', message: 'triggerType is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get character
+  const character = await db
+    .prepare(`SELECT id, current_humanity, max_humanity FROM characters WHERE id = ?`)
+    .bind(characterId)
+    .first<Character>();
+
+  if (!character) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }],
+    }, 404);
+  }
+
+  // Generate episode effects based on severity
+  const durationMinutes = 5 + (severity * 3);
+  const actionsDuring: string[] = [];
+  const memoriesLost: string[] = [];
+
+  if (severity >= 1) {
+    actionsDuring.push('INDISCRIMINATE_ATTACK');
+    memoriesLost.push('PARTIAL_BLACKOUT');
+  }
+  if (severity >= 2) {
+    actionsDuring.push('FRIENDLY_FIRE');
+    memoriesLost.push('AMNESIA_DURING');
+  }
+  if (severity >= 3) {
+    actionsDuring.push('PROPERTY_DESTRUCTION');
+    actionsDuring.push('EXTREME_VIOLENCE');
+    memoriesLost.push('COMPLETE_BLACKOUT');
+  }
+
+  // Create episode record
+  const episodeId = `cp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  await db
+    .prepare(`INSERT INTO cyberpsychosis_episodes (
+      id, character_id, trigger_type, trigger_source_id, humanity_at_trigger,
+      severity, duration_minutes, episode_type, actions_during, memories_lost
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(
+      episodeId,
+      characterId,
+      triggerType,
+      triggerSourceId || combatId,
+      character.current_humanity,
+      severity,
+      durationMinutes,
+      episodeType,
+      JSON.stringify(actionsDuring),
+      JSON.stringify(memoriesLost)
+    )
+    .run();
+
+  // Determine combat effects
+  const combatEffects = {
+    targetingChanged: true,
+    willAttackAllies: severity >= 2,
+    ignorePain: true,
+    damageBonusPercent: severity * 10,
+    defenseReductionPercent: severity * 5,
+    cannotRetreat: true,
+    cannotNegotiate: true,
+    specialActions: actionsDuring,
+  };
+
+  return c.json({
+    success: true,
+    data: {
+      episodeId,
+      character: characterId,
+      episode: {
+        severity,
+        type: episodeType,
+        durationMinutes,
+        humanityAtTrigger: character.current_humanity,
+        trigger: {
+          type: triggerType,
+          sourceId: triggerSourceId || combatId,
+        },
+      },
+      effects: {
+        actionsDuring,
+        memoriesLost,
+      },
+      combatEffects,
+      message: `${character.id} has entered a cyberpsychosis episode!`,
     },
   });
 });

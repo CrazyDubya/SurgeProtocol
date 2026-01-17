@@ -4127,4 +4127,459 @@ describe('Combat System Day 4 - Actions & Turn Management', () => {
       });
     });
   });
+
+  // ===========================================================================
+  // DAY 7: CYBERPSYCHOSIS SYSTEM
+  // ===========================================================================
+
+  describe('Combat System Day 7 - Cyberpsychosis System', () => {
+
+    // =========================================================================
+    // GET /combat/cyberpsychosis TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/cyberpsychosis', () => {
+      it('should return cyberpsychosis thresholds', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('humanity_thresholds', [
+          { id: 'ht-1', threshold_value: 40, threshold_name: 'At Risk', description: 'Starting to lose humanity', can_recover: 1 },
+          { id: 'ht-2', threshold_value: 20, threshold_name: 'Critical', description: 'On the edge', can_recover: 1 },
+          { id: 'ht-3', threshold_value: 0, threshold_name: 'Cyberpsychosis', description: 'Full cyberpsychosis', can_recover: 0 },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/cyberpsychosis');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            thresholds: Array<{ value: number; name: string }>;
+            count: number;
+            info: { maxHumanity: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.thresholds.length).toBe(3);
+        expect(data.data?.info.maxHumanity).toBe(100);
+      });
+    });
+
+    // =========================================================================
+    // GET /combat/characters/:characterId/cyberpsychosis TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/characters/:characterId/cyberpsychosis', () => {
+      it('should return character cyberpsychosis state', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('characters', [{
+          id: 'char-cp-state',
+          current_humanity: 35,
+          max_humanity: 100,
+        }]);
+        freshEnv.DB._seed('humanity_thresholds', [
+          { id: 'ht-risk', threshold_value: 40, threshold_name: 'At Risk' },
+        ]);
+        freshEnv.DB._seed('humanity_events', [{
+          id: 'he-1',
+          character_id: 'char-cp-state',
+          humanity_before: 50,
+          humanity_after: 35,
+          change_amount: -15,
+          change_source: 'augment_install',
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/characters/char-cp-state/cyberpsychosis');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            humanity: { current: number; max: number; percent: number };
+            status: { isAtRisk: boolean; isCritical: boolean };
+            recentEvents: Array<{ change: number }>;
+            statistics: { totalEpisodes: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.humanity.current).toBe(35);
+        expect(data.data?.humanity.percent).toBe(35);
+        expect(data.data?.status.isAtRisk).toBe(true);
+        expect(data.data?.status.isCritical).toBe(false);
+        expect(data.data?.recentEvents.length).toBe(1);
+      });
+
+      it('should include cyberpsychosis episodes', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('characters', [{
+          id: 'char-cp-eps',
+          current_humanity: 10,
+          max_humanity: 100,
+        }]);
+        freshEnv.DB._seed('cyberpsychosis_episodes', [{
+          id: 'cp-ep-1',
+          character_id: 'char-cp-eps',
+          trigger_type: 'COMBAT_STRESS',
+          severity: 2,
+          duration_minutes: 10,
+          episode_type: 'COMBAT_RAGE',
+          actions_during: JSON.stringify(['INDISCRIMINATE_ATTACK']),
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/characters/char-cp-eps/cyberpsychosis');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            status: { isCritical: boolean };
+            episodes: Array<{ severity: number; type: string }>;
+            statistics: { totalEpisodes: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.status.isCritical).toBe(true);
+        expect(data.data?.episodes.length).toBe(1);
+        expect(data.data?.episodes[0]?.severity).toBe(2);
+        expect(data.data?.statistics.totalEpisodes).toBe(1);
+      });
+
+      it('should return 404 for non-existent character', async () => {
+        const request = createTestRequest('GET', '/api/combat/characters/nonexistent/cyberpsychosis');
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/humanity-check TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/humanity-check', () => {
+      it('should apply humanity change', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-hum-check',
+          character_id: 'char-hum',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('characters', [{
+          id: 'char-hum',
+          current_humanity: 80,
+          max_humanity: 100,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-hum-check/humanity-check', {
+          body: {
+            characterId: 'char-hum',
+            humanityChange: -10,
+            source: 'AUGMENT_INSTALL',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            humanity: { before: number; after: number; change: number; percent: number };
+            warnings: { atRisk: boolean };
+            eventId: string;
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.humanity.before).toBe(80);
+        expect(data.data?.humanity.after).toBe(70);
+        expect(data.data?.humanity.change).toBe(-10);
+        expect(data.data?.warnings.atRisk).toBe(false);
+        expect(data.data?.eventId).toBeDefined();
+      });
+
+      it('should detect threshold crossing', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-hum-cross',
+          character_id: 'char-cross',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('characters', [{
+          id: 'char-cross',
+          current_humanity: 45,
+          max_humanity: 100,
+        }]);
+        freshEnv.DB._seed('humanity_thresholds', [
+          { id: 'ht-40', threshold_value: 40, threshold_name: 'At Risk', behavioral_changes: 'Aggressive tendencies' },
+        ]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-hum-cross/humanity-check', {
+          body: {
+            characterId: 'char-cross',
+            humanityChange: -10,
+            source: 'CYBERWARE',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            humanity: { after: number };
+            thresholdsCrossed: Array<{ value: number; name: string }>;
+            warnings: { atRisk: boolean };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.humanity.after).toBe(35);
+        expect(data.data?.thresholdsCrossed.length).toBe(1);
+        expect(data.data?.thresholdsCrossed[0]?.name).toBe('At Risk');
+        expect(data.data?.warnings.atRisk).toBe(true);
+      });
+
+      it('should flag cyberpsychosis trigger', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-hum-zero',
+          character_id: 'char-zero',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('characters', [{
+          id: 'char-zero',
+          current_humanity: 5,
+          max_humanity: 100,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-hum-zero/humanity-check', {
+          body: {
+            characterId: 'char-zero',
+            humanityChange: -10,
+            source: 'AUGMENT',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            humanity: { after: number };
+            warnings: { cyberpsychosis: boolean; shouldTriggerEpisode: boolean };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.humanity.after).toBe(0);
+        expect(data.data?.warnings.cyberpsychosis).toBe(true);
+        expect(data.data?.warnings.shouldTriggerEpisode).toBe(true);
+      });
+
+      it('should return 404 for non-existent character', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-char',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-no-char/humanity-check', {
+          body: {
+            characterId: 'nonexistent',
+            humanityChange: -10,
+            source: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(404);
+        expect(data.errors?.[0]?.code).toBe('CHARACTER_NOT_FOUND');
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-hum-ended',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-hum-ended/humanity-check', {
+          body: {
+            characterId: 'char-test',
+            humanityChange: -10,
+            source: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/humanity-check', {
+          body: {
+            characterId: 'char-test',
+            humanityChange: -10,
+            source: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/cyberpsychosis-trigger TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/cyberpsychosis-trigger', () => {
+      it('should trigger a cyberpsychosis episode', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-cp-trigger',
+          character_id: 'char-cp',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('characters', [{
+          id: 'char-cp',
+          current_humanity: 0,
+          max_humanity: 100,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-cp-trigger/cyberpsychosis-trigger', {
+          body: {
+            characterId: 'char-cp',
+            triggerType: 'HUMANITY_ZERO',
+            severity: 2,
+            episodeType: 'COMBAT_RAGE',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            episodeId: string;
+            episode: { severity: number; type: string; durationMinutes: number };
+            effects: { actionsDuring: string[]; memoriesLost: string[] };
+            combatEffects: { willAttackAllies: boolean; damageBonusPercent: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.episode.severity).toBe(2);
+        expect(data.data?.episode.type).toBe('COMBAT_RAGE');
+        expect(data.data?.effects.actionsDuring).toContain('FRIENDLY_FIRE');
+        expect(data.data?.combatEffects.willAttackAllies).toBe(true);
+        expect(data.data?.combatEffects.damageBonusPercent).toBe(20);
+      });
+
+      it('should scale effects by severity', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-cp-sev',
+          character_id: 'char-sev',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('characters', [{
+          id: 'char-sev',
+          current_humanity: 5,
+          max_humanity: 100,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-cp-sev/cyberpsychosis-trigger', {
+          body: {
+            characterId: 'char-sev',
+            triggerType: 'COMBAT_STRESS',
+            severity: 3,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            episode: { durationMinutes: number };
+            effects: { actionsDuring: string[] };
+            combatEffects: { damageBonusPercent: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        // 5 + (3 * 3) = 14 minutes
+        expect(data.data?.episode.durationMinutes).toBe(14);
+        expect(data.data?.effects.actionsDuring).toContain('EXTREME_VIOLENCE');
+        expect(data.data?.combatEffects.damageBonusPercent).toBe(30);
+      });
+
+      it('should return 404 for non-existent character', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-cp-nochar',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-cp-nochar/cyberpsychosis-trigger', {
+          body: {
+            characterId: 'nonexistent',
+            triggerType: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(404);
+        expect(data.errors?.[0]?.code).toBe('CHARACTER_NOT_FOUND');
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-cp-ended',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-cp-ended/cyberpsychosis-trigger', {
+          body: {
+            characterId: 'char-test',
+            triggerType: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/cyberpsychosis-trigger', {
+          body: {
+            characterId: 'char-test',
+            triggerType: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+  });
 });
