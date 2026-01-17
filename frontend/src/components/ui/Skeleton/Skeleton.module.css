@@ -1,0 +1,171 @@
+/**
+ * Skeleton Component Styles
+ * Loading placeholder with shimmer animation
+ */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+/* Shimmer animation */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--bg-elevated) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Cyberpunk variant with scan line */
+.cyber::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-algorithm) 50%,
+    transparent 100%
+  );
+  opacity: 0.3;
+  animation: cyberScan 2s linear infinite;
+}
+
+@keyframes cyberScan {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Preset variants */
+.text {
+  height: 1em;
+  width: 100%;
+}
+
+.title {
+  height: 1.5em;
+  width: 60%;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.card {
+  height: 120px;
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.button {
+  height: 40px;
+  width: 120px;
+  border-radius: var(--radius-sm);
+}
+
+.image {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+/* Skeleton group for card-like layouts */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* Mission card skeleton */
+.missionCard {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.missionCard .header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.missionCard .title {
+  width: 40%;
+}
+
+.missionCard .badge {
+  width: 80px;
+  height: 24px;
+}
+
+.missionCard .description {
+  margin-bottom: var(--space-4);
+}
+
+.missionCard .description .skeleton {
+  margin-bottom: var(--space-2);
+}
+
+.missionCard .description .skeleton:last-child {
+  width: 70%;
+}
+
+.missionCard .footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Stat skeleton */
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stat .label {
+  height: 0.875em;
+  width: 60px;
+}
+
+.stat .value {
+  height: 1.5em;
+  width: 100px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+    opacity: 0.5;
+    transform: none;
+  }
+}

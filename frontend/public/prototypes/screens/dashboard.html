@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="neon-decay">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - SURGE PROTOCOL</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700&family=IBM+Plex+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../styles/tokens/base.css">
+  <link rel="stylesheet" href="../styles/themes/neon-decay.css">
+  <link rel="stylesheet" href="../styles/themes/terminal-noir.css">
+  <link rel="stylesheet" href="../styles/themes/algorithm-vision.css">
+  <link rel="stylesheet" href="../styles/components/card.css">
+  <link rel="stylesheet" href="../styles/components/button.css">
+  <link rel="stylesheet" href="../styles/components/progress.css">
+  <link rel="stylesheet" href="../styles/components/badge.css">
+  <link rel="stylesheet" href="../styles/components/stat.css">
+  <link rel="stylesheet" href="../styles/components/algorithm.css">
+
+  <style>
+    /* Dashboard-specific layout styles */
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto auto;
+      gap: var(--space-4);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
+
+    .dashboard__header {
+      grid-column: 1 / -1;
+    }
+
+    .dashboard__algorithm {
+      grid-column: 1 / -1;
+    }
+
+    /* Theme switcher */
+    .theme-switcher {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: var(--z-fixed);
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-2);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+    }
+
+    .theme-switcher button {
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-switcher button:hover {
+      color: var(--accent-algorithm);
+    }
+
+    .theme-switcher button.active {
+      background: var(--accent-algorithm);
+      color: var(--bg-primary);
+    }
+
+    /* Character header layout */
+    .character-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+
+    .character-header__info {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .character-header__name {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      font-weight: var(--font-bold);
+      margin: 0 0 var(--space-2) 0;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .character-header__meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+
+    .character-header__location {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .character-header__resources {
+      margin-top: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    /* Mission item */
+    .mission-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .mission-item:hover {
+      border-color: var(--accent-algorithm);
+    }
+
+    .mission-item__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+
+    .mission-item__title {
+      font-weight: var(--font-bold);
+      color: var(--text-primary);
+    }
+
+    .mission-item__meta {
+      display: flex;
+      gap: var(--space-4);
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+
+    .mission-item--active {
+      border-color: var(--accent-warning);
+      border-width: 2px;
+    }
+
+    .mission-item--gray .mission-item__title {
+      color: var(--accent-warning);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .character-header__name {
+        font-size: var(--text-2xl);
+      }
+
+      .theme-switcher {
+        top: auto;
+        bottom: var(--space-4);
+        right: var(--space-4);
+        left: var(--space-4);
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <button class="active" onclick="setTheme('neon-decay')">Neon</button>
+    <button onclick="setTheme('terminal-noir')">Terminal</button>
+    <button onclick="setTheme('algorithm-vision')">Algorithm</button>
+  </div>
+
+  <main class="dashboard">
+
+    <!-- Character Header -->
+    <section class="dashboard__header card card--lg">
+      <div class="character-header">
+        <div class="character-header__info">
+          <h1 class="character-header__name">Marcus Chen</h1>
+          <div class="character-header__meta">
+            <span class="badge badge--tier badge--tier-3">Tier 3</span>
+            <span>Certified Courier</span>
+            <span class="character-header__location">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              The Hollows
+            </span>
+          </div>
+        </div>
+
+        <div class="rating-display">
+          <span class="rating-display__value">127.445</span>
+          <span class="rating-display__trend rating-display__trend--up">+0.8 today</span>
+          <span class="rating-display__label">Courier Rating</span>
+        </div>
+      </div>
+
+      <!-- Resource Bars -->
+      <div class="character-header__resources">
+        <div class="progress progress--labeled progress--hp">
+          <span class="progress__label">HP</span>
+          <div class="progress__track">
+            <div class="progress__fill" style="width: 100%"></div>
+          </div>
+          <span class="progress__value">82/82</span>
+        </div>
+
+        <div class="progress progress--labeled progress--humanity">
+          <span class="progress__label">HUM</span>
+          <div class="progress__track">
+            <div class="progress__fill" style="width: 95%"></div>
+          </div>
+          <span class="progress__value">95/100</span>
+        </div>
+
+        <div class="progress progress--labeled progress--xp">
+          <span class="progress__label">XP</span>
+          <div class="progress__track">
+            <div class="progress__fill" style="width: 82%"></div>
+          </div>
+          <span class="progress__value">1,240/1,500</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Mission -->
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Active Mission</h2>
+        <span class="badge badge--warning">In Progress</span>
+      </div>
+      <div class="card__body">
+        <div class="mission-item mission-item--active">
+          <div class="mission-item__header">
+            <span class="mission-item__title">Medical Run to Hollows Clinic</span>
+          </div>
+          <div class="mission-item__meta">
+            <span>14:32 remaining</span>
+            <span>2.3 km</span>
+            <span>100% integrity</span>
+          </div>
+
+          <div class="progress progress--time progress--sm" style="margin-top: var(--space-3);">
+            <div class="progress__fill" style="width: 58%"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2); margin-top: var(--space-4);">
+          <button class="btn btn--primary">Continue Mission</button>
+          <button class="btn btn--secondary">View Route</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Available Missions -->
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Available Missions</h2>
+        <span class="badge badge--secondary">3 new</span>
+      </div>
+      <div class="card__body" style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <div class="mission-item">
+          <div class="mission-item__header">
+            <span class="mission-item__title">Package to Meridian Heights</span>
+            <span class="badge badge--sm badge--secondary">Routine</span>
+          </div>
+          <div class="mission-item__meta">
+            <span class="currency"><span class="currency__symbol">&#164;</span> <span class="currency__value">45-55</span></span>
+            <span>+0.3 rating</span>
+          </div>
+        </div>
+
+        <div class="mission-item mission-item--gray">
+          <div class="mission-item__header">
+            <span class="mission-item__title">[GRAY] Unmarked Package</span>
+            <span class="badge badge--sm badge--danger">High Risk</span>
+          </div>
+          <div class="mission-item__meta">
+            <span class="currency"><span class="currency__symbol">&#164;</span> <span class="currency__value">200</span></span>
+            <span>No rating impact</span>
+          </div>
+        </div>
+
+        <div class="mission-item">
+          <div class="mission-item__header">
+            <span class="mission-item__title">Escort: VIP Transport</span>
+            <span class="badge badge--sm badge--warning">Challenging</span>
+          </div>
+          <div class="mission-item__meta">
+            <span class="currency"><span class="currency__symbol">&#164;</span> <span class="currency__value">180</span></span>
+            <span>+0.5 rating</span>
+          </div>
+        </div>
+
+        <button class="btn btn--ghost" style="margin-top: var(--space-2);">
+          View All Missions
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Algorithm Voice -->
+    <section class="dashboard__algorithm">
+      <div class="algorithm algorithm--familiar">
+        <div class="algorithm__header">
+          <span class="algorithm__title">The Algorithm</span>
+          <span class="algorithm__timestamp">22:47</span>
+        </div>
+        <div class="algorithm__message">
+          <p>"The medical run went well. Dr. Tanaka has offered another job&mdash;less urgent, decent pay. Your rating is climbing steadily. At this pace, Tier 4 in approximately three weeks.</p>
+          <p>Rest is advisable. You've been active for six hours."</p>
+        </div>
+        <div class="algorithm__prompt">
+          <div class="algorithm__options">
+            <button class="algorithm__option">What missions are available?</button>
+            <button class="algorithm__option">Tell me about the Interstitial</button>
+            <button class="algorithm__option">How do I improve my rating faster?</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Statistics</h2>
+      </div>
+      <div class="card__body">
+        <div class="stat-list stat-list--bordered">
+          <div class="stat-row">
+            <span class="stat-row__label">Total Deliveries</span>
+            <span class="stat-row__value">247</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Perfect Deliveries</span>
+            <span class="stat-row__value">89 (36%)</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Total Distance</span>
+            <span class="stat-row__value">1,847 km</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Total Earnings</span>
+            <span class="stat-row__value stat-row__value--credits">&#164; 28,450</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-row__label">Playtime</span>
+            <span class="stat-row__value">47.3 hours</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Faction Standing -->
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Faction Standing</h2>
+      </div>
+      <div class="card__body" style="display: flex; flex-direction: column; gap: var(--space-4);">
+        <div>
+          <div class="stat-row">
+            <span class="stat-row__label" style="color: var(--faction-omni);">OmniDeliver</span>
+            <span class="stat-row__value">Neutral</span>
+          </div>
+          <div class="progress progress--faction-omni progress--sm">
+            <div class="progress__fill" style="width: 50%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="stat-row">
+            <span class="stat-row__label" style="color: var(--faction-saints);">Chrome Saints</span>
+            <span class="stat-row__value stat-row__value--success">Friendly (+12)</span>
+          </div>
+          <div class="progress progress--faction-saints progress--sm">
+            <div class="progress__fill" style="width: 72%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="stat-row">
+            <span class="stat-row__label" style="color: var(--faction-tide);">Red Tide</span>
+            <span class="stat-row__value stat-row__value--danger">Hostile (-20)</span>
+          </div>
+          <div class="progress progress--faction-tide progress--sm">
+            <div class="progress__fill" style="width: 20%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="stat-row">
+            <span class="stat-row__label" style="color: var(--faction-dragons);">Neon Dragons</span>
+            <span class="stat-row__value">Neutral</span>
+          </div>
+          <div class="progress progress--faction-dragons progress--sm">
+            <div class="progress__fill" style="width: 45%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+
+      // Update active button
+      document.querySelectorAll('.theme-switcher button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // Add click feedback to mission items
+    document.querySelectorAll('.mission-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          item.style.transform = '';
+        }, 100);
+      });
+    });
+  </script>
+</body>
+</html>

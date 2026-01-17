@@ -1,0 +1,524 @@
+/**
+ * SURGE PROTOCOL - Theme: Worn Chrome
+ * Used future aesthetic
+ *
+ * Philosophy: Everything is second-hand. Your gear is patched.
+ * Your interface is customized by previous users. Stickers,
+ * scratches, modifications. Lived-in cyberpunk.
+ */
+
+[data-theme="worn-chrome"] {
+  /* ===========================================
+     BACKGROUND COLORS
+     =========================================== */
+  --bg-primary: #181820;
+  --bg-secondary: #1f1f28;
+  --bg-tertiary: #252530;
+  --bg-elevated: #2c2c38;
+  --bg-overlay: rgba(24, 24, 32, 0.95);
+
+  /* ===========================================
+     CHROME COLORS
+     =========================================== */
+  --chrome-bright: #e8e8f0;
+  --chrome-mid: #a0a0a8;
+  --chrome-dark: #505058;
+  --chrome-rust: #8b4513;
+  --chrome-scratched: #404048;
+
+  /* ===========================================
+     TEXT COLORS
+     =========================================== */
+  --text-primary: var(--chrome-bright);
+  --text-secondary: var(--chrome-mid);
+  --text-dim: var(--chrome-dark);
+  --text-inverse: #181820;
+
+  /* ===========================================
+     STICKER COLORS (Personal touches)
+     =========================================== */
+  --sticker-red: #ff3040;
+  --sticker-yellow: #ffd000;
+  --sticker-blue: #00a0ff;
+  --sticker-green: #00ff80;
+  --sticker-pink: #ff40a0;
+  --sticker-orange: #ff8020;
+
+  /* ===========================================
+     ACCENT COLORS
+     =========================================== */
+  --accent-algorithm: #00d4ff;
+  --accent-secondary: #00a0ff;
+  --accent-tertiary: var(--chrome-mid);
+
+  --accent-warning: var(--sticker-yellow);
+  --accent-danger: var(--sticker-red);
+  --accent-success: var(--sticker-green);
+  --accent-humanity: #ff00ff;
+  --accent-credits: var(--sticker-green);
+
+  /* ===========================================
+     TIER COLORS
+     =========================================== */
+  --tier-low: var(--chrome-dark);
+  --tier-mid: var(--chrome-mid);
+  --tier-high: var(--chrome-bright);
+  --tier-apex: var(--sticker-yellow);
+
+  /* ===========================================
+     FACTION COLORS
+     =========================================== */
+  --faction-omni: var(--sticker-blue);
+  --faction-saints: var(--sticker-pink);
+  --faction-tide: var(--sticker-red);
+  --faction-dragons: var(--sticker-orange);
+
+  /* ===========================================
+     STATUS COLORS
+     =========================================== */
+  --status-healthy: var(--sticker-green);
+  --status-wounded: var(--sticker-yellow);
+  --status-critical: var(--sticker-red);
+  --status-dead: #303038;
+
+  --humanity-high: #ff00ff;
+  --humanity-mid: #cc00cc;
+  --humanity-low: #990099;
+  --humanity-critical: #660066;
+
+  /* ===========================================
+     BORDER COLORS
+     =========================================== */
+  --border-subtle: #2a2a34;
+  --border-default: #3a3a44;
+  --border-strong: #4a4a54;
+  --border-accent: var(--chrome-mid);
+
+  /* ===========================================
+     WEAR EFFECTS
+     =========================================== */
+  --scratches: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cpath d='M10 10L90 15M20 30L80 25M5 60L95 65M15 85L85 80' stroke='%23ffffff' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
+
+  --tape-texture: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+
+  /* ===========================================
+     SHADOWS (Soft, worn)
+     =========================================== */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.7);
+
+  /* ===========================================
+     GRADIENTS
+     =========================================== */
+  --gradient-page: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    var(--bg-secondary) 100%
+  );
+
+  --gradient-card: linear-gradient(
+    135deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+
+  --gradient-chrome: linear-gradient(
+    180deg,
+    var(--chrome-bright) 0%,
+    var(--chrome-mid) 100%
+  );
+
+  /* ===========================================
+     TYPOGRAPHY
+     =========================================== */
+  --font-ui: 'JetBrains Mono', 'Consolas', monospace;
+  --font-display: 'Russo One', 'Oswald', sans-serif;
+  --font-narrative: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  --font-handwritten: 'Permanent Marker', 'Comic Sans MS', cursive;
+}
+
+/* ===========================================
+   WORN CHROME: BASE STYLES
+   =========================================== */
+
+[data-theme="worn-chrome"] {
+  background: var(--bg-primary);
+  background-image: var(--scratches);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+/* ===========================================
+   STICKER COMPONENT
+   =========================================== */
+
+[data-theme="worn-chrome"] .sticker {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-handwritten);
+  font-size: var(--text-sm);
+  transform: rotate(-2deg);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+[data-theme="worn-chrome"] .sticker::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tape-texture);
+  pointer-events: none;
+}
+
+[data-theme="worn-chrome"] .sticker--red {
+  background: var(--sticker-red);
+  color: white;
+}
+
+[data-theme="worn-chrome"] .sticker--yellow {
+  background: var(--sticker-yellow);
+  color: #1a1a18;
+}
+
+[data-theme="worn-chrome"] .sticker--blue {
+  background: var(--sticker-blue);
+  color: white;
+}
+
+[data-theme="worn-chrome"] .sticker--green {
+  background: var(--sticker-green);
+  color: #1a1a18;
+}
+
+[data-theme="worn-chrome"] .sticker--pink {
+  background: var(--sticker-pink);
+  color: white;
+}
+
+/* Tilted variants */
+[data-theme="worn-chrome"] .sticker--tilt-left {
+  transform: rotate(-5deg);
+}
+
+[data-theme="worn-chrome"] .sticker--tilt-right {
+  transform: rotate(5deg);
+}
+
+/* ===========================================
+   HANDWRITTEN ANNOTATION
+   =========================================== */
+
+[data-theme="worn-chrome"] .annotation {
+  font-family: var(--font-handwritten);
+  color: var(--sticker-yellow);
+  font-size: var(--text-sm);
+  position: relative;
+}
+
+[data-theme="worn-chrome"] .annotation::before {
+  content: '← ';
+}
+
+[data-theme="worn-chrome"] .annotation--arrow-right::before {
+  content: '';
+}
+
+[data-theme="worn-chrome"] .annotation--arrow-right::after {
+  content: ' →';
+}
+
+[data-theme="worn-chrome"] .annotation--note {
+  display: inline-block;
+  background: var(--sticker-yellow);
+  color: #1a1a18;
+  padding: var(--space-1) var(--space-2);
+  transform: rotate(-1deg);
+}
+
+/* ===========================================
+   TAPE PATCH (Covering "broken" UI)
+   =========================================== */
+
+[data-theme="worn-chrome"] .tape-patch {
+  position: relative;
+  padding: var(--space-2);
+}
+
+[data-theme="worn-chrome"] .tape-patch::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  background: rgba(200, 180, 150, 0.3);
+  border: 1px solid rgba(200, 180, 150, 0.5);
+  transform: rotate(-1deg);
+  z-index: -1;
+}
+
+[data-theme="worn-chrome"] .tape-patch--vertical::before {
+  transform: rotate(0deg);
+}
+
+/* ===========================================
+   SCRATCHED PANEL
+   =========================================== */
+
+[data-theme="worn-chrome"] .panel-scratched {
+  background: var(--bg-tertiary);
+  background-image: var(--scratches);
+  border: 1px solid var(--border-default);
+  padding: var(--space-4);
+  position: relative;
+}
+
+[data-theme="worn-chrome"] .panel-scratched__header {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* Serial number (scratched/faded) */
+[data-theme="worn-chrome"] .serial-number {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--chrome-dark);
+  opacity: 0.7;
+}
+
+[data-theme="worn-chrome"] .serial-number--scratched {
+  text-decoration: line-through;
+  opacity: 0.4;
+}
+
+/* ===========================================
+   CHROME BUTTONS
+   =========================================== */
+
+[data-theme="worn-chrome"] .btn {
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated) 0%,
+    var(--bg-tertiary) 100%
+  );
+  border: 1px solid var(--chrome-dark);
+  color: var(--chrome-bright);
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: var(--text-sm);
+  position: relative;
+  transition: all var(--duration-fast);
+}
+
+[data-theme="worn-chrome"] .btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--scratches);
+  pointer-events: none;
+}
+
+[data-theme="worn-chrome"] .btn:hover {
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated) 0%,
+    var(--bg-secondary) 100%
+  );
+  border-color: var(--chrome-mid);
+}
+
+[data-theme="worn-chrome"] .btn--primary {
+  background: var(--sticker-blue);
+  border-color: var(--sticker-blue);
+  color: white;
+}
+
+[data-theme="worn-chrome"] .btn--danger {
+  background: var(--sticker-red);
+  border-color: var(--sticker-red);
+  color: white;
+}
+
+/* ===========================================
+   PROGRESS BARS (Worn)
+   =========================================== */
+
+[data-theme="worn-chrome"] .progress {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  height: var(--bar-md);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="worn-chrome"] .progress::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--scratches);
+  z-index: 2;
+  pointer-events: none;
+}
+
+[data-theme="worn-chrome"] .progress__fill {
+  height: 100%;
+  background: var(--chrome-mid);
+  transition: width var(--duration-normal);
+}
+
+[data-theme="worn-chrome"] .progress--hp .progress__fill {
+  background: var(--sticker-green);
+}
+
+[data-theme="worn-chrome"] .progress--humanity .progress__fill {
+  background: var(--accent-humanity);
+}
+
+[data-theme="worn-chrome"] .progress--xp .progress__fill {
+  background: var(--sticker-blue);
+}
+
+/* ===========================================
+   CARDS (Worn, with character)
+   =========================================== */
+
+[data-theme="worn-chrome"] .card {
+  background: var(--bg-tertiary);
+  background-image: var(--scratches);
+  border: 1px solid var(--border-default);
+  padding: var(--space-4);
+  position: relative;
+}
+
+[data-theme="worn-chrome"] .card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme="worn-chrome"] .card__title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--chrome-bright);
+}
+
+/* Card with stickers */
+[data-theme="worn-chrome"] .card--decorated {
+  padding-top: var(--space-8);
+}
+
+[data-theme="worn-chrome"] .card--decorated::before {
+  content: 'STAY CHROME';
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  background: var(--sticker-red);
+  color: white;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-handwritten);
+  font-size: var(--text-xs);
+  transform: rotate(3deg);
+}
+
+/* ===========================================
+   GRAFFITI / MARGIN NOTES
+   =========================================== */
+
+[data-theme="worn-chrome"] .graffiti {
+  font-family: var(--font-handwritten);
+  color: var(--sticker-red);
+  opacity: 0.8;
+}
+
+[data-theme="worn-chrome"] .graffiti--subtle {
+  opacity: 0.4;
+  font-size: var(--text-xs);
+}
+
+[data-theme="worn-chrome"] .margin-note {
+  position: absolute;
+  right: calc(-1 * var(--space-8));
+  font-family: var(--font-handwritten);
+  font-size: var(--text-xs);
+  color: var(--sticker-yellow);
+  transform: rotate(90deg);
+  transform-origin: left center;
+  white-space: nowrap;
+}
+
+/* ===========================================
+   CHROME BADGE
+   =========================================== */
+
+[data-theme="worn-chrome"] .chrome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: linear-gradient(
+    180deg,
+    var(--chrome-mid) 0%,
+    var(--chrome-dark) 100%
+  );
+  color: var(--bg-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-sm);
+}
+
+[data-theme="worn-chrome"] .chrome-badge--worn {
+  background: linear-gradient(
+    180deg,
+    var(--chrome-dark) 0%,
+    var(--chrome-scratched) 100%
+  );
+  color: var(--chrome-mid);
+}
+
+/* ===========================================
+   FADED ELEMENTS
+   =========================================== */
+
+[data-theme="worn-chrome"] .faded {
+  opacity: 0.5;
+}
+
+[data-theme="worn-chrome"] .faded--text {
+  color: var(--chrome-dark);
+}
+
+[data-theme="worn-chrome"] .worn-edge {
+  border-color: var(--chrome-rust);
+}
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+
+@media (max-width: 640px) {
+  [data-theme="worn-chrome"] .margin-note {
+    display: none;
+  }
+
+  [data-theme="worn-chrome"] .sticker {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+}

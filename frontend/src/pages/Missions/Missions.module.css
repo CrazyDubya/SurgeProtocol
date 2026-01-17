@@ -1,0 +1,203 @@
+/**
+ * Missions Page Styles
+ * Sidebar + Main content layout
+ */
+
+.missions {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-5);
+  min-height: calc(100vh - 120px);
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 1024px) {
+  .missions {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+  height: fit-content;
+}
+
+/* ===========================================
+   MAIN CONTENT
+   =========================================== */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ===========================================
+   DETAIL PANEL
+   =========================================== */
+
+.detailPanel {
+  padding: var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-algorithm);
+  border-radius: var(--radius-md);
+  animation: slideIn var(--duration-normal) var(--ease-out);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================================
+   MISSION GRID
+   =========================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: var(--text-4xl);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.emptyButton {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.emptyButton:hover {
+  border-color: var(--accent-algorithm);
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   NO ACTIVE MISSION
+   =========================================== */
+
+.noActiveTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.noActiveText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ===========================================
+   REFRESH BUTTON
+   =========================================== */
+
+.refreshButton {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.refreshButton:hover:not(:disabled) {
+  border-color: var(--accent-algorithm);
+  color: var(--text-primary);
+}
+
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

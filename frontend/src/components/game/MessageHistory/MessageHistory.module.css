@@ -1,0 +1,290 @@
+/**
+ * Message History Component Styles
+ */
+
+.history {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   FILTERS
+   =========================================== */
+
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  overflow-x: auto;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  white-space: nowrap;
+}
+
+.filterChip:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.filterChip.active {
+  background: var(--accent-algorithm);
+  border-color: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
+
+/* ===========================================
+   MESSAGE LIST
+   =========================================== */
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+
+.listInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ===========================================
+   MESSAGE ITEM
+   =========================================== */
+
+.item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.item:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.item.unread {
+  border-left: 3px solid var(--accent-algorithm);
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  flex-shrink: 0;
+}
+
+/* Tone colors for icons */
+.item.neutral .itemIcon { color: var(--text-secondary); }
+.item.approving .itemIcon { color: var(--accent-success); }
+.item.disappointed .itemIcon { color: var(--accent-warning); }
+.item.urgent .itemIcon { color: var(--accent-danger); }
+.item.cryptic .itemIcon { color: var(--accent-humanity, #ff00ff); }
+.item.threatening .itemIcon { color: var(--accent-danger); }
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.itemType {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.itemTime {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.itemPreview {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item.unread .itemPreview {
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   EXPANDED MESSAGE
+   =========================================== */
+
+.expanded {
+  border-color: var(--accent-algorithm);
+  background: var(--bg-tertiary);
+}
+
+.expanded .itemPreview {
+  white-space: normal;
+  overflow: visible;
+}
+
+.itemResponse {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+}
+
+.responseLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+  margin-bottom: var(--space-1);
+}
+
+.responseText {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-algorithm);
+  margin: 0;
+}
+
+/* ===========================================
+   DATE SEPARATOR
+   =========================================== */
+
+.dateSeparator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.dateLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.dateText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: var(--text-3xl);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   LOAD MORE
+   =========================================== */
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.loadMoreButton {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.loadMoreButton:hover {
+  border-color: var(--accent-algorithm);
+  color: var(--text-primary);
+}

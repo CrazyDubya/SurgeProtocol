@@ -1,0 +1,173 @@
+/**
+ * PageTransition Component Styles
+ * Smooth page entry/exit animations
+ */
+
+.transition {
+  animation: pageEnter var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scanline effect for cyberpunk feel */
+.transition::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-algorithm) 50%,
+    transparent 100%
+  );
+  animation: scanline 0.3s ease-out forwards;
+  pointer-events: none;
+  z-index: var(--z-tooltip);
+}
+
+@keyframes scanline {
+  from {
+    top: 0;
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Staggered children animation */
+.stagger > * {
+  opacity: 0;
+  animation: staggerIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+.stagger > *:nth-child(7) { animation-delay: 300ms; }
+.stagger > *:nth-child(8) { animation-delay: 350ms; }
+
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade variant */
+.fade {
+  animation: fadeIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+.fade::before {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide variant */
+.slide {
+  animation: slideIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Glitch effect for special transitions */
+.glitch {
+  animation: glitchIn 0.4s steps(10) forwards;
+}
+
+.glitch::before {
+  animation: glitchScan 0.4s steps(20) forwards;
+}
+
+@keyframes glitchIn {
+  0% {
+    opacity: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  }
+  20% {
+    clip-path: polygon(0 0, 100% 0, 100% 20%, 0 20%);
+  }
+  40% {
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+  }
+  60% {
+    opacity: 0.8;
+    clip-path: polygon(0 0, 100% 0, 100% 60%, 0 60%);
+  }
+  80% {
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 0 80%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes glitchScan {
+  0% {
+    height: 4px;
+    background: var(--accent-algorithm);
+    box-shadow:
+      0 0 10px var(--accent-algorithm),
+      0 0 20px var(--accent-algorithm);
+  }
+  100% {
+    height: 0;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .transition,
+  .stagger > *,
+  .fade,
+  .slide,
+  .glitch {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .transition::before,
+  .glitch::before {
+    display: none;
+  }
+}

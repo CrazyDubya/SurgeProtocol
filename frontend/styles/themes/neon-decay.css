@@ -1,0 +1,300 @@
+/**
+ * SURGE PROTOCOL - Theme: Neon Decay
+ * Blade Runner-inspired noir aesthetic
+ *
+ * Philosophy: Beauty in decay. Neon lights reflecting off
+ * rain-slicked streets. The city is alive with light but
+ * hollow inside.
+ */
+
+[data-theme="neon-decay"] {
+  /* ===========================================
+     BACKGROUND COLORS
+     =========================================== */
+  --bg-primary: #0a0814;         /* Deep purple-black */
+  --bg-secondary: #12101a;       /* Slightly lighter */
+  --bg-tertiary: #1a1824;        /* Card surfaces */
+  --bg-elevated: #222030;        /* Raised elements */
+  --bg-overlay: rgba(10, 8, 20, 0.9);
+
+  /* ===========================================
+     TEXT COLORS
+     =========================================== */
+  --text-primary: #e8e0f0;       /* Warm off-white */
+  --text-secondary: #9088a0;     /* Muted lavender */
+  --text-dim: #504858;           /* Very muted */
+  --text-inverse: #0a0814;       /* For light backgrounds */
+
+  /* ===========================================
+     ACCENT COLORS
+     =========================================== */
+  --accent-algorithm: #00d4ff;   /* Electric cyan - Algorithm voice */
+  --accent-secondary: #ff00ff;   /* Hot magenta - highlights */
+  --accent-tertiary: #ff6600;    /* Neon orange - warnings */
+
+  --accent-warning: #ff8800;     /* Amber warning */
+  --accent-danger: #ff0066;      /* Hot pink danger */
+  --accent-success: #33ff88;     /* Electric green success */
+  --accent-humanity: #cc66ff;    /* Purple - humanity */
+  --accent-credits: #ffd700;     /* Gold - money */
+
+  /* ===========================================
+     FACTION COLORS
+     =========================================== */
+  --faction-omni: #00d4ff;       /* OmniDeliver - corporate cyan */
+  --faction-saints: #cc66ff;     /* Chrome Saints - purple */
+  --faction-tide: #ff0044;       /* Red Tide - blood red */
+  --faction-dragons: #ff6600;    /* Neon Dragons - orange */
+
+  /* ===========================================
+     TIER COLORS
+     =========================================== */
+  --tier-low: #606068;           /* Tiers 1-3: Gray */
+  --tier-mid: #00d4ff;           /* Tiers 4-6: Cyan */
+  --tier-high: #cc66ff;          /* Tiers 7-8: Purple */
+  --tier-apex: #ffd700;          /* Tiers 9-10: Gold */
+
+  /* ===========================================
+     STATUS COLORS
+     =========================================== */
+  --status-healthy: #33ff88;
+  --status-wounded: #ffaa00;
+  --status-critical: #ff0066;
+  --status-dead: #444444;
+
+  --humanity-high: #cc66ff;      /* 100-60 */
+  --humanity-mid: #8844cc;       /* 59-40 */
+  --humanity-low: #6622aa;       /* 39-20 */
+  --humanity-critical: #440088;  /* 19-0 */
+
+  /* ===========================================
+     BORDER COLORS
+     =========================================== */
+  --border-subtle: rgba(200, 180, 220, 0.1);
+  --border-default: rgba(200, 180, 220, 0.2);
+  --border-strong: rgba(200, 180, 220, 0.4);
+  --border-accent: var(--accent-algorithm);
+
+  /* ===========================================
+     GLOW EFFECTS
+     =========================================== */
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.4),
+               0 0 40px rgba(0, 212, 255, 0.2),
+               0 0 60px rgba(0, 212, 255, 0.1);
+
+  --glow-pink: 0 0 20px rgba(255, 0, 255, 0.4),
+               0 0 40px rgba(255, 0, 255, 0.2);
+
+  --glow-orange: 0 0 20px rgba(255, 102, 0, 0.4),
+                 0 0 40px rgba(255, 102, 0, 0.2);
+
+  --glow-purple: 0 0 20px rgba(204, 102, 255, 0.4),
+                 0 0 40px rgba(204, 102, 255, 0.2);
+
+  --glow-danger: 0 0 20px rgba(255, 0, 102, 0.5),
+                 0 0 40px rgba(255, 0, 102, 0.3);
+
+  /* ===========================================
+     SHADOWS
+     =========================================== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5),
+               0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5),
+               0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.6),
+               0 8px 16px rgba(0, 0, 0, 0.4);
+
+  /* ===========================================
+     GRADIENTS
+     =========================================== */
+  --gradient-page: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    #0f0a18 50%,
+    var(--bg-primary) 100%
+  );
+
+  --gradient-card: linear-gradient(
+    135deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+
+  --gradient-accent: linear-gradient(
+    90deg,
+    var(--accent-algorithm) 0%,
+    var(--accent-secondary) 100%
+  );
+
+  --gradient-neon-border: linear-gradient(
+    90deg,
+    var(--accent-algorithm),
+    var(--accent-secondary),
+    var(--accent-tertiary),
+    var(--accent-algorithm)
+  );
+
+  /* ===========================================
+     TYPOGRAPHY
+     =========================================== */
+  --font-ui: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
+  --font-narrative: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+
+  /* ===========================================
+     SPECIAL EFFECTS
+     =========================================== */
+
+  /* Rain overlay (use as background-image) */
+  --rain-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cline x1='10' y1='0' x2='8' y2='100' stroke='%2300d4ff' stroke-width='0.5' opacity='0.1'/%3E%3Cline x1='30' y1='0' x2='28' y2='100' stroke='%2300d4ff' stroke-width='0.3' opacity='0.08'/%3E%3Cline x1='50' y1='0' x2='48' y2='100' stroke='%2300d4ff' stroke-width='0.4' opacity='0.06'/%3E%3Cline x1='70' y1='0' x2='68' y2='100' stroke='%2300d4ff' stroke-width='0.3' opacity='0.1'/%3E%3Cline x1='90' y1='0' x2='88' y2='100' stroke='%2300d4ff' stroke-width='0.5' opacity='0.07'/%3E%3C/svg%3E");
+
+  /* Scan line effect */
+  --scanlines: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+
+  /* Chromatic aberration offset */
+  --aberration-offset: 2px;
+}
+
+/* ===========================================
+   NEON DECAY: COMPONENT OVERRIDES
+   =========================================== */
+
+[data-theme="neon-decay"] {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+/* Neon border effect for cards */
+[data-theme="neon-decay"] .card {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-default);
+  position: relative;
+}
+
+[data-theme="neon-decay"] .card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: var(--gradient-neon-border);
+  background-size: 300% 100%;
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+[data-theme="neon-decay"] .card:hover::before {
+  opacity: 0.5;
+  animation: neon-shift 3s linear infinite;
+}
+
+@keyframes neon-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Glowing text for important elements */
+[data-theme="neon-decay"] .glow-text {
+  text-shadow: var(--glow-cyan);
+}
+
+[data-theme="neon-decay"] .glow-text--pink {
+  text-shadow: var(--glow-pink);
+}
+
+[data-theme="neon-decay"] .glow-text--danger {
+  text-shadow: var(--glow-danger);
+}
+
+/* Algorithm voice styling */
+[data-theme="neon-decay"] .algorithm-voice {
+  color: var(--accent-algorithm);
+  text-shadow: var(--glow-cyan);
+  font-style: italic;
+}
+
+/* Progress bars with glow */
+[data-theme="neon-decay"] .progress-bar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+[data-theme="neon-decay"] .progress-bar__fill {
+  background: var(--accent-algorithm);
+  box-shadow: var(--glow-cyan);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+[data-theme="neon-decay"] .progress-bar--humanity .progress-bar__fill {
+  background: var(--accent-humanity);
+  box-shadow: var(--glow-purple);
+}
+
+[data-theme="neon-decay"] .progress-bar--danger .progress-bar__fill {
+  background: var(--accent-danger);
+  box-shadow: var(--glow-danger);
+}
+
+/* Buttons with neon effect */
+[data-theme="neon-decay"] .btn-primary {
+  background: transparent;
+  border: 2px solid var(--accent-algorithm);
+  color: var(--accent-algorithm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+[data-theme="neon-decay"] .btn-primary:hover {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  box-shadow: var(--glow-cyan);
+}
+
+/* Rain animation overlay */
+[data-theme="neon-decay"] .rain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--rain-overlay);
+  background-size: 100px 100px;
+  opacity: 0.3;
+  animation: rain-fall 0.5s linear infinite;
+  z-index: var(--z-fixed);
+}
+
+@keyframes rain-fall {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* Holographic shimmer effect */
+[data-theme="neon-decay"] .holographic {
+  background: linear-gradient(
+    135deg,
+    var(--accent-algorithm) 0%,
+    var(--accent-secondary) 25%,
+    var(--accent-tertiary) 50%,
+    var(--accent-secondary) 75%,
+    var(--accent-algorithm) 100%
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: holographic-shift 5s ease infinite;
+}
+
+@keyframes holographic-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}

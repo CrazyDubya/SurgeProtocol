@@ -1,0 +1,284 @@
+/**
+ * Attribute Display Component Styles
+ * Character stats and attributes
+ */
+
+.attributes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   ATTRIBUTE CARD
+   =========================================== */
+
+.attribute {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast);
+}
+
+.attribute:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.attributeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.attributeName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+}
+
+.attributeValue {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.valueCurrent {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.valueMax {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.valueModifier {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  margin-left: var(--space-2);
+}
+
+.valueModifier.positive {
+  color: var(--accent-success);
+}
+
+.valueModifier.negative {
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   ATTRIBUTE BAR
+   =========================================== */
+
+.attributeBar {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.attributeFill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  border-radius: 3px;
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+/* Bar color variants */
+.attribute.buffed .attributeFill {
+  background: var(--accent-success);
+}
+
+.attribute.debuffed .attributeFill {
+  background: var(--accent-danger);
+}
+
+/* ===========================================
+   ATTRIBUTE DESCRIPTION
+   =========================================== */
+
+.attributeDesc {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ===========================================
+   GRID LAYOUT
+   =========================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   COMPACT ATTRIBUTE
+   =========================================== */
+
+.compact {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
+.compact .attributeName {
+  font-size: var(--text-xs);
+}
+
+.compact .valueCurrent {
+  font-size: var(--text-xl);
+}
+
+.compact .attributeBar {
+  flex: 1;
+  max-width: 100px;
+}
+
+/* ===========================================
+   PENTAGON RADAR (for overview)
+   =========================================== */
+
+.radar {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.radarBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.radarGrid {
+  fill: none;
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+
+.radarShape {
+  fill: rgba(0, 255, 157, 0.2);
+  stroke: var(--accent-algorithm);
+  stroke-width: 2;
+  transition: all var(--duration-normal);
+}
+
+.radarLabels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.radarLabel {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transform: translate(-50%, -50%);
+}
+
+.radarValue {
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   STAT SUMMARY ROW
+   =========================================== */
+
+.summary {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 60px;
+}
+
+.summaryLabel {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.summaryValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.summaryValue.highlight {
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   DERIVED STATS
+   =========================================== */
+
+.derived {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.derivedStat {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.derivedLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.derivedValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.derivedValue.bonus {
+  color: var(--accent-success);
+}
+
+.derivedValue.penalty {
+  color: var(--accent-danger);
+}

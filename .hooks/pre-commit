@@ -162,6 +162,37 @@ if [ -f "$ROOT_DIR/scripts/validate-schema.js" ] && command -v node &> /dev/null
     fi
 fi
 
+# 7b. Frontend validation (if frontend files are staged)
+STAGED_FRONTEND=$(git diff --cached --name-only | grep "^frontend/" || true)
+
+if [ -n "$STAGED_FRONTEND" ]; then
+    echo -e "\n${YELLOW}[CHECK]${NC} Frontend files being modified:"
+    echo "$STAGED_FRONTEND" | head -5
+    [ $(echo "$STAGED_FRONTEND" | wc -l) -gt 5 ] && echo "  ... and more"
+
+    # Run frontend validation script
+    if [ -f "$ROOT_DIR/scripts/validate-frontend.js" ] && command -v node &> /dev/null; then
+        echo -e "\n${YELLOW}[CHECK]${NC} Running frontend validation..."
+        if node "$ROOT_DIR/scripts/validate-frontend.js"; then
+            echo -e "${GREEN}[OK]${NC} Frontend validation passed"
+        else
+            echo -e "${RED}[ERROR]${NC} Frontend validation failed"
+            FAILED=1
+        fi
+    fi
+
+    # Run design token tests
+    if [ -f "$ROOT_DIR/tests/design-tokens.test.js" ] && command -v node &> /dev/null; then
+        echo -e "\n${YELLOW}[CHECK]${NC} Running design token tests..."
+        if node --test "$ROOT_DIR/tests/design-tokens.test.js" 2>&1 | grep -q "pass"; then
+            echo -e "${GREEN}[OK]${NC} Design token tests passed"
+        else
+            echo -e "${RED}[ERROR]${NC} Design token tests failed"
+            FAILED=1
+        fi
+    fi
+fi
+
 # 8. Check for schema doc files
 echo -e "\n${YELLOW}[CHECK]${NC} Checking schema documentation..."
 

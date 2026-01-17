@@ -1,0 +1,175 @@
+/**
+ * NotFound Page Styles
+ * 404 error page with cyberpunk aesthetic
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.errorCode {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 15vw, 10rem);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-danger);
+  line-height: 1;
+  position: relative;
+  animation: glitch 3s ease-in-out infinite;
+}
+
+.errorCode::before,
+.errorCode::after {
+  content: '404';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.errorCode::before {
+  color: var(--accent-algorithm);
+  animation: glitchBefore 3s ease-in-out infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+
+.errorCode::after {
+  color: var(--accent-danger);
+  animation: glitchAfter 3s ease-in-out infinite;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-2px, -2px);
+  }
+  80% {
+    transform: translate(2px, 2px);
+  }
+}
+
+@keyframes glitchBefore {
+  0%, 100% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(4px, 0);
+  }
+  50% {
+    transform: translate(-4px, 0);
+  }
+  75% {
+    transform: translate(2px, 0);
+  }
+}
+
+@keyframes glitchAfter {
+  0%, 100% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(-4px, 0);
+  }
+  50% {
+    transform: translate(4px, 0);
+  }
+  75% {
+    transform: translate(-2px, 0);
+  }
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin: var(--space-4) 0;
+}
+
+.message {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 400px;
+  margin-bottom: var(--space-6);
+  line-height: 1.6;
+}
+
+.errorDetails {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  text-align: left;
+  max-width: 400px;
+}
+
+.errorLine {
+  margin-bottom: var(--space-1);
+}
+
+.errorLine:last-child {
+  margin-bottom: 0;
+}
+
+.errorKey {
+  color: var(--accent-algorithm);
+}
+
+.errorValue {
+  color: var(--text-secondary);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: transparent;
+  border: 1px solid var(--accent-algorithm);
+  color: var(--accent-algorithm);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.button:hover {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
+
+.buttonIcon {
+  font-size: var(--text-lg);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .errorCode,
+  .errorCode::before,
+  .errorCode::after {
+    animation: none;
+  }
+}

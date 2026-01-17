@@ -1,0 +1,267 @@
+/**
+ * Response Options Component Styles
+ */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ===========================================
+   OPTION BUTTON
+   =========================================== */
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: left;
+  width: 100%;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--accent-algorithm);
+  background: var(--bg-secondary);
+}
+
+.option:active:not(:disabled) {
+  transform: translateX(4px);
+}
+
+.option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--accent-algorithm);
+  outline-offset: 2px;
+}
+
+/* ===========================================
+   OPTION CONTENT
+   =========================================== */
+
+.optionIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.option:hover .optionIndex {
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.optionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.optionText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.optionConsequence {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin: var(--space-1) 0 0 0;
+  font-style: italic;
+}
+
+/* ===========================================
+   OPTION VARIANTS
+   =========================================== */
+
+.compliant .optionIndex {
+  background: rgba(0, 255, 157, 0.1);
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.defiant .optionIndex {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.defiant:hover {
+  border-color: var(--accent-danger);
+}
+
+.defiant:hover .optionIndex {
+  background: var(--accent-danger);
+  color: var(--bg-primary);
+}
+
+.questioning .optionIndex {
+  background: rgba(255, 255, 0, 0.1);
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.questioning:hover {
+  border-color: var(--accent-warning);
+}
+
+.silent .optionText {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ===========================================
+   SELECTED STATE
+   =========================================== */
+
+.selected {
+  border-color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.1);
+}
+
+.selected .optionIndex {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
+
+/* ===========================================
+   HORIZONTAL LAYOUT
+   =========================================== */
+
+.horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.horizontal .option {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ===========================================
+   TIMER
+   =========================================== */
+
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+}
+
+.timerLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+.timerValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.timer.urgent .timerValue {
+  color: var(--accent-danger);
+  animation: timerPulse 1s infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.timerBar {
+  height: 3px;
+  background: var(--bg-secondary);
+  border-radius: 2px;
+  margin-top: var(--space-2);
+  overflow: hidden;
+}
+
+.timerFill {
+  height: 100%;
+  background: var(--accent-algorithm);
+  transition: width 1s linear;
+}
+
+.timer.urgent .timerFill {
+  background: var(--accent-danger);
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ===========================================
+   KEYBOARD HINTS
+   =========================================== */
+
+.keyboardHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+}
+
+.keyHint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.keyHint kbd {
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}

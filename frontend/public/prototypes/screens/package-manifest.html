@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="brutalist-cargo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Package Manifest - SURGE PROTOCOL</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&family=Oswald:wght@400;700&family=Roboto+Condensed:wght@400;700&family=Stardos+Stencil:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../styles/tokens/base.css">
+  <link rel="stylesheet" href="../styles/themes/neon-decay.css">
+  <link rel="stylesheet" href="../styles/themes/terminal-noir.css">
+  <link rel="stylesheet" href="../styles/themes/algorithm-vision.css">
+  <link rel="stylesheet" href="../styles/themes/brutalist-cargo.css">
+  <link rel="stylesheet" href="../styles/themes/worn-chrome.css">
+  <link rel="stylesheet" href="../styles/components/card.css">
+  <link rel="stylesheet" href="../styles/components/button.css">
+  <link rel="stylesheet" href="../styles/components/progress.css">
+  <link rel="stylesheet" href="../styles/components/badge.css">
+
+  <style>
+    /* Package Manifest Page Layout */
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      margin: 0;
+      padding: var(--space-4);
+    }
+
+    .page-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header with caution stripe */
+    .page-header {
+      background: var(--stripe-caution);
+      padding: var(--space-1);
+      margin-bottom: var(--space-4);
+    }
+
+    .page-header__inner {
+      background: var(--bg-secondary);
+      padding: var(--space-4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-header__title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+    }
+
+    .page-header__id {
+      font-family: var(--font-ui);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    /* Shipping Label */
+    .label-container {
+      background: #f8f8f0;
+      color: #1a1a18;
+      padding: var(--space-6);
+      border: 3px solid #1a1a18;
+      margin-bottom: var(--space-4);
+      position: relative;
+    }
+
+    .label-container::before {
+      content: '▲ FRAGILE ▲';
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-4);
+      background: #d40000;
+      color: white;
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-stencil);
+      font-size: var(--text-sm);
+      transform: rotate(5deg);
+      font-weight: bold;
+    }
+
+    .label-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 2px solid #1a1a18;
+    }
+
+    .label-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+    }
+
+    .label-barcode {
+      font-family: 'Libre Barcode 39', monospace;
+      font-size: 48px;
+      line-height: 1;
+    }
+
+    .label-barcode-fallback {
+      font-family: monospace;
+      font-size: var(--text-xs);
+      background: linear-gradient(90deg,
+        #000 2px, transparent 2px, transparent 4px,
+        #000 4px, transparent 6px, transparent 8px
+      );
+      background-size: 8px 100%;
+      height: 40px;
+      width: 150px;
+      position: relative;
+    }
+
+    .label-barcode-fallback::after {
+      content: 'PKT-8472937C';
+      position: absolute;
+      bottom: -16px;
+      left: 0;
+      font-size: var(--text-xs);
+    }
+
+    .label-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+
+    .label-field {
+      margin-bottom: var(--space-3);
+    }
+
+    .label-field__label {
+      font-family: var(--font-label);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: #606060;
+      margin-bottom: var(--space-1);
+    }
+
+    .label-field__value {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      text-transform: uppercase;
+    }
+
+    .label-warnings {
+      margin-top: var(--space-4);
+      padding-top: var(--space-3);
+      border-top: 2px dashed #1a1a18;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .label-warning {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: #d40000;
+    }
+
+    .label-warning::before {
+      content: '⚠';
+    }
+
+    /* Status Panel */
+    .status-panel {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-strong);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+
+    .status-title {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-label);
+      text-transform: uppercase;
+      font-size: var(--text-sm);
+      font-weight: bold;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .status-badge--active {
+      background: var(--industrial-green);
+      color: white;
+    }
+
+    .status-badge--warning {
+      background: var(--industrial-yellow);
+      color: #1a1a18;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px dashed var(--border-default);
+    }
+
+    .status-row:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      font-family: var(--font-label);
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .status-value {
+      font-weight: bold;
+    }
+
+    .status-value--countdown {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      color: var(--industrial-yellow);
+    }
+
+    /* Progress indicators */
+    .cargo-progress {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-strong);
+      height: 24px;
+      position: relative;
+      margin: var(--space-3) 0;
+    }
+
+    .cargo-progress__fill {
+      height: 100%;
+      background: var(--industrial-green);
+      position: relative;
+    }
+
+    .cargo-progress__fill--warning {
+      background: var(--industrial-yellow);
+    }
+
+    .cargo-progress__fill--danger {
+      background: var(--industrial-red);
+    }
+
+    .cargo-progress__label {
+      position: absolute;
+      right: var(--space-2);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: var(--text-sm);
+      font-weight: bold;
+      color: var(--text-primary);
+    }
+
+    /* Route display */
+    .route-display {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-strong);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+
+    .route-title {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .route-steps {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .route-step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--border-default);
+    }
+
+    .route-step--complete {
+      border-left-color: var(--industrial-green);
+      opacity: 0.7;
+    }
+
+    .route-step--current {
+      border-left-color: var(--industrial-yellow);
+      background: var(--bg-elevated);
+    }
+
+    .route-step--pending {
+      opacity: 0.5;
+    }
+
+    .route-step__icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid currentColor;
+      font-size: var(--text-lg);
+    }
+
+    .route-step--complete .route-step__icon {
+      background: var(--industrial-green);
+      border-color: var(--industrial-green);
+      color: white;
+    }
+
+    .route-step--current .route-step__icon {
+      border-color: var(--industrial-yellow);
+      color: var(--industrial-yellow);
+    }
+
+    .route-step__info {
+      flex: 1;
+    }
+
+    .route-step__name {
+      font-weight: bold;
+    }
+
+    .route-step__detail {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .route-step__time {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+    }
+
+    /* Action buttons */
+    .actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .btn-industrial {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      font-weight: bold;
+      border: 2px solid var(--border-strong);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: var(--space-4) var(--space-6);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+
+    .btn-industrial:hover {
+      background: var(--bg-elevated);
+      border-color: var(--industrial-yellow);
+    }
+
+    .btn-industrial--primary {
+      background: var(--industrial-blue);
+      border-color: var(--industrial-blue);
+      color: white;
+    }
+
+    .btn-industrial--primary:hover {
+      background: #0055aa;
+    }
+
+    .btn-industrial--danger {
+      background: transparent;
+      border-color: var(--industrial-red);
+      color: var(--industrial-red);
+    }
+
+    .btn-industrial--danger:hover {
+      background: var(--industrial-red);
+      color: white;
+    }
+
+    /* Theme switcher */
+    .theme-switcher {
+      position: fixed;
+      bottom: var(--space-4);
+      right: var(--space-4);
+      z-index: var(--z-fixed);
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-2);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+    }
+
+    .theme-switcher button {
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+
+    .theme-switcher button:hover {
+      color: var(--accent-algorithm);
+    }
+
+    .theme-switcher button.active {
+      background: var(--accent-secondary);
+      color: var(--bg-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .label-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header__inner {
+        flex-direction: column;
+        gap: var(--space-2);
+        text-align: center;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn-industrial {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Switcher -->
+  <div class="theme-switcher">
+    <button onclick="setTheme('neon-decay')">Neon</button>
+    <button onclick="setTheme('terminal-noir')">Terminal</button>
+    <button onclick="setTheme('algorithm-vision')">Algorithm</button>
+    <button class="active" onclick="setTheme('brutalist-cargo')">Cargo</button>
+    <button onclick="setTheme('worn-chrome')">Chrome</button>
+  </div>
+
+  <div class="page-container">
+
+    <!-- Page Header with Caution Stripe -->
+    <header class="page-header">
+      <div class="page-header__inner">
+        <div>
+          <h1 class="page-header__title">Active Delivery Manifest</h1>
+          <span class="page-header__id">Session ID: SES-2087-03-15-2247</span>
+        </div>
+        <span class="status-badge status-badge--active">● In Transit</span>
+      </div>
+    </header>
+
+    <!-- Shipping Label -->
+    <div class="label-container">
+      <div class="label-header">
+        <div>
+          <div class="label-logo">OmniDeliver</div>
+          <div style="font-size: var(--text-xs); color: #606060;">GLOBAL LOGISTICS NETWORK</div>
+        </div>
+        <div class="label-barcode-fallback"></div>
+      </div>
+
+      <div class="label-grid">
+        <div>
+          <div class="label-field">
+            <div class="label-field__label">Sender</div>
+            <div class="label-field__value">MedCorp Central Pharmacy</div>
+          </div>
+          <div class="label-field">
+            <div class="label-field__label">Origin</div>
+            <div class="label-field__value">Sector 12-A, Industrial Zone</div>
+          </div>
+        </div>
+        <div>
+          <div class="label-field">
+            <div class="label-field__label">Recipient</div>
+            <div class="label-field__value">Hollows Free Clinic</div>
+          </div>
+          <div class="label-field">
+            <div class="label-field__label">Destination</div>
+            <div class="label-field__value">The Hollows, Block 7</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="label-grid">
+        <div class="label-field">
+          <div class="label-field__label">Package Type</div>
+          <div class="label-field__value">Medical Supply</div>
+        </div>
+        <div class="label-field">
+          <div class="label-field__label">Weight</div>
+          <div class="label-field__value">1.2 KG</div>
+        </div>
+      </div>
+
+      <div class="label-warnings">
+        <div class="label-warning">Temperature Sensitive: Maintain 2-8°C</div>
+        <div class="label-warning">Do Not Drop</div>
+        <div class="label-warning">Handle With Care</div>
+      </div>
+    </div>
+
+    <!-- Status Panel -->
+    <div class="status-panel">
+      <div class="status-header">
+        <span class="status-title">Delivery Status</span>
+        <span class="status-badge status-badge--warning">● Time Critical</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Time Remaining</span>
+        <span class="status-value status-value--countdown">00:14:32</span>
+      </div>
+
+      <div style="margin: var(--space-3) 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-1);">
+          <span class="status-label">Route Progress</span>
+          <span>68%</span>
+        </div>
+        <div class="cargo-progress">
+          <div class="cargo-progress__fill" style="width: 68%;"></div>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Cargo Integrity</span>
+        <span class="status-value" style="color: var(--industrial-green);">100%</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Temperature</span>
+        <span class="status-value">4.2°C ✓</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Expected Payment</span>
+        <span class="status-value" style="color: var(--industrial-green);">¤ 85 + Bonus</span>
+      </div>
+    </div>
+
+    <!-- Route Display -->
+    <div class="route-display">
+      <div class="route-header">
+        <span class="route-title">Route Waypoints</span>
+        <span style="color: var(--text-secondary); font-size: var(--text-sm);">3.2 km remaining</span>
+      </div>
+
+      <div class="route-steps">
+        <div class="route-step route-step--complete">
+          <div class="route-step__icon">✓</div>
+          <div class="route-step__info">
+            <div class="route-step__name">MedCorp Central Pharmacy</div>
+            <div class="route-step__detail">Package collected, verified</div>
+          </div>
+          <div class="route-step__time">22:33</div>
+        </div>
+
+        <div class="route-step route-step--complete">
+          <div class="route-step__icon">✓</div>
+          <div class="route-step__info">
+            <div class="route-step__name">Sector 7 Checkpoint</div>
+            <div class="route-step__detail">Security scan passed</div>
+          </div>
+          <div class="route-step__time">22:41</div>
+        </div>
+
+        <div class="route-step route-step--current">
+          <div class="route-step__icon">→</div>
+          <div class="route-step__info">
+            <div class="route-step__name">The Hollows - Entry Point</div>
+            <div class="route-step__detail">Navigate through market district</div>
+          </div>
+          <div class="route-step__time">~3 min</div>
+        </div>
+
+        <div class="route-step route-step--pending">
+          <div class="route-step__icon">○</div>
+          <div class="route-step__info">
+            <div class="route-step__name">Hollows Free Clinic</div>
+            <div class="route-step__detail">Final destination</div>
+          </div>
+          <div class="route-step__time">~8 min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-industrial btn-industrial--primary">
+        View Full Route Map
+      </button>
+      <button class="btn-industrial">
+        Report Issue
+      </button>
+      <button class="btn-industrial btn-industrial--danger">
+        Abandon Delivery (Penalty: -15 Rating)
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+
+      // Update active button
+      document.querySelectorAll('.theme-switcher button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // Countdown timer
+    let timeLeft = 14 * 60 + 32;
+    setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.querySelector('.status-value--countdown').textContent =
+          `00:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

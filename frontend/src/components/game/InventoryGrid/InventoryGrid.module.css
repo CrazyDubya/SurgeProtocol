@@ -1,0 +1,358 @@
+/**
+ * Inventory Grid Component Styles
+ */
+
+.inventory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.capacity {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.capacityValue {
+  color: var(--accent-algorithm);
+}
+
+.capacity.warning .capacityValue {
+  color: var(--accent-warning);
+}
+
+.capacity.full .capacityValue {
+  color: var(--accent-danger);
+}
+
+/* ===========================================
+   FILTERS
+   =========================================== */
+
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  white-space: nowrap;
+}
+
+.filterChip:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.filterChip.active {
+  background: var(--accent-algorithm);
+  border-color: var(--accent-algorithm);
+  color: var(--bg-primary);
+}
+
+.filterCount {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* ===========================================
+   GRID
+   =========================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-2);
+}
+
+.gridLarge {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+/* ===========================================
+   ITEM SLOT
+   =========================================== */
+
+.item {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.item:hover {
+  border-color: var(--accent-algorithm);
+  transform: translateY(-2px);
+}
+
+.item.selected {
+  border-color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+}
+
+.item.equipped {
+  border-color: var(--accent-success);
+}
+
+.item.equipped::after {
+  content: '◈';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: var(--accent-success);
+}
+
+/* ===========================================
+   ITEM CONTENT
+   =========================================== */
+
+.itemIcon {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-1);
+}
+
+/* Item type colors */
+.item-weapon .itemIcon { color: var(--accent-danger); }
+.item-armor .itemIcon { color: var(--accent-corp, #3b82f6); }
+.item-consumable .itemIcon { color: var(--accent-success); }
+.item-medical .itemIcon { color: #ff6b6b; }
+.item-chemical .itemIcon { color: var(--accent-warning); }
+.item-tech .itemIcon { color: var(--accent-algorithm); }
+.item-data .itemIcon { color: var(--accent-humanity, #ff00ff); }
+.item-key .itemIcon { color: var(--accent-xp, #ffd700); }
+.item-misc .itemIcon { color: var(--text-secondary); }
+
+.itemName {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.itemQuantity {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  padding: 0 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-primary);
+}
+
+.itemCondition {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--bg-tertiary);
+}
+
+.itemConditionFill {
+  height: 100%;
+  transition: width var(--duration-fast);
+}
+
+.itemCondition.good .itemConditionFill {
+  background: var(--accent-success);
+}
+
+.itemCondition.worn .itemConditionFill {
+  background: var(--accent-warning);
+}
+
+.itemCondition.damaged .itemConditionFill {
+  background: var(--accent-danger);
+}
+
+/* ===========================================
+   LIST VIEW
+   =========================================== */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.listItem:hover {
+  border-color: var(--accent-algorithm);
+}
+
+.listItem.selected {
+  border-color: var(--accent-algorithm);
+  background: rgba(0, 255, 157, 0.1);
+}
+
+.listItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xl);
+}
+
+.listItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.listItemName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.listItemType {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.listItemMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.listItemValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+.listItemWeight {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   EMPTY STATE
+   =========================================== */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: var(--text-3xl);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   VIEW TOGGLE
+   =========================================== */
+
+.viewToggle {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.viewButton {
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.viewButton:hover {
+  color: var(--text-primary);
+}
+
+.viewButton.active {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+}

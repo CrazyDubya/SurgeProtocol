@@ -1,0 +1,263 @@
+/**
+ * SURGE PROTOCOL - Badge & Tag Components
+ *
+ * Small labels for status, tier, faction, and categorization.
+ *
+ * Usage:
+ *   <span class="badge">CERTIFIED</span>
+ *   <span class="badge badge--tier">T3</span>
+ *   <span class="tag">Medical</span>
+ */
+
+/* ===========================================
+   BASE BADGE
+   =========================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+}
+
+/* ===========================================
+   BADGE COLOR VARIANTS
+   =========================================== */
+
+.badge--secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.badge--success {
+  background: var(--accent-success);
+}
+
+.badge--warning {
+  background: var(--accent-warning);
+}
+
+.badge--danger {
+  background: var(--accent-danger);
+}
+
+.badge--humanity {
+  background: var(--accent-humanity);
+}
+
+.badge--credits {
+  background: var(--accent-credits);
+  color: var(--bg-primary);
+}
+
+/* Outlined variants */
+.badge--outline {
+  background: transparent;
+  border: 1px solid var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.badge--outline.badge--danger {
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.badge--outline.badge--warning {
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.badge--outline.badge--success {
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+/* ===========================================
+   TIER BADGE
+   =========================================== */
+
+.badge--tier {
+  min-width: 2.5em;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+}
+
+.badge--tier-1,
+.badge--tier-2,
+.badge--tier-3 {
+  background: var(--tier-low);
+  color: var(--text-primary);
+}
+
+.badge--tier-4,
+.badge--tier-5,
+.badge--tier-6 {
+  background: var(--tier-mid);
+  color: var(--bg-primary);
+}
+
+.badge--tier-7,
+.badge--tier-8 {
+  background: var(--tier-high);
+  color: var(--bg-primary);
+}
+
+.badge--tier-9,
+.badge--tier-10 {
+  background: var(--tier-apex);
+  color: var(--bg-primary);
+}
+
+/* ===========================================
+   FACTION BADGE
+   =========================================== */
+
+.badge--faction-omni {
+  background: var(--faction-omni);
+  color: var(--bg-primary);
+}
+
+.badge--faction-saints {
+  background: var(--faction-saints);
+  color: var(--bg-primary);
+}
+
+.badge--faction-tide {
+  background: var(--faction-tide);
+  color: var(--text-primary);
+}
+
+.badge--faction-dragons {
+  background: var(--faction-dragons);
+  color: var(--bg-primary);
+}
+
+/* ===========================================
+   STATUS BADGE
+   =========================================== */
+
+.badge--status {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.badge--status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+.badge--online {
+  background: rgba(51, 255, 136, 0.2);
+  color: var(--accent-success);
+}
+
+.badge--offline {
+  background: var(--bg-tertiary);
+  color: var(--text-dim);
+}
+
+.badge--busy {
+  background: rgba(255, 136, 0, 0.2);
+  color: var(--accent-warning);
+}
+
+/* ===========================================
+   SIZE VARIANTS
+   =========================================== */
+
+.badge--sm {
+  padding: 2px var(--space-1);
+  font-size: 10px;
+}
+
+.badge--lg {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* ===========================================
+   TAG (Softer, pill-shaped variant)
+   =========================================== */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+.tag--clickable {
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tag--clickable:hover {
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.tag--selected {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  border-color: var(--accent-algorithm);
+}
+
+/* Tag with close button */
+.tag--removable {
+  padding-right: var(--space-1);
+}
+
+.tag__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+}
+
+.tag__remove:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===========================================
+   BADGE GROUP
+   =========================================== */
+
+.badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

@@ -1,0 +1,385 @@
+/**
+ * Algorithm Terminal Component Styles
+ * Full-screen terminal interface for The Algorithm
+ */
+
+.terminal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border: 1px solid var(--accent-algorithm);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+/* CRT scanline effect */
+.terminal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Glow effect */
+.terminal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: inset 0 0 60px rgba(0, 255, 157, 0.05);
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--accent-algorithm);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-algorithm);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--accent-algorithm); }
+  50% { opacity: 0.5; box-shadow: 0 0 4px var(--accent-algorithm); }
+}
+
+.statusText {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-algorithm);
+}
+
+.headerTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.connectionInfo {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   MESSAGE AREA
+   =========================================== */
+
+.messageArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  overflow-y: auto;
+  position: relative;
+}
+
+.messageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   MESSAGE BLOCK
+   =========================================== */
+
+.message {
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.message::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-algorithm);
+  opacity: 0.5;
+}
+
+.messageHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.messageIcon {
+  font-size: var(--text-base);
+  color: var(--accent-algorithm);
+}
+
+.messageLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-algorithm);
+}
+
+.messageTimestamp {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.messageText {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Typing cursor */
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.2em;
+  background: var(--accent-algorithm);
+  margin-left: 2px;
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ===========================================
+   TONE VARIANTS
+   =========================================== */
+
+.neutral::before { background: var(--text-secondary); }
+.neutral .messageIcon { color: var(--text-secondary); }
+.neutral .messageLabel { color: var(--text-secondary); }
+
+.approving::before { background: var(--accent-success); }
+.approving .messageIcon { color: var(--accent-success); }
+.approving .messageLabel { color: var(--accent-success); }
+.approving .messageText { color: var(--accent-success); }
+
+.disappointed::before { background: var(--accent-warning); }
+.disappointed .messageIcon { color: var(--accent-warning); }
+.disappointed .messageLabel { color: var(--accent-warning); }
+
+.urgent::before { background: var(--accent-danger); animation: urgentPulse 1s infinite; }
+.urgent .messageIcon { color: var(--accent-danger); }
+.urgent .messageLabel { color: var(--accent-danger); }
+.urgent .messageText { color: var(--accent-danger); }
+
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.cryptic::before { background: var(--accent-humanity, #ff00ff); }
+.cryptic .messageIcon { color: var(--accent-humanity, #ff00ff); }
+.cryptic .messageLabel { color: var(--accent-humanity, #ff00ff); }
+.cryptic .messageText {
+  color: var(--accent-humanity, #ff00ff);
+  font-style: italic;
+}
+
+.threatening::before {
+  background: var(--accent-danger);
+  animation: threatPulse 0.5s infinite;
+}
+.threatening .messageText {
+  color: var(--accent-danger);
+  text-shadow: 0 0 10px var(--accent-danger);
+}
+
+@keyframes threatPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ===========================================
+   INPUT AREA
+   =========================================== */
+
+.inputArea {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+}
+
+.inputPrompt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.promptSymbol {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--accent-algorithm);
+}
+
+.promptText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ===========================================
+   PROCESSING STATE
+   =========================================== */
+
+.processing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.processingIcon {
+  font-size: var(--text-lg);
+  color: var(--accent-algorithm);
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.processingText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.processingDots {
+  display: inline-block;
+}
+
+.processingDots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+
+/* ===========================================
+   GLITCH EFFECT (for special moments)
+   =========================================== */
+
+.glitch {
+  animation: glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-default);
+}
+
+.footerLeft {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footerStat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.footerStatValue {
+  color: var(--accent-algorithm);
+}

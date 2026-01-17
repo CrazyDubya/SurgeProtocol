@@ -1,0 +1,351 @@
+/**
+ * Badge Component Styles
+ * Status indicators, tags, and labels
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-ui);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ===========================================
+   SIZE VARIANTS
+   =========================================== */
+
+.xs {
+  padding: 0 var(--space-1);
+  font-size: 9px;
+  line-height: 14px;
+}
+
+.sm {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.md {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+}
+
+.lg {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+}
+
+/* ===========================================
+   COLOR VARIANTS
+   =========================================== */
+
+.default {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.primary {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-algorithm);
+}
+
+.secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.success {
+  background: var(--accent-success);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-success);
+}
+
+.warning {
+  background: var(--accent-warning);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-warning);
+}
+
+.danger {
+  background: var(--accent-danger);
+  color: white;
+  border: 1px solid var(--accent-danger);
+}
+
+.info {
+  background: var(--accent-time, #00ffff);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-time, #00ffff);
+}
+
+/* Game-specific variants */
+.algorithm {
+  background: var(--accent-algorithm);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-algorithm);
+}
+
+.humanity {
+  background: var(--accent-humanity, #ff00ff);
+  color: white;
+  border: 1px solid var(--accent-humanity, #ff00ff);
+}
+
+.corp {
+  background: var(--accent-corp, #3b82f6);
+  color: white;
+  border: 1px solid var(--accent-corp, #3b82f6);
+}
+
+.street {
+  background: var(--accent-street, #f59e0b);
+  color: var(--bg-primary);
+  border: 1px solid var(--accent-street, #f59e0b);
+}
+
+/* ===========================================
+   OUTLINE VARIANT
+   =========================================== */
+
+.outline {
+  background: transparent;
+}
+
+.outline.default {
+  color: var(--text-secondary);
+}
+
+.outline.primary {
+  color: var(--accent-algorithm);
+}
+
+.outline.success {
+  color: var(--accent-success);
+}
+
+.outline.warning {
+  color: var(--accent-warning);
+}
+
+.outline.danger {
+  color: var(--accent-danger);
+}
+
+.outline.info {
+  color: var(--accent-time, #00ffff);
+}
+
+.outline.algorithm {
+  color: var(--accent-algorithm);
+}
+
+.outline.humanity {
+  color: var(--accent-humanity, #ff00ff);
+}
+
+.outline.corp {
+  color: var(--accent-corp, #3b82f6);
+}
+
+.outline.street {
+  color: var(--accent-street, #f59e0b);
+}
+
+/* ===========================================
+   MODIFIERS
+   =========================================== */
+
+.pill {
+  border-radius: 9999px;
+}
+
+/* ===========================================
+   GLOW EFFECT
+   =========================================== */
+
+.glow {
+  box-shadow: 0 0 8px currentColor;
+}
+
+.glow.primary,
+.glow.algorithm {
+  box-shadow: 0 0 8px var(--accent-algorithm);
+}
+
+.glow.success {
+  box-shadow: 0 0 8px var(--accent-success);
+}
+
+.glow.warning {
+  box-shadow: 0 0 8px var(--accent-warning);
+}
+
+.glow.danger {
+  box-shadow: 0 0 8px var(--accent-danger);
+}
+
+.glow.humanity {
+  box-shadow: 0 0 8px var(--accent-humanity, #ff00ff);
+}
+
+/* ===========================================
+   PULSE ANIMATION
+   =========================================== */
+
+.pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ===========================================
+   ICON & REMOVE BUTTON
+   =========================================== */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1em;
+}
+
+.text {
+  display: inline-block;
+}
+
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--space-1);
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 1.2em;
+  line-height: 1;
+  transition: opacity var(--duration-fast);
+}
+
+.remove:hover {
+  opacity: 1;
+}
+
+/* ===========================================
+   BADGE GROUP
+   =========================================== */
+
+.group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ===========================================
+   STATUS DOT
+   =========================================== */
+
+.statusDot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusDot::before {
+  content: '';
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-sm::before {
+  width: 6px;
+  height: 6px;
+}
+
+.dot-md::before {
+  width: 8px;
+  height: 8px;
+}
+
+.dot-lg::before {
+  width: 12px;
+  height: 12px;
+}
+
+/* Status dot colors */
+.dot-online::before,
+.dot-success::before {
+  background: var(--accent-success);
+}
+
+.dot-offline::before {
+  background: var(--text-dim);
+}
+
+.dot-busy::before,
+.dot-danger::before {
+  background: var(--accent-danger);
+}
+
+.dot-away::before,
+.dot-warning::before {
+  background: var(--accent-warning);
+}
+
+/* Status dot pulse */
+.statusDot.pulse::before {
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 4px currentColor;
+    opacity: 0.5;
+  }
+}
+
+.dot-online.pulse::before {
+  animation: dotPulseGreen 2s ease-in-out infinite;
+}
+
+@keyframes dotPulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-success);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.3);
+  }
+}
+
+.statusLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}

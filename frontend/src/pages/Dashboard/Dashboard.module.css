@@ -1,0 +1,227 @@
+/**
+ * Dashboard Page Styles
+ * 3-column layout: Character | Missions | Algorithm
+ */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 320px 1fr 340px;
+  gap: var(--space-5);
+  min-height: calc(100vh - 120px);
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 1200px) {
+  .dashboard {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rightColumn {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .rightColumn {
+    grid-column: span 1;
+  }
+}
+
+/* ===========================================
+   COLUMNS
+   =========================================== */
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.centerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   SECTIONS
+   =========================================== */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===========================================
+   MISSION LIST
+   =========================================== */
+
+.missionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   ACTIVITY FEED
+   =========================================== */
+
+.activityTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.activityIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.activityText {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.activityTime {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* Activity variants */
+.activity-success .activityIcon {
+  color: var(--accent-success);
+}
+
+.activity-highlight .activityIcon {
+  color: var(--accent-xp, var(--accent-warning));
+}
+
+.activity-algorithm .activityIcon {
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   STATS LIST
+   =========================================== */
+
+.statsList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.statLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-warning .statValue {
+  color: var(--accent-warning);
+}
+
+.stat-danger .statValue {
+  color: var(--accent-error);
+}
+
+/* ===========================================
+   VIEW ALL BUTTON
+   =========================================== */
+
+.viewAllButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewAllButton:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   NO MISSION STATE
+   =========================================== */
+
+.noMission {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  text-align: center;
+  margin: 0;
+}

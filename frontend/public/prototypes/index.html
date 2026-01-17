@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="neon-decay">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SURGE PROTOCOL - Static Prototypes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/tokens/base.css">
+  <link rel="stylesheet" href="styles/themes/neon-decay.css">
+  <link rel="stylesheet" href="styles/themes/terminal-noir.css">
+  <link rel="stylesheet" href="styles/themes/algorithm-vision.css">
+  <link rel="stylesheet" href="styles/themes/brutalist-cargo.css">
+  <link rel="stylesheet" href="styles/themes/worn-chrome.css">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: var(--space-6);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest);
+      color: var(--accent-algorithm);
+      margin-bottom: var(--space-2);
+    }
+    .subtitle { color: var(--text-secondary); margin-bottom: var(--space-8); }
+    .section { margin-bottom: var(--space-8); }
+    .section-title {
+      font-size: var(--text-lg);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-3);
+    }
+    a {
+      display: block;
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    a:hover {
+      border-color: var(--accent-algorithm);
+      background: var(--bg-tertiary);
+    }
+    .theme-btn {
+      display: inline-block;
+      padding: var(--space-2) var(--space-3);
+      margin-right: var(--space-2);
+      margin-bottom: var(--space-2);
+      cursor: pointer;
+    }
+    .theme-btn.active { background: var(--accent-algorithm); color: var(--bg-primary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Static Prototypes</h1>
+    <p class="subtitle">Week 2 HTML/CSS prototypes (preserved for reference)</p>
+
+    <div class="section">
+      <div class="section-title">Theme</div>
+      <div>
+        <button class="theme-btn active" onclick="setTheme('neon-decay')">Neon Decay</button>
+        <button class="theme-btn" onclick="setTheme('terminal-noir')">Terminal Noir</button>
+        <button class="theme-btn" onclick="setTheme('algorithm-vision')">Algorithm Vision</button>
+        <button class="theme-btn" onclick="setTheme('brutalist-cargo')">Brutalist Cargo</button>
+        <button class="theme-btn" onclick="setTheme('worn-chrome')">Worn Chrome</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Screen Prototypes</div>
+      <div class="grid">
+        <a href="screens/dashboard.html">Dashboard</a>
+        <a href="screens/missions.html">Mission Board</a>
+        <a href="screens/character-detail.html">Character Detail</a>
+        <a href="screens/inventory.html">Inventory</a>
+        <a href="screens/package-manifest.html">Package Manifest</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <p style="color: var(--text-dim); font-size: var(--text-sm);">
+        These are static HTML prototypes from Week 2.<br>
+        The live app is at <a href="/" style="display:inline;">the root</a>.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>
