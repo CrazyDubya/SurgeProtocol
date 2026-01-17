@@ -2237,3 +2237,601 @@ describe('Combat System Day 3 - Combat Instance Management', () => {
     });
   });
 });
+
+// =============================================================================
+// DAY 4: COMBAT ACTIONS & TURN MANAGEMENT TESTS
+// =============================================================================
+
+describe('Combat System Day 4 - Actions & Turn Management', () => {
+  let env: MockEnv;
+
+  beforeEach(async () => {
+    env = createMockEnv();
+
+    // Seed characters
+    env.DB._seed('characters', [
+      {
+        id: 'char-player-1',
+        user_id: 'user-1',
+        name: 'Test Runner',
+        handle: 'testrunner',
+        level: 5,
+        current_hp: 100,
+        max_hp: 100,
+      },
+    ]);
+
+    // Seed combat action definitions
+    env.DB._seed('combat_action_definitions', [
+      {
+        id: 'action-pistol-shot',
+        code: 'PISTOL_SHOT',
+        name: 'Pistol Shot',
+        description: 'Fire a pistol at a target',
+        action_type: 'ATTACK',
+        action_cost: 1,
+        is_free_action: 0,
+        is_reaction: 0,
+        target_type: 'SINGLE_ENEMY',
+        range_min_m: 1,
+        range_max_m: 25,
+        damage_formula: '2d6+2',
+        damage_type: 'BALLISTIC',
+        accuracy_modifier: 0,
+        critical_chance_modifier: 0,
+        critical_damage_modifier: 1.5,
+        status_effects: null,
+      },
+      {
+        id: 'action-defend',
+        code: 'DEFEND',
+        name: 'Defend',
+        description: 'Take a defensive stance',
+        action_type: 'DEFEND',
+        action_cost: 1,
+        is_free_action: 0,
+        is_reaction: 0,
+        target_type: 'SELF',
+        range_min_m: 0,
+        range_max_m: 0,
+        damage_formula: null,
+        damage_type: null,
+        accuracy_modifier: 0,
+        critical_chance_modifier: 0,
+        critical_damage_modifier: 0,
+        status_effects: null,
+      },
+      {
+        id: 'action-move',
+        code: 'MOVE',
+        name: 'Move',
+        description: 'Move to a new position',
+        action_type: 'MOVE',
+        action_cost: 1,
+        is_free_action: 0,
+        is_reaction: 0,
+        target_type: 'POSITION',
+        range_min_m: 0,
+        range_max_m: 10,
+        damage_formula: null,
+        damage_type: null,
+        accuracy_modifier: 0,
+        critical_chance_modifier: 0,
+        critical_damage_modifier: 0,
+        status_effects: null,
+      },
+      {
+        id: 'action-reload',
+        code: 'RELOAD',
+        name: 'Reload',
+        description: 'Reload your weapon',
+        action_type: 'RELOAD',
+        action_cost: 1,
+        is_free_action: 0,
+        is_reaction: 0,
+        target_type: 'SELF',
+        range_min_m: 0,
+        range_max_m: 0,
+        damage_formula: null,
+        damage_type: null,
+        accuracy_modifier: 0,
+        critical_chance_modifier: 0,
+        critical_damage_modifier: 0,
+        status_effects: null,
+      },
+    ]);
+
+    // Seed active combat instance
+    env.DB._seed('combat_instances', [
+      {
+        id: 'combat-active-turn',
+        character_id: 'char-player-1',
+        encounter_id: null,
+        started_at: '2024-01-15T10:00:00Z',
+        status: 'ACTIVE',
+        current_round: 1,
+        current_turn_entity_id: 'char-player-1',
+        turn_order: JSON.stringify([
+          { id: 'char-player-1', type: 'player' },
+          { id: 'enemy-1', type: 'enemy' },
+          { id: 'enemy-2', type: 'enemy' },
+        ]),
+        player_participants: JSON.stringify([
+          { id: 'char-player-1', name: 'Test Runner', type: 'player', isActive: true },
+        ]),
+        enemy_participants: JSON.stringify([
+          { id: 'enemy-1', name: 'Ganger', hp: 50, isActive: true },
+          { id: 'enemy-2', name: 'Ganger Heavy', hp: 75, isActive: true },
+        ]),
+        damage_dealt_by_player: 0,
+        damage_taken_by_player: 0,
+        enemies_defeated: 0,
+        allies_lost: 0,
+        rounds_elapsed: 0,
+        time_elapsed_seconds: 0,
+        action_log: null,
+      },
+      {
+        id: 'combat-paused',
+        character_id: 'char-player-1',
+        encounter_id: null,
+        started_at: '2024-01-15T11:00:00Z',
+        status: 'PAUSED',
+        current_round: 2,
+        current_turn_entity_id: 'char-player-1',
+        turn_order: JSON.stringify([
+          { id: 'char-player-1', type: 'player' },
+          { id: 'enemy-1', type: 'enemy' },
+        ]),
+        player_participants: JSON.stringify([{ id: 'char-player-1', name: 'Test Runner', isActive: true }]),
+        enemy_participants: JSON.stringify([{ id: 'enemy-1', name: 'Ganger', isActive: true }]),
+        damage_dealt_by_player: 50,
+        damage_taken_by_player: 20,
+        enemies_defeated: 1,
+        allies_lost: 0,
+        rounds_elapsed: 1,
+        time_elapsed_seconds: 60,
+      },
+      {
+        id: 'combat-completed',
+        character_id: 'char-player-1',
+        encounter_id: null,
+        started_at: '2024-01-14T10:00:00Z',
+        status: 'COMPLETED',
+        current_round: 5,
+        current_turn_entity_id: null,
+        turn_order: null,
+        damage_dealt_by_player: 200,
+        damage_taken_by_player: 80,
+        enemies_defeated: 3,
+        allies_lost: 0,
+        rounds_elapsed: 5,
+        time_elapsed_seconds: 180,
+        ended_at: '2024-01-14T10:03:00Z',
+        outcome: 'VICTORY',
+      },
+    ]);
+  });
+
+  // ===========================================================================
+  // GET /combat/instances/:id/available-actions TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/instances/:id/available-actions', () => {
+    it('should return available actions for active combat', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-active-turn/available-actions');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          currentTurn: { entityId: string; entityType: string; round: number };
+          actions: {
+            attack: unknown[];
+            defense: unknown[];
+            movement: unknown[];
+            utility: unknown[];
+          };
+          validTargets: Array<{ id: string; name: string }>;
+          actionPointsRemaining: number;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.currentTurn.entityId).toBe('char-player-1');
+      expect(data.data?.currentTurn.entityType).toBe('player');
+      expect(data.data?.currentTurn.round).toBe(1);
+      expect(data.data?.actionPointsRemaining).toBe(2);
+    });
+
+    it('should categorize actions by type', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-active-turn/available-actions');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          actions: {
+            attack: Array<{ code: string }>;
+            defense: Array<{ code: string }>;
+            movement: Array<{ code: string }>;
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.actions.attack.some(a => a.code === 'PISTOL_SHOT')).toBe(true);
+      expect(data.data?.actions.defense.some(a => a.code === 'DEFEND')).toBe(true);
+      expect(data.data?.actions.movement.some(a => a.code === 'MOVE')).toBe(true);
+    });
+
+    it('should return valid targets for player turn', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-active-turn/available-actions');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          validTargets: Array<{ id: string; name: string }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.validTargets).toHaveLength(2);
+      expect(data.data?.validTargets.some(t => t.id === 'enemy-1')).toBe(true);
+      expect(data.data?.validTargets.some(t => t.id === 'enemy-2')).toBe(true);
+    });
+
+    it('should return 400 for non-active combat', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-completed/available-actions');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/nonexistent/available-actions');
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // POST /combat/instances/:id/action TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/instances/:id/action', () => {
+    it('should execute an attack action', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/action', {
+        body: {
+          actionId: 'PISTOL_SHOT',
+          targetId: 'enemy-1',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          action: { id: string; code: string; name: string };
+          result: { success: boolean; message: string };
+          combat: { stats: { damageDealt: number } };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.action.code).toBe('PISTOL_SHOT');
+      expect(data.data?.result.message).toBeDefined();
+    });
+
+    it('should execute a defensive action', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/action', {
+        body: {
+          actionId: 'DEFEND',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          action: { code: string };
+          result: { success: boolean; effects: string[]; message: string };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.action.code).toBe('DEFEND');
+      expect(data.data?.result.effects).toContain('DEFENDING');
+      expect(data.data?.result.message).toBe('Took defensive stance');
+    });
+
+    it('should execute a move action', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/action', {
+        body: {
+          actionId: 'MOVE',
+          position: { x: 10, y: 5 },
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          action: { code: string };
+          result: { effects: string[] };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.action.code).toBe('MOVE');
+      expect(data.data?.result.effects).toContain('MOVED');
+    });
+
+    it('should require target for targeted actions', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/action', {
+        body: {
+          actionId: 'PISTOL_SHOT',
+          // Missing targetId
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('TARGET_REQUIRED');
+    });
+
+    it('should reject invalid action', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/action', {
+        body: {
+          actionId: 'NONEXISTENT_ACTION',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('INVALID_ACTION');
+    });
+
+    it('should reject action on non-active combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-completed/action', {
+        body: {
+          actionId: 'DEFEND',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/nonexistent/action', {
+        body: {
+          actionId: 'DEFEND',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // POST /combat/instances/:id/next-turn TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/instances/:id/next-turn', () => {
+    it('should advance to next turn', async () => {
+      // Create a fresh env to ensure complete isolation
+      const freshEnv = createMockEnv();
+      freshEnv.DB._seed('combat_instances', [
+        {
+          id: 'combat-isolated-turn',
+          character_id: 'char-player-1',
+          status: 'ACTIVE',
+          current_round: 1,
+          current_turn_entity_id: 'player-first',
+          turn_order: JSON.stringify([
+            { id: 'player-first', type: 'player' },
+            { id: 'enemy-next', type: 'enemy' },
+          ]),
+          rounds_elapsed: 0,
+        },
+      ]);
+
+      const request = createTestRequest('POST', '/api/combat/instances/combat-isolated-turn/next-turn', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, freshEnv);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          previousTurn: { entityId: string; round: number };
+          currentTurn: { entityId: string; entityType: string; round: number; turnIndex: number };
+          roundAdvanced: boolean;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.previousTurn.entityId).toBe('player-first');
+      expect(data.data?.currentTurn.entityId).toBe('enemy-next');
+      expect(data.data?.currentTurn.entityType).toBe('enemy');
+      expect(data.data?.currentTurn.turnIndex).toBe(1);
+      expect(data.data?.roundAdvanced).toBe(false);
+    });
+
+    it('should increment round when turn order wraps', async () => {
+      // Seed combat at last position in turn order
+      env.DB._seed('combat_instances', [
+        {
+          id: 'combat-last-turn',
+          character_id: 'char-player-1',
+          status: 'ACTIVE',
+          current_round: 1,
+          current_turn_entity_id: 'enemy-2',
+          turn_order: JSON.stringify([
+            { id: 'char-player-1', type: 'player' },
+            { id: 'enemy-1', type: 'enemy' },
+            { id: 'enemy-2', type: 'enemy' },
+          ]),
+          rounds_elapsed: 0,
+        },
+      ]);
+
+      const request = createTestRequest('POST', '/api/combat/instances/combat-last-turn/next-turn', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          currentTurn: { round: number; turnIndex: number };
+          roundAdvanced: boolean;
+          combat: { roundsElapsed: number };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.currentTurn.round).toBe(2);
+      expect(data.data?.currentTurn.turnIndex).toBe(0);
+      expect(data.data?.roundAdvanced).toBe(true);
+      expect(data.data?.combat.roundsElapsed).toBe(1);
+    });
+
+    it('should reject for non-active combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-paused/next-turn', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/nonexistent/next-turn', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // POST /combat/instances/:id/pause TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/instances/:id/pause', () => {
+    it('should pause active combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/pause', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: { id: string; status: string; currentRound: number };
+          message: string;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.combat.status).toBe('PAUSED');
+      expect(data.data?.message).toBe('Combat paused');
+    });
+
+    it('should reject pausing non-active combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-paused/pause', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('CANNOT_PAUSE');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/nonexistent/pause', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // POST /combat/instances/:id/resume TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/instances/:id/resume', () => {
+    it('should resume paused combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-paused/resume', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: { id: string; status: string; currentRound: number };
+          message: string;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.combat.status).toBe('ACTIVE');
+      expect(data.data?.message).toBe('Combat resumed');
+    });
+
+    it('should reject resuming non-paused combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-active-turn/resume', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('CANNOT_RESUME');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/nonexistent/resume', {
+        body: {},
+      });
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+});

@@ -1913,3 +1913,567 @@ combatRoutes.get('/history', async (c) => {
     },
   });
 });
+
+// =============================================================================
+// DAY 4: COMBAT ACTIONS & TURN MANAGEMENT
+// =============================================================================
+
+interface ActionResult {
+  success: boolean;
+  damage?: number;
+  damageType?: string;
+  targetId?: string;
+  effects?: string[];
+  criticalHit?: boolean;
+  message: string;
+}
+
+/**
+ * GET /combat/instances/:id/available-actions
+ * Get available actions for the current entity's turn.
+ */
+combatRoutes.get('/instances/:id/available-actions', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get current entity's available actions
+  const currentEntityId = combat.current_turn_entity_id;
+  const turnOrder = combat.turn_order ? JSON.parse(combat.turn_order) : [];
+  const currentTurn = turnOrder.find((t: { id: string }) => t.id === currentEntityId);
+
+  if (!currentTurn) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NO_CURRENT_TURN', message: 'No current turn entity' }],
+    }, 400);
+  }
+
+  // Get all combat action definitions
+  const actionsResult = await db
+    .prepare(
+      `SELECT id, code, name, description, action_type, action_cost,
+              is_free_action, is_reaction, target_type, range_min_m, range_max_m,
+              damage_formula, damage_type
+       FROM combat_action_definitions
+       ORDER BY action_type, action_cost, name`
+    )
+    .all<CombatActionDefinition>();
+
+  // Parse participants to find valid targets
+  const playerParticipants = combat.player_participants
+    ? JSON.parse(combat.player_participants)
+    : [];
+  const enemyParticipants = combat.enemy_participants
+    ? JSON.parse(combat.enemy_participants)
+    : [];
+
+  const isPlayerTurn = currentTurn.type === 'player';
+  const validTargets = isPlayerTurn
+    ? enemyParticipants.filter((e: { isActive?: boolean }) => e.isActive !== false)
+    : playerParticipants.filter((p: { isActive?: boolean }) => p.isActive !== false);
+
+  // Categorize actions
+  const actions = actionsResult.results.map(action => ({
+    id: action.id,
+    code: action.code,
+    name: action.name,
+    description: action.description,
+    type: action.action_type,
+    cost: action.action_cost,
+    isFreeAction: action.is_free_action === 1,
+    isReaction: action.is_reaction === 1,
+    targeting: {
+      type: action.target_type,
+      rangeMin: action.range_min_m,
+      rangeMax: action.range_max_m,
+    },
+    damage: action.damage_formula ? {
+      formula: action.damage_formula,
+      type: action.damage_type,
+    } : null,
+  }));
+
+  // Group by type
+  const attackActions = actions.filter(a => a.type === 'ATTACK');
+  const defenseActions = actions.filter(a => a.type === 'DEFEND' || a.type === 'HUNKER');
+  const movementActions = actions.filter(a => a.type === 'MOVE');
+  const utilityActions = actions.filter(a => !['ATTACK', 'DEFEND', 'HUNKER', 'MOVE'].includes(a.type || ''));
+
+  return c.json({
+    success: true,
+    data: {
+      currentTurn: {
+        entityId: currentEntityId,
+        entityType: currentTurn.type,
+        round: combat.current_round,
+      },
+      actions: {
+        attack: attackActions,
+        defense: defenseActions,
+        movement: movementActions,
+        utility: utilityActions,
+      },
+      validTargets: validTargets.map((t: { id: string; name: string }) => ({
+        id: t.id,
+        name: t.name,
+      })),
+      actionPointsRemaining: 2, // Standard action points per turn
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/action
+ * Execute a combat action.
+ */
+combatRoutes.post('/instances/:id/action', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+  const body = await c.req.json<{
+    actionId: string;
+    targetId?: string;
+    position?: { x: number; y: number };
+  }>();
+
+  const { actionId, targetId, position } = body;
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get action definition
+  const action = await db
+    .prepare(`SELECT * FROM combat_action_definitions WHERE id = ? OR code = ?`)
+    .bind(actionId, actionId)
+    .first<CombatActionDefinition>();
+
+  if (!action) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_ACTION', message: 'Action not found' }],
+    }, 400);
+  }
+
+  // Validate target if required
+  const requiresTarget = ['SINGLE_ENEMY', 'SINGLE_ALLY', 'SINGLE_ANY'].includes(action.target_type || '');
+  if (requiresTarget && !targetId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'TARGET_REQUIRED', message: 'This action requires a target' }],
+    }, 400);
+  }
+
+  // Calculate action result
+  const result = calculateActionResult(action, targetId, combat);
+
+  // Update combat stats based on action
+  let damageDealt = combat.damage_dealt_by_player;
+  let damageTaken = combat.damage_taken_by_player;
+  let enemiesDefeated = combat.enemies_defeated;
+
+  const turnOrder = combat.turn_order ? JSON.parse(combat.turn_order) : [];
+  const currentTurn = turnOrder.find((t: { id: string }) => t.id === combat.current_turn_entity_id);
+  const isPlayerAction = currentTurn?.type === 'player';
+
+  if (result.damage && result.damage > 0) {
+    if (isPlayerAction) {
+      damageDealt += result.damage;
+      // Check if target defeated (simplified)
+      if (result.damage >= 50) {
+        enemiesDefeated += 1;
+      }
+    } else {
+      damageTaken += result.damage;
+    }
+  }
+
+  // Record action in log
+  const actionLog = combat.action_log ? JSON.parse(combat.action_log) : [];
+  actionLog.push({
+    round: combat.current_round,
+    entityId: combat.current_turn_entity_id,
+    actionId: action.id,
+    actionCode: action.code,
+    targetId,
+    result,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Update combat instance
+  await db
+    .prepare(
+      `UPDATE combat_instances SET
+        damage_dealt_by_player = ?,
+        damage_taken_by_player = ?,
+        enemies_defeated = ?,
+        action_log = ?
+       WHERE id = ?`
+    )
+    .bind(damageDealt, damageTaken, enemiesDefeated, JSON.stringify(actionLog), combatId)
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      action: {
+        id: action.id,
+        code: action.code,
+        name: action.name,
+        type: action.action_type,
+      },
+      result,
+      combat: {
+        id: combatId,
+        currentRound: combat.current_round,
+        currentTurnEntity: combat.current_turn_entity_id,
+        stats: {
+          damageDealt,
+          damageTaken,
+          enemiesDefeated,
+        },
+      },
+    },
+  });
+});
+
+/**
+ * Calculate the result of a combat action.
+ */
+function calculateActionResult(
+  action: CombatActionDefinition,
+  targetId: string | undefined,
+  combat: CombatInstance
+): ActionResult {
+  // Simplified damage calculation
+  let damage = 0;
+  let criticalHit = false;
+  const effects: string[] = [];
+
+  if (action.damage_formula) {
+    // Parse damage formula (e.g., "2d6+5" or "1d10+STR")
+    const baseDamage = parseDamageFormula(action.damage_formula);
+
+    // Check for critical hit (10% base chance + modifiers)
+    const critChance = 0.1 + (action.critical_chance_modifier / 100);
+    if (Math.random() < critChance) {
+      criticalHit = true;
+      damage = Math.floor(baseDamage * (action.critical_damage_modifier || 1.5));
+      effects.push('CRITICAL_HIT');
+    } else {
+      damage = baseDamage;
+    }
+
+    // Apply accuracy modifier
+    const hitChance = 0.8 + (action.accuracy_modifier / 100);
+    if (Math.random() > hitChance) {
+      damage = 0;
+      return {
+        success: false,
+        damage: 0,
+        targetId,
+        effects: ['MISSED'],
+        message: `${action.name} missed!`,
+      };
+    }
+  }
+
+  // Handle special action types
+  if (action.action_type === 'DEFEND' || action.action_type === 'HUNKER') {
+    effects.push('DEFENDING');
+    return {
+      success: true,
+      targetId: combat.current_turn_entity_id,
+      effects,
+      message: `Took defensive stance`,
+    };
+  }
+
+  if (action.action_type === 'MOVE') {
+    effects.push('MOVED');
+    return {
+      success: true,
+      effects,
+      message: `Moved to new position`,
+    };
+  }
+
+  if (action.action_type === 'RELOAD') {
+    effects.push('RELOADED');
+    return {
+      success: true,
+      effects,
+      message: `Reloaded weapon`,
+    };
+  }
+
+  // Parse status effects from action
+  if (action.status_effects) {
+    const statusEffects = JSON.parse(action.status_effects);
+    effects.push(...statusEffects.map((s: { code: string }) => s.code));
+  }
+
+  return {
+    success: true,
+    damage,
+    damageType: action.damage_type || undefined,
+    targetId,
+    effects,
+    criticalHit,
+    message: damage > 0
+      ? `${action.name} dealt ${damage} ${action.damage_type || ''} damage${criticalHit ? ' (CRITICAL!)' : ''}`
+      : `${action.name} executed successfully`,
+  };
+}
+
+/**
+ * Parse a damage formula and return calculated damage.
+ */
+function parseDamageFormula(formula: string): number {
+  // Handle dice notation (e.g., "2d6+5")
+  const diceMatch = formula.match(/(\d+)d(\d+)(?:\+(\d+))?/);
+  if (diceMatch) {
+    const numDice = parseInt(diceMatch[1]!, 10);
+    const dieSize = parseInt(diceMatch[2]!, 10);
+    const bonus = parseInt(diceMatch[3] || '0', 10);
+
+    let total = 0;
+    for (let i = 0; i < numDice; i++) {
+      total += Math.floor(Math.random() * dieSize) + 1;
+    }
+    return total + bonus;
+  }
+
+  // Handle flat damage
+  const flatMatch = formula.match(/^(\d+)$/);
+  if (flatMatch) {
+    return parseInt(flatMatch[1]!, 10);
+  }
+
+  // Default fallback
+  return Math.floor(Math.random() * 10) + 5;
+}
+
+/**
+ * POST /combat/instances/:id/next-turn
+ * Advance to the next turn in combat.
+ */
+combatRoutes.post('/instances/:id/next-turn', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  const turnOrder = combat.turn_order ? JSON.parse(combat.turn_order) : [];
+  if (turnOrder.length === 0) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NO_TURN_ORDER', message: 'No turn order defined' }],
+    }, 400);
+  }
+
+  // Find current turn index
+  const currentIndex = turnOrder.findIndex(
+    (t: { id: string }) => t.id === combat.current_turn_entity_id
+  );
+
+  // Calculate next turn
+  let nextIndex = (currentIndex + 1) % turnOrder.length;
+  let newRound = combat.current_round;
+  let roundsElapsed = combat.rounds_elapsed;
+
+  // If we wrapped around, increment round
+  if (nextIndex === 0) {
+    newRound += 1;
+    roundsElapsed += 1;
+  }
+
+  const nextEntity = turnOrder[nextIndex];
+
+  // Save previous turn info BEFORE the update (mock DB mutates rows in place)
+  const previousEntityId = combat.current_turn_entity_id;
+  const previousRound = combat.current_round;
+
+  // Update combat instance
+  await db
+    .prepare(
+      `UPDATE combat_instances SET
+        current_turn_entity_id = ?,
+        current_round = ?,
+        rounds_elapsed = ?
+       WHERE id = ?`
+    )
+    .bind(nextEntity.id, newRound, roundsElapsed, combatId)
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      previousTurn: {
+        entityId: previousEntityId,
+        round: previousRound,
+      },
+      currentTurn: {
+        entityId: nextEntity.id,
+        entityType: nextEntity.type,
+        round: newRound,
+        turnIndex: nextIndex,
+        totalTurns: turnOrder.length,
+      },
+      roundAdvanced: nextIndex === 0,
+      combat: {
+        id: combatId,
+        roundsElapsed,
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/pause
+ * Pause an active combat.
+ */
+combatRoutes.post('/instances/:id/pause', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CANNOT_PAUSE', message: 'Only active combat can be paused' }],
+    }, 400);
+  }
+
+  // Update status to PAUSED
+  await db
+    .prepare(`UPDATE combat_instances SET status = ? WHERE id = ?`)
+    .bind('PAUSED', combatId)
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combat: {
+        id: combatId,
+        status: 'PAUSED',
+        currentRound: combat.current_round,
+        currentTurnEntity: combat.current_turn_entity_id,
+      },
+      message: 'Combat paused',
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/resume
+ * Resume a paused combat.
+ */
+combatRoutes.post('/instances/:id/resume', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'PAUSED') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CANNOT_RESUME', message: 'Only paused combat can be resumed' }],
+    }, 400);
+  }
+
+  // Update status to ACTIVE
+  await db
+    .prepare(`UPDATE combat_instances SET status = ? WHERE id = ?`)
+    .bind('ACTIVE', combatId)
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combat: {
+        id: combatId,
+        status: 'ACTIVE',
+        currentRound: combat.current_round,
+        currentTurnEntity: combat.current_turn_entity_id,
+      },
+      message: 'Combat resumed',
+    },
+  });
+});
