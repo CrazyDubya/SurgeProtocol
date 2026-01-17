@@ -805,3 +805,547 @@ combatRoutes.get('/types', async (c) => {
     },
   });
 });
+
+// =============================================================================
+// DAY 2: ARENA ENDPOINTS
+// =============================================================================
+
+interface CombatArena {
+  id: string;
+  location_id: string | null;
+  name: string | null;
+  width_m: number;
+  height_m: number;
+  grid_size_m: number;
+  terrain_map: string | null;
+  elevation_map: string | null;
+  cover_points: string | null;
+  hazard_zones: string | null;
+  player_spawn_points: string | null;
+  enemy_spawn_points: string | null;
+  reinforcement_points: string | null;
+  interactable_objects: string | null;
+  destructibles: string | null;
+  hackable_objects: string | null;
+  lighting_level: number;
+  ambient_hazards: string | null;
+  weather_effects: string | null;
+  noise_level: number;
+  has_multiple_levels: number;
+  level_connections: string | null;
+  fall_damage_enabled: number;
+  patrol_routes: string | null;
+  sniper_positions: string | null;
+  flanking_routes: string | null;
+  retreat_routes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CombatEncounter {
+  id: string;
+  name: string | null;
+  description: string | null;
+  encounter_type: string | null;
+  difficulty_rating: number;
+  is_scripted: number;
+  is_avoidable: number;
+  location_id: string | null;
+  combat_arena_id: string | null;
+  environment_modifiers: string | null;
+  enemy_spawn_groups: string | null;
+  boss_npc_id: string | null;
+  primary_objective: string | null;
+  optional_objectives: string | null;
+  failure_conditions: string | null;
+  time_limit_seconds: number | null;
+  xp_reward: number;
+  cred_reward: number;
+  item_drops: string | null;
+  special_rewards: string | null;
+  retreat_possible: number;
+  retreat_penalty: string | null;
+  death_consequence: string | null;
+  narrative_impact: string | null;
+  enemy_ai_profile: string | null;
+  enemy_coordination: number;
+  enemy_morale_enabled: number;
+  surrender_possible: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * GET /combat/arenas
+ * List all combat arenas with optional location filtering.
+ */
+combatRoutes.get('/arenas', async (c) => {
+  const db = c.env.DB;
+
+  // Query params for filtering
+  const locationId = c.req.query('locationId');
+  const hasMultipleLevels = c.req.query('multipleLevels');
+  const minSize = c.req.query('minSize');
+  const limit = Math.min(parseInt(c.req.query('limit') || '50'), 100);
+  const offset = parseInt(c.req.query('offset') || '0');
+
+  let query = `
+    SELECT ca.id, ca.name, ca.location_id,
+           ca.width_m, ca.height_m, ca.grid_size_m,
+           ca.lighting_level, ca.noise_level,
+           ca.has_multiple_levels, ca.fall_damage_enabled,
+           l.name as location_name, l.district_id
+    FROM combat_arenas ca
+    LEFT JOIN locations l ON ca.location_id = l.id
+    WHERE 1=1
+  `;
+  const params: unknown[] = [];
+
+  if (locationId) {
+    query += ` AND ca.location_id = ?`;
+    params.push(locationId);
+  }
+
+  if (hasMultipleLevels === 'true') {
+    query += ` AND ca.has_multiple_levels = 1`;
+  } else if (hasMultipleLevels === 'false') {
+    query += ` AND ca.has_multiple_levels = 0`;
+  }
+
+  if (minSize) {
+    const size = parseInt(minSize);
+    query += ` AND (ca.width_m * ca.height_m) >= ?`;
+    params.push(size);
+  }
+
+  // Count total
+  const countQuery = query.replace(/SELECT[\s\S]+?FROM/, 'SELECT COUNT(*) as total FROM');
+  const countResult = await db.prepare(countQuery).bind(...params).first<{ total: number }>();
+
+  query += ` ORDER BY ca.name ASC LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const result = await db.prepare(query).bind(...params).all<CombatArena & { location_name: string | null; district_id: string | null }>();
+
+  const arenas = result.results.map(arena => ({
+    id: arena.id,
+    name: arena.name,
+    location: arena.location_id ? {
+      id: arena.location_id,
+      name: arena.location_name,
+      districtId: arena.district_id,
+    } : null,
+    dimensions: {
+      width: arena.width_m,
+      height: arena.height_m,
+      gridSize: arena.grid_size_m,
+      area: arena.width_m * arena.height_m,
+    },
+    environment: {
+      lightingLevel: arena.lighting_level,
+      noiseLevel: arena.noise_level,
+    },
+    hasMultipleLevels: arena.has_multiple_levels === 1,
+    fallDamageEnabled: arena.fall_damage_enabled === 1,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      arenas,
+      pagination: {
+        total: countResult?.total || 0,
+        limit,
+        offset,
+        hasMore: offset + limit < (countResult?.total || 0),
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/arenas/:id
+ * Get detailed information about a specific combat arena.
+ */
+combatRoutes.get('/arenas/:id', async (c) => {
+  const db = c.env.DB;
+  const arenaId = c.req.param('id');
+
+  const arena = await db
+    .prepare(
+      `SELECT ca.*, l.name as location_name, l.district_id
+       FROM combat_arenas ca
+       LEFT JOIN locations l ON ca.location_id = l.id
+       WHERE ca.id = ?`
+    )
+    .bind(arenaId)
+    .first<CombatArena & { location_name: string | null; district_id: string | null }>();
+
+  if (!arena) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat arena not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      arena: {
+        id: arena.id,
+        name: arena.name,
+        location: arena.location_id ? {
+          id: arena.location_id,
+          name: arena.location_name,
+          districtId: arena.district_id,
+        } : null,
+        dimensions: {
+          width: arena.width_m,
+          height: arena.height_m,
+          gridSize: arena.grid_size_m,
+          area: arena.width_m * arena.height_m,
+        },
+        terrain: {
+          map: arena.terrain_map ? JSON.parse(arena.terrain_map) : null,
+          elevation: arena.elevation_map ? JSON.parse(arena.elevation_map) : null,
+          coverPoints: arena.cover_points ? JSON.parse(arena.cover_points) : [],
+          hazardZones: arena.hazard_zones ? JSON.parse(arena.hazard_zones) : [],
+        },
+        spawns: {
+          player: arena.player_spawn_points ? JSON.parse(arena.player_spawn_points) : [],
+          enemy: arena.enemy_spawn_points ? JSON.parse(arena.enemy_spawn_points) : [],
+          reinforcement: arena.reinforcement_points ? JSON.parse(arena.reinforcement_points) : [],
+        },
+        interactables: {
+          objects: arena.interactable_objects ? JSON.parse(arena.interactable_objects) : [],
+          destructibles: arena.destructibles ? JSON.parse(arena.destructibles) : [],
+          hackable: arena.hackable_objects ? JSON.parse(arena.hackable_objects) : [],
+        },
+        environment: {
+          lightingLevel: arena.lighting_level,
+          noiseLevel: arena.noise_level,
+          ambientHazards: arena.ambient_hazards ? JSON.parse(arena.ambient_hazards) : [],
+          weatherEffects: arena.weather_effects ? JSON.parse(arena.weather_effects) : null,
+        },
+        vertical: {
+          hasMultipleLevels: arena.has_multiple_levels === 1,
+          levelConnections: arena.level_connections ? JSON.parse(arena.level_connections) : [],
+          fallDamageEnabled: arena.fall_damage_enabled === 1,
+        },
+        aiHints: {
+          patrolRoutes: arena.patrol_routes ? JSON.parse(arena.patrol_routes) : [],
+          sniperPositions: arena.sniper_positions ? JSON.parse(arena.sniper_positions) : [],
+          flankingRoutes: arena.flanking_routes ? JSON.parse(arena.flanking_routes) : [],
+          retreatRoutes: arena.retreat_routes ? JSON.parse(arena.retreat_routes) : [],
+        },
+      },
+    },
+  });
+});
+
+// =============================================================================
+// DAY 2: ENCOUNTER ENDPOINTS
+// =============================================================================
+
+/**
+ * GET /combat/encounters
+ * List all combat encounters with optional filtering.
+ */
+combatRoutes.get('/encounters', async (c) => {
+  const db = c.env.DB;
+
+  // Query params for filtering
+  const encounterType = c.req.query('type');
+  const minDifficulty = c.req.query('minDifficulty');
+  const maxDifficulty = c.req.query('maxDifficulty');
+  const locationId = c.req.query('locationId');
+  const isAvoidable = c.req.query('avoidable');
+  const isScripted = c.req.query('scripted');
+  const limit = Math.min(parseInt(c.req.query('limit') || '50'), 100);
+  const offset = parseInt(c.req.query('offset') || '0');
+
+  let query = `
+    SELECT ce.id, ce.name, ce.description,
+           ce.encounter_type, ce.difficulty_rating,
+           ce.is_scripted, ce.is_avoidable,
+           ce.location_id, ce.combat_arena_id,
+           ce.xp_reward, ce.cred_reward,
+           ce.retreat_possible, ce.surrender_possible,
+           l.name as location_name,
+           ca.name as arena_name
+    FROM combat_encounters ce
+    LEFT JOIN locations l ON ce.location_id = l.id
+    LEFT JOIN combat_arenas ca ON ce.combat_arena_id = ca.id
+    WHERE 1=1
+  `;
+  const params: unknown[] = [];
+
+  if (encounterType) {
+    query += ` AND ce.encounter_type = ?`;
+    params.push(encounterType);
+  }
+
+  if (minDifficulty) {
+    query += ` AND ce.difficulty_rating >= ?`;
+    params.push(parseInt(minDifficulty));
+  }
+
+  if (maxDifficulty) {
+    query += ` AND ce.difficulty_rating <= ?`;
+    params.push(parseInt(maxDifficulty));
+  }
+
+  if (locationId) {
+    query += ` AND ce.location_id = ?`;
+    params.push(locationId);
+  }
+
+  if (isAvoidable === 'true') {
+    query += ` AND ce.is_avoidable = 1`;
+  } else if (isAvoidable === 'false') {
+    query += ` AND ce.is_avoidable = 0`;
+  }
+
+  if (isScripted === 'true') {
+    query += ` AND ce.is_scripted = 1`;
+  } else if (isScripted === 'false') {
+    query += ` AND ce.is_scripted = 0`;
+  }
+
+  // Count total
+  const countQuery = query.replace(/SELECT[\s\S]+?FROM/, 'SELECT COUNT(*) as total FROM');
+  const countResult = await db.prepare(countQuery).bind(...params).first<{ total: number }>();
+
+  query += ` ORDER BY ce.difficulty_rating ASC, ce.name ASC LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const result = await db.prepare(query).bind(...params).all<CombatEncounter & { location_name: string | null; arena_name: string | null }>();
+
+  const encounters = result.results.map(enc => ({
+    id: enc.id,
+    name: enc.name,
+    description: enc.description,
+    type: enc.encounter_type,
+    difficulty: enc.difficulty_rating,
+    isScripted: enc.is_scripted === 1,
+    isAvoidable: enc.is_avoidable === 1,
+    location: enc.location_id ? {
+      id: enc.location_id,
+      name: enc.location_name,
+    } : null,
+    arena: enc.combat_arena_id ? {
+      id: enc.combat_arena_id,
+      name: enc.arena_name,
+    } : null,
+    rewards: {
+      xp: enc.xp_reward,
+      credits: enc.cred_reward,
+    },
+    options: {
+      canRetreat: enc.retreat_possible === 1,
+      canSurrender: enc.surrender_possible === 1,
+    },
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      encounters,
+      pagination: {
+        total: countResult?.total || 0,
+        limit,
+        offset,
+        hasMore: offset + limit < (countResult?.total || 0),
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/encounters/:id
+ * Get detailed information about a specific combat encounter.
+ */
+combatRoutes.get('/encounters/:id', async (c) => {
+  const db = c.env.DB;
+  const encounterId = c.req.param('id');
+
+  const encounter = await db
+    .prepare(
+      `SELECT ce.*, l.name as location_name, ca.name as arena_name,
+              npc.name as boss_name, npc.npc_type as boss_type
+       FROM combat_encounters ce
+       LEFT JOIN locations l ON ce.location_id = l.id
+       LEFT JOIN combat_arenas ca ON ce.combat_arena_id = ca.id
+       LEFT JOIN npc_definitions npc ON ce.boss_npc_id = npc.id
+       WHERE ce.id = ?`
+    )
+    .bind(encounterId)
+    .first<CombatEncounter & {
+      location_name: string | null;
+      arena_name: string | null;
+      boss_name: string | null;
+      boss_type: string | null;
+    }>();
+
+  if (!encounter) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat encounter not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      encounter: {
+        id: encounter.id,
+        name: encounter.name,
+        description: encounter.description,
+        type: encounter.encounter_type,
+        difficulty: encounter.difficulty_rating,
+        isScripted: encounter.is_scripted === 1,
+        isAvoidable: encounter.is_avoidable === 1,
+        location: encounter.location_id ? {
+          id: encounter.location_id,
+          name: encounter.location_name,
+        } : null,
+        arena: encounter.combat_arena_id ? {
+          id: encounter.combat_arena_id,
+          name: encounter.arena_name,
+        } : null,
+        environmentModifiers: encounter.environment_modifiers
+          ? JSON.parse(encounter.environment_modifiers)
+          : null,
+        enemies: {
+          spawnGroups: encounter.enemy_spawn_groups
+            ? JSON.parse(encounter.enemy_spawn_groups)
+            : [],
+          boss: encounter.boss_npc_id ? {
+            id: encounter.boss_npc_id,
+            name: encounter.boss_name,
+            type: encounter.boss_type,
+          } : null,
+        },
+        objectives: {
+          primary: encounter.primary_objective,
+          optional: encounter.optional_objectives
+            ? JSON.parse(encounter.optional_objectives)
+            : [],
+          failureConditions: encounter.failure_conditions
+            ? JSON.parse(encounter.failure_conditions)
+            : [],
+          timeLimit: encounter.time_limit_seconds,
+        },
+        rewards: {
+          xp: encounter.xp_reward,
+          credits: encounter.cred_reward,
+          itemDrops: encounter.item_drops
+            ? JSON.parse(encounter.item_drops)
+            : [],
+          special: encounter.special_rewards
+            ? JSON.parse(encounter.special_rewards)
+            : [],
+        },
+        consequences: {
+          canRetreat: encounter.retreat_possible === 1,
+          retreatPenalty: encounter.retreat_penalty
+            ? JSON.parse(encounter.retreat_penalty)
+            : null,
+          deathConsequence: encounter.death_consequence,
+          narrativeImpact: encounter.narrative_impact
+            ? JSON.parse(encounter.narrative_impact)
+            : null,
+        },
+        ai: {
+          profile: encounter.enemy_ai_profile,
+          coordination: encounter.enemy_coordination,
+          moraleEnabled: encounter.enemy_morale_enabled === 1,
+          canSurrender: encounter.surrender_possible === 1,
+        },
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/encounters/:id/preview
+ * Get a spoiler-free preview of an encounter for pre-combat decision making.
+ */
+combatRoutes.get('/encounters/:id/preview', async (c) => {
+  const db = c.env.DB;
+  const encounterId = c.req.param('id');
+
+  const encounter = await db
+    .prepare(
+      `SELECT ce.id, ce.name, ce.description,
+              ce.encounter_type, ce.difficulty_rating,
+              ce.is_avoidable, ce.retreat_possible,
+              ce.xp_reward, ce.cred_reward,
+              ce.time_limit_seconds,
+              l.name as location_name
+       FROM combat_encounters ce
+       LEFT JOIN locations l ON ce.location_id = l.id
+       WHERE ce.id = ?`
+    )
+    .bind(encounterId)
+    .first<{
+      id: string;
+      name: string | null;
+      description: string | null;
+      encounter_type: string | null;
+      difficulty_rating: number;
+      is_avoidable: number;
+      retreat_possible: number;
+      xp_reward: number;
+      cred_reward: number;
+      time_limit_seconds: number | null;
+      location_name: string | null;
+    }>();
+
+  if (!encounter) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat encounter not found' }],
+    }, 404);
+  }
+
+  // Determine difficulty label
+  let difficultyLabel = 'Unknown';
+  if (encounter.difficulty_rating <= 2) difficultyLabel = 'Easy';
+  else if (encounter.difficulty_rating <= 4) difficultyLabel = 'Normal';
+  else if (encounter.difficulty_rating <= 6) difficultyLabel = 'Hard';
+  else if (encounter.difficulty_rating <= 8) difficultyLabel = 'Very Hard';
+  else difficultyLabel = 'Extreme';
+
+  return c.json({
+    success: true,
+    data: {
+      preview: {
+        id: encounter.id,
+        name: encounter.name,
+        description: encounter.description,
+        type: encounter.encounter_type,
+        difficulty: {
+          rating: encounter.difficulty_rating,
+          label: difficultyLabel,
+        },
+        location: encounter.location_name,
+        options: {
+          canAvoid: encounter.is_avoidable === 1,
+          canRetreat: encounter.retreat_possible === 1,
+        },
+        hasTimeLimit: encounter.time_limit_seconds !== null,
+        estimatedRewards: {
+          xp: encounter.xp_reward,
+          credits: encounter.cred_reward,
+        },
+        warnings: [
+          ...(encounter.difficulty_rating >= 7 ? ['High difficulty - prepare carefully'] : []),
+          ...(encounter.time_limit_seconds ? ['Time-limited encounter'] : []),
+          ...(encounter.is_avoidable === 0 ? ['Cannot be avoided'] : []),
+          ...(encounter.retreat_possible === 0 ? ['No retreat possible'] : []),
+        ],
+      },
+    },
+  });
+});

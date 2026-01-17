@@ -796,3 +796,568 @@ describe('Combat System Integration', () => {
     });
   });
 });
+
+// =============================================================================
+// DAY 2: ARENA & ENCOUNTER TESTS
+// =============================================================================
+
+describe('Combat System Day 2 - Arenas & Encounters', () => {
+  let env: MockEnv;
+
+  beforeEach(async () => {
+    env = createMockEnv();
+
+    // Seed locations for arena/encounter references
+    env.DB._seed('locations', [
+      {
+        id: 'loc-warehouse',
+        code: 'ABANDONED_WAREHOUSE',
+        name: 'Abandoned Warehouse',
+        district_id: 'district-industrial',
+      },
+      {
+        id: 'loc-alley',
+        code: 'BACK_ALLEY',
+        name: 'Back Alley',
+        district_id: 'district-downtown',
+      },
+    ]);
+
+    // Seed combat arenas
+    env.DB._seed('combat_arenas', [
+      {
+        id: 'arena-warehouse',
+        location_id: 'loc-warehouse',
+        name: 'Warehouse Floor',
+        width_m: 40,
+        height_m: 30,
+        grid_size_m: 1.0,
+        terrain_map: JSON.stringify({ type: 'concrete', features: ['crates', 'pillars'] }),
+        elevation_map: JSON.stringify({ levels: [0, 2] }),
+        cover_points: JSON.stringify([
+          { x: 10, y: 5, type: 'half', destructible: true },
+          { x: 25, y: 15, type: 'full', destructible: false },
+        ]),
+        hazard_zones: JSON.stringify([{ x: 30, y: 20, type: 'toxic', damage: 5 }]),
+        player_spawn_points: JSON.stringify([{ x: 5, y: 5 }, { x: 5, y: 25 }]),
+        enemy_spawn_points: JSON.stringify([{ x: 35, y: 15 }]),
+        reinforcement_points: JSON.stringify([{ x: 20, y: 0 }]),
+        interactable_objects: JSON.stringify([{ id: 'console-1', type: 'terminal', x: 20, y: 10 }]),
+        destructibles: JSON.stringify([{ id: 'barrel-1', hp: 20, x: 15, y: 15 }]),
+        hackable_objects: JSON.stringify([{ id: 'turret-1', difficulty: 6, x: 30, y: 10 }]),
+        lighting_level: 30,
+        ambient_hazards: JSON.stringify([]),
+        weather_effects: null,
+        noise_level: 20,
+        has_multiple_levels: 1,
+        level_connections: JSON.stringify([{ from: 0, to: 1, type: 'ladder', x: 35, y: 5 }]),
+        fall_damage_enabled: 1,
+        patrol_routes: JSON.stringify([{ id: 'patrol-1', waypoints: [[10, 10], [30, 10], [30, 20]] }]),
+        sniper_positions: JSON.stringify([{ x: 38, y: 5, elevation: 2 }]),
+        flanking_routes: JSON.stringify([{ id: 'flank-1', path: [[5, 15], [10, 25], [25, 25]] }]),
+        retreat_routes: JSON.stringify([{ id: 'retreat-1', exit: [0, 15] }]),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'arena-alley',
+        location_id: 'loc-alley',
+        name: 'Narrow Alley',
+        width_m: 10,
+        height_m: 50,
+        grid_size_m: 1.0,
+        terrain_map: null,
+        elevation_map: null,
+        cover_points: JSON.stringify([{ x: 5, y: 20, type: 'half' }]),
+        hazard_zones: null,
+        player_spawn_points: JSON.stringify([{ x: 5, y: 5 }]),
+        enemy_spawn_points: JSON.stringify([{ x: 5, y: 45 }]),
+        reinforcement_points: null,
+        interactable_objects: null,
+        destructibles: null,
+        hackable_objects: null,
+        lighting_level: 15,
+        ambient_hazards: null,
+        weather_effects: JSON.stringify({ type: 'rain', intensity: 0.5 }),
+        noise_level: 60,
+        has_multiple_levels: 0,
+        level_connections: null,
+        fall_damage_enabled: 0,
+        patrol_routes: null,
+        sniper_positions: null,
+        flanking_routes: null,
+        retreat_routes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+
+    // Seed NPC definitions for boss references
+    env.DB._seed('npc_definitions', [
+      {
+        id: 'npc-boss-chrome',
+        code: 'CHROME_FANATIC',
+        name: 'Chrome Fanatic Leader',
+        npc_type: 'BOSS',
+      },
+    ]);
+
+    // Seed combat encounters
+    env.DB._seed('combat_encounters', [
+      {
+        id: 'enc-warehouse-ambush',
+        name: 'Warehouse Ambush',
+        description: 'Gangers have set up an ambush in the warehouse.',
+        encounter_type: 'AMBUSH',
+        difficulty_rating: 5,
+        is_scripted: 0,
+        is_avoidable: 1,
+        location_id: 'loc-warehouse',
+        combat_arena_id: 'arena-warehouse',
+        environment_modifiers: JSON.stringify({ visibility: -10, noise: 20 }),
+        enemy_spawn_groups: JSON.stringify([
+          { npcType: 'GANGER', count: 3, tier: 1 },
+          { npcType: 'GANGER_HEAVY', count: 1, tier: 2 },
+        ]),
+        boss_npc_id: null,
+        primary_objective: 'Defeat all enemies',
+        optional_objectives: JSON.stringify(['Disable the alarm', 'Find the stash']),
+        failure_conditions: JSON.stringify(['Player death', 'All allies down']),
+        time_limit_seconds: null,
+        xp_reward: 150,
+        cred_reward: 500,
+        item_drops: JSON.stringify([{ item: 'ammo_pistol', chance: 0.8 }]),
+        special_rewards: null,
+        retreat_possible: 1,
+        retreat_penalty: JSON.stringify({ reputation: -5 }),
+        death_consequence: 'RESPAWN_HOSPITAL',
+        narrative_impact: null,
+        enemy_ai_profile: 'AGGRESSIVE',
+        enemy_coordination: 40,
+        enemy_morale_enabled: 1,
+        surrender_possible: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'enc-boss-fight',
+        name: 'Chrome Fanatic Showdown',
+        description: 'Face the leader of the Chrome Fanatics.',
+        encounter_type: 'BOSS',
+        difficulty_rating: 8,
+        is_scripted: 1,
+        is_avoidable: 0,
+        location_id: 'loc-warehouse',
+        combat_arena_id: 'arena-warehouse',
+        environment_modifiers: null,
+        enemy_spawn_groups: JSON.stringify([
+          { npcType: 'CHROME_FANATIC', count: 2, tier: 3 },
+        ]),
+        boss_npc_id: 'npc-boss-chrome',
+        primary_objective: 'Defeat the Chrome Fanatic Leader',
+        optional_objectives: JSON.stringify(['Spare the leader']),
+        failure_conditions: JSON.stringify(['Player death']),
+        time_limit_seconds: 300,
+        xp_reward: 500,
+        cred_reward: 2000,
+        item_drops: JSON.stringify([{ item: 'rare_augment', chance: 0.5 }]),
+        special_rewards: JSON.stringify([{ type: 'UNLOCK_FACTION', faction: 'CHROME_FANATICS' }]),
+        retreat_possible: 0,
+        retreat_penalty: null,
+        death_consequence: 'MISSION_FAIL',
+        narrative_impact: JSON.stringify({ flag: 'CHROME_LEADER_DEFEATED' }),
+        enemy_ai_profile: 'TACTICAL',
+        enemy_coordination: 80,
+        enemy_morale_enabled: 0,
+        surrender_possible: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'enc-alley-mugging',
+        name: 'Alley Mugging',
+        description: 'Street thugs try to rob you.',
+        encounter_type: 'RANDOM',
+        difficulty_rating: 2,
+        is_scripted: 0,
+        is_avoidable: 1,
+        location_id: 'loc-alley',
+        combat_arena_id: 'arena-alley',
+        environment_modifiers: null,
+        enemy_spawn_groups: JSON.stringify([{ npcType: 'THUG', count: 2, tier: 1 }]),
+        boss_npc_id: null,
+        primary_objective: 'Survive',
+        optional_objectives: null,
+        failure_conditions: null,
+        time_limit_seconds: null,
+        xp_reward: 50,
+        cred_reward: 100,
+        item_drops: null,
+        special_rewards: null,
+        retreat_possible: 1,
+        retreat_penalty: null,
+        death_consequence: 'RESPAWN_HOSPITAL',
+        narrative_impact: null,
+        enemy_ai_profile: 'COWARDLY',
+        enemy_coordination: 20,
+        enemy_morale_enabled: 1,
+        surrender_possible: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+  });
+
+  // ===========================================================================
+  // ARENA TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/arenas', () => {
+    it('should return all arenas', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { arenas: unknown[]; pagination: { total: number } };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.arenas).toHaveLength(2);
+    });
+
+    it('should filter by location', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas?locationId=loc-warehouse');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { arenas: Array<{ id: string; name: string }> };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.arenas).toHaveLength(1);
+      expect(data.data?.arenas[0]?.name).toBe('Warehouse Floor');
+    });
+
+    it('should filter by multiple levels', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas?multipleLevels=true');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { arenas: Array<{ id: string; hasMultipleLevels: boolean }> };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.arenas).toHaveLength(1);
+      expect(data.data?.arenas[0]?.hasMultipleLevels).toBe(true);
+    });
+
+    it('should return arena dimensions', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          arenas: Array<{
+            dimensions: { width: number; height: number; area: number };
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const warehouse = data.data?.arenas.find(a => a.dimensions.width === 40);
+      expect(warehouse?.dimensions.area).toBe(1200); // 40 * 30
+    });
+  });
+
+  describe('GET /api/combat/arenas/:id', () => {
+    it('should return arena details with terrain data', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas/arena-warehouse');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          arena: {
+            id: string;
+            name: string;
+            terrain: {
+              coverPoints: Array<{ x: number; y: number; type: string }>;
+              hazardZones: Array<{ type: string }>;
+            };
+            spawns: {
+              player: Array<{ x: number; y: number }>;
+              enemy: Array<{ x: number; y: number }>;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.arena.name).toBe('Warehouse Floor');
+      expect(data.data?.arena.terrain.coverPoints).toHaveLength(2);
+      expect(data.data?.arena.terrain.hazardZones).toHaveLength(1);
+      expect(data.data?.arena.spawns.player).toHaveLength(2);
+    });
+
+    it('should return interactables and AI hints', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas/arena-warehouse');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          arena: {
+            interactables: {
+              objects: unknown[];
+              hackable: unknown[];
+            };
+            aiHints: {
+              patrolRoutes: unknown[];
+              sniperPositions: unknown[];
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.arena.interactables.objects).toHaveLength(1);
+      expect(data.data?.arena.interactables.hackable).toHaveLength(1);
+      expect(data.data?.arena.aiHints.patrolRoutes).toHaveLength(1);
+      expect(data.data?.arena.aiHints.sniperPositions).toHaveLength(1);
+    });
+
+    it('should return 404 for non-existent arena', async () => {
+      const request = createTestRequest('GET', '/api/combat/arenas/nonexistent');
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // ENCOUNTER TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/encounters', () => {
+    it('should return all encounters', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { encounters: unknown[]; pagination: { total: number } };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.encounters).toHaveLength(3);
+    });
+
+    it('should filter by encounter type', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters?type=BOSS');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { encounters: Array<{ type: string; name: string }> };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.encounters).toHaveLength(1);
+      expect(data.data?.encounters[0]?.name).toBe('Chrome Fanatic Showdown');
+    });
+
+    it('should filter by difficulty range', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters?minDifficulty=4&maxDifficulty=6');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { encounters: Array<{ difficulty: number }> };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.encounters).toHaveLength(1);
+      expect(data.data?.encounters[0]?.difficulty).toBe(5);
+    });
+
+    it('should filter by avoidable encounters', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters?avoidable=false');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { encounters: Array<{ isAvoidable: boolean }> };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.encounters).toHaveLength(1);
+      expect(data.data?.encounters[0]?.isAvoidable).toBe(false);
+    });
+
+    it('should return rewards info', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          encounters: Array<{
+            rewards: { xp: number; credits: number };
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const bossEnc = data.data?.encounters.find(e => e.rewards.xp === 500);
+      expect(bossEnc?.rewards.credits).toBe(2000);
+    });
+  });
+
+  describe('GET /api/combat/encounters/:id', () => {
+    it('should return encounter details with objectives', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/enc-warehouse-ambush');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          encounter: {
+            name: string;
+            objectives: {
+              primary: string;
+              optional: string[];
+            };
+            enemies: {
+              spawnGroups: Array<{ npcType: string; count: number }>;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.encounter.name).toBe('Warehouse Ambush');
+      expect(data.data?.encounter.objectives.primary).toBe('Defeat all enemies');
+      expect(data.data?.encounter.objectives.optional).toHaveLength(2);
+      expect(data.data?.encounter.enemies.spawnGroups).toHaveLength(2);
+    });
+
+    it('should return boss info for boss encounters', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/enc-boss-fight');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          encounter: {
+            enemies: {
+              boss: { id: string; name: string | null; type: string | null };
+            };
+            objectives: { timeLimit: number };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      // Boss ID should be present
+      expect(data.data?.encounter.enemies.boss?.id).toBe('npc-boss-chrome');
+      // Note: boss name/type from JOIN may not work perfectly in mock DB
+      expect(data.data?.encounter.objectives.timeLimit).toBe(300);
+    });
+
+    it('should return AI configuration', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/enc-boss-fight');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          encounter: {
+            ai: {
+              profile: string;
+              coordination: number;
+              moraleEnabled: boolean;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.encounter.ai.profile).toBe('TACTICAL');
+      expect(data.data?.encounter.ai.coordination).toBe(80);
+      expect(data.data?.encounter.ai.moraleEnabled).toBe(false);
+    });
+
+    it('should return 404 for non-existent encounter', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/nonexistent');
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/combat/encounters/:id/preview', () => {
+    it('should return spoiler-free preview', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/enc-warehouse-ambush/preview');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          preview: {
+            name: string;
+            difficulty: { rating: number; label: string };
+            options: { canAvoid: boolean; canRetreat: boolean };
+            estimatedRewards: { xp: number; credits: number };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.preview.name).toBe('Warehouse Ambush');
+      expect(data.data?.preview.difficulty.rating).toBe(5);
+      expect(data.data?.preview.difficulty.label).toBe('Hard'); // 5 is in the 5-6 range = Hard
+      expect(data.data?.preview.options.canAvoid).toBe(true);
+      expect(data.data?.preview.estimatedRewards.xp).toBe(150);
+    });
+
+    it('should include warnings for difficult encounters', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/enc-boss-fight/preview');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          preview: {
+            difficulty: { label: string };
+            hasTimeLimit: boolean;
+            warnings: string[];
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.preview.difficulty.label).toBe('Very Hard');
+      expect(data.data?.preview.hasTimeLimit).toBe(true);
+      expect(data.data?.preview.warnings).toContain('High difficulty - prepare carefully');
+      expect(data.data?.preview.warnings).toContain('Time-limited encounter');
+      expect(data.data?.preview.warnings).toContain('Cannot be avoided');
+      expect(data.data?.preview.warnings).toContain('No retreat possible');
+    });
+
+    it('should return 404 for non-existent encounter', async () => {
+      const request = createTestRequest('GET', '/api/combat/encounters/nonexistent/preview');
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+});
