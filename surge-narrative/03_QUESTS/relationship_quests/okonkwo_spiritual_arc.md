@@ -258,9 +258,9 @@ Kwame Okonkwo is the gatekeeper to the Third Path—a spiritual guide who tests 
 
 ### Checks
 - TIER >= 5
-- HUMANITY 40-80
+- HUMANITY_SCORE BETWEEN 40 AND 80
 - THIRD_PATH_HINTS >= 1
-- INTERSTITIAL_FOUND
+- DISCOVERED_INTERSTITIAL
 
 ### Sets
 - OKONKWO_STUDENT

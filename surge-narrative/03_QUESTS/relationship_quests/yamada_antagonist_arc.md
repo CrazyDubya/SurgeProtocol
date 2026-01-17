@@ -73,6 +73,7 @@ Distinguished, precise, every movement economical. Japanese heritage, silver at 
 ### Stage 2: The Personal Touch (Relationship -49 to -25)
 **Tier**: 5-6
 **Tone**: Reluctant respect, deeper understanding
+**Required Flag**: `DISCOVERED_HOLLOWS == true` (for daughter revelation scenes)
 
 **Unexpected Meeting**:
 
@@ -85,6 +86,7 @@ Distinguished, precise, every movement economical. Japanese heritage, silver at 
 **Yamada**: [long pause] "Before she understood what I couldn't make her understand. Before she chose... differently."
 
 **The Daughter Revelation**:
+**[Condition: DISCOVERED_HOLLOWS == true]**
 
 **Yamada**: "Yuki was brilliant. Compassionate. Everything I hoped for. She saw the flaws I couldn't see—or wouldn't." [feeds another pigeon] "She's in the Hollows now. Uses a different name. Organizes against everything I've built."
 
@@ -334,6 +336,7 @@ Discovery of classified Nakamura files that could change everything—including 
 - YAMADA_DAUGHTER_MENTIONED
 - NAKAMURA_HOSTILITY_LEVEL
 - PLAYER_TIER
+- DISCOVERED_HOLLOWS (required for daughter revelation)
 
 ### Sets
 - YAMADA_ALLY_STATUS

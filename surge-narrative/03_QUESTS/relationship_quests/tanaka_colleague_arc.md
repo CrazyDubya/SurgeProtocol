@@ -304,8 +304,8 @@ Tanaka values player's perspective for understanding resistance psychology.
 
 ### Checks
 - TANAKA_RELATIONSHIP thresholds
-- PLAYER_CHROME_LEVEL
-- PLAYER_HUMANITY
+- CHROME_LEVEL
+- HUMANITY_SCORE
 - GHOST_NETWORK_ACCESS
 
 ### Sets

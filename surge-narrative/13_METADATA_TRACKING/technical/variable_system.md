@@ -78,6 +78,33 @@ TIER BETWEEN 3 AND 6  // Mid-game specific content
 
 ---
 
+#### CHROME_LEVEL (Integer: 0-100)
+**Purpose**: Tracks extent of cybernetic augmentation (inverse of HUMANITY_SCORE).
+**Calculation**: `CHROME_LEVEL = 100 - HUMANITY_SCORE`
+**Initial Value**: 0
+**Modification**: Automatically calculated from HUMANITY_SCORE
+
+**Thresholds**:
+| Range | Status | Visual Description |
+|-------|--------|-------------------|
+| 0 | Pure Human | No visible augmentation |
+| 1-20 | Light Chrome | Subtle enhancements, easily hidden |
+| 21-40 | Moderate Chrome | Visible augments, still mostly human |
+| 41-60 | Heavy Chrome | Significant visible chrome, NPC unease |
+| 61-80 | Extensive Chrome | More machine than human appearance |
+| 81-99 | Near-Total Chrome | Almost entirely augmented |
+| 100 | Full Conversion | The Hollow - no humanity remaining |
+
+**Usage in Conditions**:
+```
+CHROME_LEVEL >= 50       // Heavy augmentation content
+CHROME_LEVEL < 20        // Passes as baseline human
+```
+
+**Note**: This is a derived variable. Writers can use either `CHROME_LEVEL >= X` or `HUMANITY_SCORE <= (100-X)` - they are equivalent.
+
+---
+
 ### Relationship Variables
 
 All relationship variables follow this pattern:
@@ -395,5 +422,65 @@ When conditions are not met, content should fall back gracefully:
 
 ---
 
+## Skill Variables
+
+### Overview
+Skills represent player proficiencies that unlock dialogue options and quest approaches.
+
+### Core Skills
+
+#### INVESTIGATION_SKILL (Integer: 0-5)
+**Purpose**: Determines access to investigative dialogue options and quest paths.
+**Initial Value**: 1
+**Modification**: Quest completion (+1), discovering hidden information (+1)
+
+**Thresholds**:
+| Level | Description | Unlocks |
+|-------|-------------|---------|
+| 0 | Oblivious | No investigation options |
+| 1 | Observant | Basic "notice something" options |
+| 2 | Curious | Can ask probing questions |
+| 3 | Investigator | Unlock hidden quest clues |
+| 4 | Detective | Advanced deduction options |
+| 5 | Master Sleuth | All investigation content |
+
+**Usage in Conditions**:
+```
+INVESTIGATION_SKILL >= 2    // Can probe deeper
+INVESTIGATION_SKILL >= 4    // Unlock hidden connections
+```
+
+#### CHARISMA_SKILL (Integer: 0-5)
+**Purpose**: Determines access to persuasion and social dialogue options.
+**Initial Value**: 1
+**Modification**: Successful persuasions (+1), relationship milestones (+1)
+
+#### TECH_SKILL (Integer: 0-5)
+**Purpose**: Determines access to technical/hacking dialogue options.
+**Initial Value**: 1
+**Modification**: Tech-related quest completion (+1), chrome installation (+1)
+
+#### COMBAT_SKILL (Integer: 0-5)
+**Purpose**: Determines access to combat-related dialogue and intimidation.
+**Initial Value**: 1
+**Modification**: Combat victories (+1), training with allies (+1)
+
+### Skill Check Format
+
+```
+[Condition: SKILL_NAME >= threshold]
+"Dialogue option requiring this skill level"
+```
+
+**Example**:
+```markdown
+**Option A**: "I'll ask around." [Standard]
+
+**Option B** [Condition: INVESTIGATION_SKILL >= 3]: "I noticed the scuff marks near the ventilation. Someone came through here recently."
+→ Unlocks shortcut to quest objective
+```
+
+---
+
 *Document created: Phase 5 Session 2*
-*Variable count: ~35 core variables + ~85 flags = ~120 tracked values*
+*Variable count: ~35 core variables + ~85 flags + 4 skills = ~125 tracked values*
