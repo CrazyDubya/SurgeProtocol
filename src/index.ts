@@ -19,6 +19,7 @@ import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
 import { questRoutes } from './api/quests';
 import { vehicleRoutes } from './api/vehicles';
+import { saveRoutes } from './api/saves';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -83,6 +84,7 @@ app.route('/api/items', itemRoutes);
 app.route('/api/augmentations', augmentationRoutes);
 app.route('/api/quests', questRoutes);
 app.route('/api/vehicles', vehicleRoutes);
+app.route('/api/saves', saveRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());

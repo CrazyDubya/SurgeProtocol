@@ -87,10 +87,59 @@ export class MockD1Database {
     }
 
     const columns = colsMatch[1]!.split(',').map(c => c.trim());
+
+    // Parse VALUES clause to identify which values are parameters (?) vs literals/functions
+    const valuesMatch = sql.match(/VALUES\s*\((.+)\)\s*$/is);
+    if (!valuesMatch) {
+      return { results: [], success: false, meta: { changes: 0, last_row_id: 0 } };
+    }
+
+    // Split values carefully, handling function calls like datetime('now')
+    const valuesStr = valuesMatch[1]!;
+    const values: string[] = [];
+    let depth = 0;
+    let current = '';
+    for (const char of valuesStr) {
+      if (char === '(' && depth >= 0) {
+        depth++;
+        current += char;
+      } else if (char === ')' && depth > 0) {
+        depth--;
+        current += char;
+      } else if (char === ',' && depth === 0) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    if (current.trim()) {
+      values.push(current.trim());
+    }
+
     const row: D1Row = {};
+    let paramIndex = 0;
 
     columns.forEach((col, i) => {
-      row[col] = params[i];
+      const valueStr = values[i]?.trim() || '?';
+      if (valueStr === '?') {
+        // Parameter placeholder - use next param
+        row[col] = params[paramIndex++];
+      } else if (valueStr.toLowerCase().startsWith('datetime(')) {
+        // SQL datetime function - use current time
+        row[col] = new Date().toISOString();
+      } else if (valueStr.toLowerCase() === 'null') {
+        row[col] = null;
+      } else if (/^['"].*['"]$/.test(valueStr)) {
+        // String literal - strip quotes
+        row[col] = valueStr.slice(1, -1);
+      } else if (/^-?\d+(\.\d+)?$/.test(valueStr)) {
+        // Numeric literal
+        row[col] = parseFloat(valueStr);
+      } else {
+        // Other literals or expressions
+        row[col] = valueStr;
+      }
     });
 
     if (!this.tables.has(tableName)) {
@@ -174,6 +223,46 @@ export class MockD1Database {
     const limitMatch = sql.match(/LIMIT\s+(\d+)/i);
     if (limitMatch) {
       rows = rows.slice(0, parseInt(limitMatch[1]!, 10));
+    }
+
+    // Handle aggregate functions (COUNT, SUM, etc.)
+    const selectClause = sql.match(/SELECT\s+(.+?)\s+FROM/is)?.[1] || '*';
+
+    // Check for COUNT(*)
+    const countMatch = selectClause.match(/COUNT\s*\(\s*\*\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/);
+    if (countMatch) {
+      const alias = countMatch[1] || 'count';
+      return { results: [{ [alias]: rows.length }] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
+    }
+
+    // Check for SUM with CASE (simplified)
+    const sumCaseMatches = [...selectClause.matchAll(/SUM\s*\(\s*CASE\s+WHEN\s+(\w+)\s*=\s*'(\w+)'\s+THEN\s+(\w+)\s+ELSE\s+(\d+)\s+END\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/gi)];
+    const countCaseMatches = [...selectClause.matchAll(/COUNT\s*\(\s*CASE\s+WHEN\s+(\w+)\s*=\s*'(\w+)'\s+THEN\s+(\d+)\s+END\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/gi)];
+
+    if (sumCaseMatches.length > 0 || countCaseMatches.length > 0) {
+      const result: D1Row = {};
+
+      for (const m of countCaseMatches) {
+        const [, col, val, , alias = 'count'] = m;
+        result[alias] = rows.filter(r => r[col!] === val).length;
+      }
+
+      for (const m of sumCaseMatches) {
+        const [, col, val, sumCol, defaultVal, alias = 'sum'] = m;
+        result[alias] = rows
+          .filter(r => r[col!] === val)
+          .reduce((acc, r) => acc + (Number(r[sumCol!]) || Number(defaultVal) || 0), 0);
+      }
+
+      return { results: [result] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
+    }
+
+    // Check for simple SUM
+    const sumMatch = selectClause.match(/SUM\s*\(\s*(\w+)\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/i);
+    if (sumMatch) {
+      const [, col, alias = 'sum'] = sumMatch;
+      const sum = rows.reduce((acc, r) => acc + (Number(r[col!]) || 0), 0);
+      return { results: [{ [alias]: sum }] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
     }
 
     // Apply column aliases
