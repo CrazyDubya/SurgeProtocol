@@ -75,12 +75,14 @@ export function useWebSocket(options: WebSocketOptions): WebSocketHook {
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stateSignal = signal<WebSocketState>('disconnected');
+  // Store signal in ref to persist across renders
+  const stateSignalRef = useRef(signal<WebSocketState>('disconnected'));
+  const stateSignal = stateSignalRef.current;
 
   const setState = useCallback((newState: WebSocketState) => {
     stateSignal.value = newState;
     onStateChange?.(newState);
-  }, [onStateChange]);
+  }, [onStateChange, stateSignal]);
 
   const clearTimers = useCallback(() => {
     if (reconnectTimeoutRef.current) {
