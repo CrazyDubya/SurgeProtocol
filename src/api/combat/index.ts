@@ -1349,3 +1349,567 @@ combatRoutes.get('/encounters/:id/preview', async (c) => {
     },
   });
 });
+
+// =============================================================================
+// DAY 3: COMBAT INSTANCE MANAGEMENT
+// =============================================================================
+
+interface CombatInstance {
+  id: string;
+  character_id: string;
+  encounter_id: string | null;
+  started_at: string;
+  status: string;
+  current_round: number;
+  current_turn_entity_id: string | null;
+  turn_order: string | null;
+  player_participants: string | null;
+  enemy_participants: string | null;
+  neutral_participants: string | null;
+  reinforcements_called: number;
+  damage_dealt_by_player: number;
+  damage_taken_by_player: number;
+  enemies_defeated: number;
+  allies_lost: number;
+  rounds_elapsed: number;
+  time_elapsed_seconds: number;
+  ammo_expended: string | null;
+  items_used: string | null;
+  abilities_used: string | null;
+  health_items_used: number;
+  ended_at: string | null;
+  outcome: string | null;
+  objectives_completed: string | null;
+  loot_dropped: string | null;
+  xp_earned: number;
+  special_achievements: string | null;
+  action_log: string | null;
+  replay_seed: number | null;
+}
+
+/**
+ * POST /combat/start
+ * Initialize a new combat instance from an encounter.
+ */
+combatRoutes.post('/start', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.json<{
+    characterId: string;
+    encounterId: string;
+    participants?: { id: string; type: 'player' | 'ally' }[];
+  }>();
+
+  const { characterId, encounterId, participants = [] } = body;
+
+  // Validate character exists
+  const character = await db
+    .prepare(`SELECT id, name FROM characters WHERE id = ?`)
+    .bind(characterId)
+    .first<{ id: string; name: string }>();
+
+  if (!character) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
+    }, 404);
+  }
+
+  // Check if character already has active combat
+  const activeCombat = await db
+    .prepare(
+      `SELECT id FROM combat_instances
+       WHERE character_id = ? AND status IN ('INITIALIZING', 'ACTIVE', 'PAUSED')`
+    )
+    .bind(characterId)
+    .first();
+
+  if (activeCombat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'ALREADY_IN_COMBAT', message: 'Character is already in combat' }],
+    }, 400);
+  }
+
+  // Validate encounter exists
+  const encounter = await db
+    .prepare(
+      `SELECT id, name, enemy_spawn_groups, difficulty_rating,
+              primary_objective, time_limit_seconds
+       FROM combat_encounters WHERE id = ?`
+    )
+    .bind(encounterId)
+    .first<{
+      id: string;
+      name: string | null;
+      enemy_spawn_groups: string | null;
+      difficulty_rating: number;
+      primary_objective: string | null;
+      time_limit_seconds: number | null;
+    }>();
+
+  if (!encounter) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Encounter not found' }],
+    }, 404);
+  }
+
+  // Generate combat instance ID
+  const combatId = `combat-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
+  // Build initial participant lists
+  const playerParticipants = [
+    { id: characterId, name: character.name, type: 'player' as const, isActive: true },
+    ...participants.map(p => ({ ...p, isActive: true })),
+  ];
+
+  // Parse enemy spawn groups from encounter
+  const enemyGroups = encounter.enemy_spawn_groups
+    ? JSON.parse(encounter.enemy_spawn_groups)
+    : [];
+  const enemyParticipants = enemyGroups.flatMap((group: { enemies: unknown[] }) =>
+    group.enemies || []
+  );
+
+  // Generate initial turn order (simplified - players first, then enemies)
+  const turnOrder = [
+    ...playerParticipants.map(p => ({ id: p.id, type: 'player' })),
+    ...enemyParticipants.map((e: { id: string }) => ({ id: e.id, type: 'enemy' })),
+  ];
+
+  // Generate replay seed for deterministic random events
+  const replaySeed = Math.floor(Math.random() * 1000000);
+
+  // Insert combat instance
+  await db
+    .prepare(
+      `INSERT INTO combat_instances (
+        id, character_id, encounter_id, started_at,
+        status, current_round, current_turn_entity_id, turn_order,
+        player_participants, enemy_participants, replay_seed
+      ) VALUES (?, ?, ?, datetime('now'), 'ACTIVE', 1, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      combatId,
+      characterId,
+      encounterId,
+      turnOrder[0]?.id || null,
+      JSON.stringify(turnOrder),
+      JSON.stringify(playerParticipants),
+      JSON.stringify(enemyParticipants),
+      replaySeed
+    )
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combat: {
+        id: combatId,
+        status: 'ACTIVE',
+        encounter: {
+          id: encounter.id,
+          name: encounter.name,
+          difficulty: encounter.difficulty_rating,
+          objective: encounter.primary_objective,
+          timeLimit: encounter.time_limit_seconds,
+        },
+        currentRound: 1,
+        currentTurn: turnOrder[0] || null,
+        turnOrder,
+        participants: {
+          players: playerParticipants,
+          enemies: enemyParticipants,
+        },
+        startedAt: new Date().toISOString(),
+      },
+    },
+  }, 201);
+});
+
+/**
+ * GET /combat/active
+ * List active combat instances for a character.
+ */
+combatRoutes.get('/active', async (c) => {
+  const db = c.env.DB;
+  const characterId = c.req.query('characterId');
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_PARAM', message: 'characterId query parameter is required' }],
+    }, 400);
+  }
+
+  const result = await db
+    .prepare(
+      `SELECT ci.*, ce.name as encounter_name, ce.difficulty_rating
+       FROM combat_instances ci
+       LEFT JOIN combat_encounters ce ON ci.encounter_id = ce.id
+       WHERE ci.character_id = ? AND ci.status IN ('INITIALIZING', 'ACTIVE', 'PAUSED')
+       ORDER BY ci.started_at DESC`
+    )
+    .bind(characterId)
+    .all<CombatInstance & { encounter_name: string | null; difficulty_rating: number | null }>();
+
+  const activeCombats = result.results.map(combat => ({
+    id: combat.id,
+    status: combat.status,
+    encounter: combat.encounter_id ? {
+      id: combat.encounter_id,
+      name: combat.encounter_name,
+      difficulty: combat.difficulty_rating,
+    } : null,
+    currentRound: combat.current_round,
+    roundsElapsed: combat.rounds_elapsed,
+    timeElapsed: combat.time_elapsed_seconds,
+    stats: {
+      damageDealt: combat.damage_dealt_by_player,
+      damageTaken: combat.damage_taken_by_player,
+      enemiesDefeated: combat.enemies_defeated,
+      alliesLost: combat.allies_lost,
+    },
+    startedAt: combat.started_at,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      activeCombats,
+      count: activeCombats.length,
+    },
+  });
+});
+
+/**
+ * GET /combat/instances/:id
+ * Get detailed state of a combat instance.
+ */
+combatRoutes.get('/instances/:id', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  const combat = await db
+    .prepare(
+      `SELECT ci.*, ce.name as encounter_name, ce.difficulty_rating,
+              ce.primary_objective, ce.optional_objectives,
+              ce.time_limit_seconds, ce.retreat_possible
+       FROM combat_instances ci
+       LEFT JOIN combat_encounters ce ON ci.encounter_id = ce.id
+       WHERE ci.id = ?`
+    )
+    .bind(combatId)
+    .first<CombatInstance & {
+      encounter_name: string | null;
+      difficulty_rating: number | null;
+      primary_objective: string | null;
+      optional_objectives: string | null;
+      time_limit_seconds: number | null;
+      retreat_possible: number | null;
+    }>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      combat: {
+        id: combat.id,
+        characterId: combat.character_id,
+        status: combat.status,
+        encounter: combat.encounter_id ? {
+          id: combat.encounter_id,
+          name: combat.encounter_name,
+          difficulty: combat.difficulty_rating,
+          objective: combat.primary_objective,
+          optionalObjectives: combat.optional_objectives
+            ? JSON.parse(combat.optional_objectives)
+            : [],
+          timeLimit: combat.time_limit_seconds,
+          canRetreat: combat.retreat_possible === 1,
+        } : null,
+        turn: {
+          currentRound: combat.current_round,
+          currentEntityId: combat.current_turn_entity_id,
+          turnOrder: combat.turn_order ? JSON.parse(combat.turn_order) : [],
+        },
+        participants: {
+          players: combat.player_participants
+            ? JSON.parse(combat.player_participants)
+            : [],
+          enemies: combat.enemy_participants
+            ? JSON.parse(combat.enemy_participants)
+            : [],
+          neutrals: combat.neutral_participants
+            ? JSON.parse(combat.neutral_participants)
+            : [],
+          reinforcementsCalled: combat.reinforcements_called === 1,
+        },
+        stats: {
+          damageDealt: combat.damage_dealt_by_player,
+          damageTaken: combat.damage_taken_by_player,
+          enemiesDefeated: combat.enemies_defeated,
+          alliesLost: combat.allies_lost,
+          roundsElapsed: combat.rounds_elapsed,
+          timeElapsed: combat.time_elapsed_seconds,
+        },
+        resourcesUsed: {
+          ammo: combat.ammo_expended ? JSON.parse(combat.ammo_expended) : {},
+          items: combat.items_used ? JSON.parse(combat.items_used) : [],
+          abilities: combat.abilities_used ? JSON.parse(combat.abilities_used) : [],
+          healthItems: combat.health_items_used,
+        },
+        outcome: combat.ended_at ? {
+          result: combat.outcome,
+          objectivesCompleted: combat.objectives_completed
+            ? JSON.parse(combat.objectives_completed)
+            : [],
+          loot: combat.loot_dropped ? JSON.parse(combat.loot_dropped) : [],
+          xpEarned: combat.xp_earned,
+          achievements: combat.special_achievements
+            ? JSON.parse(combat.special_achievements)
+            : [],
+          endedAt: combat.ended_at,
+        } : null,
+        timing: {
+          startedAt: combat.started_at,
+          endedAt: combat.ended_at,
+        },
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/end
+ * End a combat instance with a specific outcome.
+ */
+combatRoutes.post('/instances/:id/end', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+  const body = await c.req.json<{
+    outcome: 'VICTORY' | 'DEFEAT' | 'RETREAT' | 'DRAW';
+    objectivesCompleted?: string[];
+    loot?: { itemId: string; quantity: number }[];
+  }>();
+
+  const { outcome, objectivesCompleted = [], loot = [] } = body;
+
+  // Validate outcome
+  const validOutcomes = ['VICTORY', 'DEFEAT', 'RETREAT', 'DRAW'];
+  if (!validOutcomes.includes(outcome)) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_OUTCOME', message: 'Invalid combat outcome' }],
+    }, 400);
+  }
+
+  // Get combat instance (without JOIN for better mock DB compatibility)
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  // Check if combat is already ended
+  if (combat.status === 'COMPLETED' || combat.status === 'ABANDONED') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'ALREADY_ENDED', message: 'Combat has already ended' }],
+    }, 400);
+  }
+
+  // Get encounter details if exists
+  let encounter: { xp_reward: number; cred_reward: number; retreat_possible: number } | null = null;
+  if (combat.encounter_id) {
+    encounter = await db
+      .prepare(`SELECT xp_reward, cred_reward, retreat_possible FROM combat_encounters WHERE id = ?`)
+      .bind(combat.encounter_id)
+      .first<{ xp_reward: number; cred_reward: number; retreat_possible: number }>();
+  }
+
+  // Check retreat possibility
+  if (outcome === 'RETREAT' && encounter?.retreat_possible === 0) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'RETREAT_NOT_ALLOWED', message: 'Retreat is not possible in this encounter' }],
+    }, 400);
+  }
+
+  // Calculate XP based on outcome
+  let xpEarned = 0;
+  const xpReward = encounter?.xp_reward || 0;
+  const credReward = encounter?.cred_reward || 0;
+  if (outcome === 'VICTORY') {
+    xpEarned = xpReward;
+  } else if (outcome === 'RETREAT') {
+    xpEarned = Math.floor(xpReward * 0.25); // 25% XP for retreat
+  } else if (outcome === 'DRAW') {
+    xpEarned = Math.floor(xpReward * 0.5); // 50% XP for draw
+  }
+  // DEFEAT gets 0 XP
+
+  // Update combat instance
+  await db
+    .prepare(
+      `UPDATE combat_instances SET
+        status = ?,
+        ended_at = ?,
+        outcome = ?,
+        objectives_completed = ?,
+        loot_dropped = ?,
+        xp_earned = ?
+       WHERE id = ?`
+    )
+    .bind(
+      'COMPLETED',
+      new Date().toISOString(),
+      outcome,
+      JSON.stringify(objectivesCompleted),
+      JSON.stringify(loot),
+      xpEarned,
+      combatId
+    )
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combat: {
+        id: combatId,
+        status: 'COMPLETED',
+        outcome,
+        stats: {
+          damageDealt: combat.damage_dealt_by_player,
+          damageTaken: combat.damage_taken_by_player,
+          enemiesDefeated: combat.enemies_defeated,
+          roundsElapsed: combat.rounds_elapsed,
+          timeElapsed: combat.time_elapsed_seconds,
+        },
+        rewards: {
+          xpEarned,
+          creditsEarned: outcome === 'VICTORY' ? credReward : 0,
+          loot,
+          objectivesCompleted,
+        },
+        endedAt: new Date().toISOString(),
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/history
+ * Get completed combat history for a character.
+ */
+combatRoutes.get('/history', async (c) => {
+  const db = c.env.DB;
+  const characterId = c.req.query('characterId');
+  const outcome = c.req.query('outcome');
+  const limit = Math.min(parseInt(c.req.query('limit') || '20'), 50);
+  const offset = parseInt(c.req.query('offset') || '0');
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_PARAM', message: 'characterId query parameter is required' }],
+    }, 400);
+  }
+
+  let query = `
+    SELECT ci.*, ce.name as encounter_name, ce.difficulty_rating
+    FROM combat_instances ci
+    LEFT JOIN combat_encounters ce ON ci.encounter_id = ce.id
+    WHERE ci.character_id = ? AND ci.status = 'COMPLETED'
+  `;
+  const params: unknown[] = [characterId];
+
+  if (outcome) {
+    query += ` AND ci.outcome = ?`;
+    params.push(outcome);
+  }
+
+  // Count total
+  const countQuery = query.replace(/SELECT[\s\S]+?FROM/, 'SELECT COUNT(*) as total FROM');
+  const countResult = await db.prepare(countQuery).bind(...params).first<{ total: number }>();
+
+  query += ` ORDER BY ci.ended_at DESC LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const result = await db.prepare(query).bind(...params).all<CombatInstance & {
+    encounter_name: string | null;
+    difficulty_rating: number | null;
+  }>();
+
+  const history = result.results.map(combat => ({
+    id: combat.id,
+    encounter: combat.encounter_id ? {
+      id: combat.encounter_id,
+      name: combat.encounter_name,
+      difficulty: combat.difficulty_rating,
+    } : null,
+    outcome: combat.outcome,
+    stats: {
+      damageDealt: combat.damage_dealt_by_player,
+      damageTaken: combat.damage_taken_by_player,
+      enemiesDefeated: combat.enemies_defeated,
+      alliesLost: combat.allies_lost,
+      roundsElapsed: combat.rounds_elapsed,
+      timeElapsed: combat.time_elapsed_seconds,
+    },
+    rewards: {
+      xpEarned: combat.xp_earned,
+      loot: combat.loot_dropped ? JSON.parse(combat.loot_dropped) : [],
+      objectivesCompleted: combat.objectives_completed
+        ? JSON.parse(combat.objectives_completed)
+        : [],
+    },
+    achievements: combat.special_achievements
+      ? JSON.parse(combat.special_achievements)
+      : [],
+    timing: {
+      startedAt: combat.started_at,
+      endedAt: combat.ended_at,
+    },
+  }));
+
+  // Calculate summary stats
+  const totalCombats = countResult?.total || 0;
+  const victories = result.results.filter(c => c.outcome === 'VICTORY').length;
+  const defeats = result.results.filter(c => c.outcome === 'DEFEAT').length;
+  const retreats = result.results.filter(c => c.outcome === 'RETREAT').length;
+
+  return c.json({
+    success: true,
+    data: {
+      history,
+      summary: {
+        totalCombats,
+        inCurrentPage: history.length,
+        outcomes: {
+          victories,
+          defeats,
+          retreats,
+        },
+      },
+      pagination: {
+        total: totalCombats,
+        limit,
+        offset,
+        hasMore: offset + limit < totalCombats,
+      },
+    },
+  });
+});

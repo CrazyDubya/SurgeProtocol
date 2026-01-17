@@ -1361,3 +1361,879 @@ describe('Combat System Day 2 - Arenas & Encounters', () => {
     });
   });
 });
+
+// =============================================================================
+// DAY 3: COMBAT INSTANCE MANAGEMENT TESTS
+// =============================================================================
+
+describe('Combat System Day 3 - Combat Instance Management', () => {
+  let env: MockEnv;
+
+  beforeEach(async () => {
+    env = createMockEnv();
+
+    // Seed characters
+    env.DB._seed('characters', [
+      {
+        id: 'char-player-1',
+        user_id: 'user-1',
+        name: 'Test Runner',
+        handle: 'testrunner',
+        level: 5,
+        current_hp: 100,
+        max_hp: 100,
+      },
+      {
+        id: 'char-player-2',
+        user_id: 'user-2',
+        name: 'Ally Fighter',
+        handle: 'allyfighter',
+        level: 4,
+        current_hp: 80,
+        max_hp: 80,
+      },
+    ]);
+
+    // Seed locations
+    env.DB._seed('locations', [
+      {
+        id: 'loc-warehouse',
+        code: 'ABANDONED_WAREHOUSE',
+        name: 'Abandoned Warehouse',
+        district_id: 'district-industrial',
+      },
+    ]);
+
+    // Seed combat arenas
+    env.DB._seed('combat_arenas', [
+      {
+        id: 'arena-warehouse',
+        location_id: 'loc-warehouse',
+        name: 'Warehouse Floor',
+        width_m: 40,
+        height_m: 30,
+      },
+    ]);
+
+    // Seed combat encounters
+    env.DB._seed('combat_encounters', [
+      {
+        id: 'enc-warehouse-ambush',
+        name: 'Warehouse Ambush',
+        description: 'Gangers have set up an ambush.',
+        encounter_type: 'AMBUSH',
+        difficulty_rating: 5,
+        is_scripted: 0,
+        is_avoidable: 1,
+        location_id: 'loc-warehouse',
+        combat_arena_id: 'arena-warehouse',
+        enemy_spawn_groups: JSON.stringify([
+          { enemies: [{ id: 'enemy-1', name: 'Ganger' }, { id: 'enemy-2', name: 'Ganger Heavy' }] },
+        ]),
+        primary_objective: 'Defeat all enemies',
+        optional_objectives: JSON.stringify(['Find the stash']),
+        time_limit_seconds: null,
+        xp_reward: 150,
+        cred_reward: 500,
+        retreat_possible: 1,
+      },
+      {
+        id: 'enc-no-retreat',
+        name: 'No Escape Fight',
+        description: 'Fight to the death.',
+        encounter_type: 'BOSS',
+        difficulty_rating: 8,
+        is_scripted: 1,
+        is_avoidable: 0,
+        location_id: 'loc-warehouse',
+        combat_arena_id: 'arena-warehouse',
+        enemy_spawn_groups: JSON.stringify([]),
+        primary_objective: 'Survive',
+        optional_objectives: null,
+        time_limit_seconds: 300,
+        xp_reward: 500,
+        cred_reward: 2000,
+        retreat_possible: 0,
+      },
+    ]);
+
+    // Seed combat instances for history tests
+    env.DB._seed('combat_instances', [
+      {
+        id: 'combat-completed-1',
+        character_id: 'char-player-1',
+        encounter_id: 'enc-warehouse-ambush',
+        started_at: '2024-01-01T10:00:00Z',
+        status: 'COMPLETED',
+        current_round: 5,
+        damage_dealt_by_player: 150,
+        damage_taken_by_player: 50,
+        enemies_defeated: 3,
+        allies_lost: 0,
+        rounds_elapsed: 5,
+        time_elapsed_seconds: 120,
+        ended_at: '2024-01-01T10:02:00Z',
+        outcome: 'VICTORY',
+        objectives_completed: JSON.stringify(['Defeat all enemies']),
+        loot_dropped: JSON.stringify([{ itemId: 'item-ammo', quantity: 20 }]),
+        xp_earned: 150,
+        special_achievements: JSON.stringify(['FLAWLESS']),
+      },
+      {
+        id: 'combat-completed-2',
+        character_id: 'char-player-1',
+        encounter_id: 'enc-warehouse-ambush',
+        started_at: '2024-01-02T10:00:00Z',
+        status: 'COMPLETED',
+        current_round: 3,
+        damage_dealt_by_player: 80,
+        damage_taken_by_player: 100,
+        enemies_defeated: 1,
+        allies_lost: 1,
+        rounds_elapsed: 3,
+        time_elapsed_seconds: 90,
+        ended_at: '2024-01-02T10:01:30Z',
+        outcome: 'DEFEAT',
+        objectives_completed: JSON.stringify([]),
+        loot_dropped: JSON.stringify([]),
+        xp_earned: 0,
+      },
+      {
+        id: 'combat-completed-3',
+        character_id: 'char-player-1',
+        encounter_id: 'enc-warehouse-ambush',
+        started_at: '2024-01-03T10:00:00Z',
+        status: 'COMPLETED',
+        current_round: 2,
+        damage_dealt_by_player: 30,
+        damage_taken_by_player: 40,
+        enemies_defeated: 0,
+        allies_lost: 0,
+        rounds_elapsed: 2,
+        time_elapsed_seconds: 60,
+        ended_at: '2024-01-03T10:01:00Z',
+        outcome: 'RETREAT',
+        objectives_completed: JSON.stringify([]),
+        loot_dropped: JSON.stringify([]),
+        xp_earned: 37,
+      },
+    ]);
+  });
+
+  // ===========================================================================
+  // POST /combat/start TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/start', () => {
+    it('should start a new combat instance', async () => {
+      const request = createTestRequest('POST', '/api/combat/start', {
+        body: {
+          characterId: 'char-player-1',
+          encounterId: 'enc-warehouse-ambush',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            id: string;
+            status: string;
+            encounter: { id: string; name: string };
+            currentRound: number;
+            turnOrder: Array<{ id: string; type: string }>;
+            participants: {
+              players: Array<{ id: string; name: string }>;
+              enemies: Array<{ id: string }>;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(201);
+      expect(data.success).toBe(true);
+      expect(data.data?.combat.status).toBe('ACTIVE');
+      expect(data.data?.combat.encounter.id).toBe('enc-warehouse-ambush');
+      expect(data.data?.combat.currentRound).toBe(1);
+      expect(data.data?.combat.participants.players).toHaveLength(1);
+      expect(data.data?.combat.participants.players[0]?.name).toBe('Test Runner');
+      expect(data.data?.combat.participants.enemies).toHaveLength(2);
+    });
+
+    it('should include additional participants', async () => {
+      const request = createTestRequest('POST', '/api/combat/start', {
+        body: {
+          characterId: 'char-player-1',
+          encounterId: 'enc-warehouse-ambush',
+          participants: [{ id: 'char-player-2', type: 'ally' }],
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            turnOrder: unknown[];
+            participants: { players: unknown[] };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(201);
+      expect(data.data?.combat.participants.players).toHaveLength(2);
+      // Turn order should have player + ally + enemies
+      expect(data.data?.combat.turnOrder.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should return 404 for non-existent character', async () => {
+      const request = createTestRequest('POST', '/api/combat/start', {
+        body: {
+          characterId: 'nonexistent',
+          encounterId: 'enc-warehouse-ambush',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(404);
+      expect(data.errors?.[0]?.code).toBe('NOT_FOUND');
+    });
+
+    it('should return 404 for non-existent encounter', async () => {
+      const request = createTestRequest('POST', '/api/combat/start', {
+        body: {
+          characterId: 'char-player-1',
+          encounterId: 'nonexistent',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(404);
+      expect(data.errors?.[0]?.code).toBe('NOT_FOUND');
+    });
+
+    it('should prevent starting combat when already in combat', async () => {
+      // First, seed an active combat
+      env.DB._seed('combat_instances', [
+        {
+          id: 'combat-active',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-warehouse-ambush',
+          status: 'ACTIVE',
+          current_round: 1,
+        },
+      ]);
+
+      const request = createTestRequest('POST', '/api/combat/start', {
+        body: {
+          characterId: 'char-player-1',
+          encounterId: 'enc-warehouse-ambush',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('ALREADY_IN_COMBAT');
+    });
+  });
+
+  // ===========================================================================
+  // GET /combat/active TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/active', () => {
+    beforeEach(() => {
+      // Seed active combat instances
+      env.DB._seed('combat_instances', [
+        {
+          id: 'combat-active-1',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-warehouse-ambush',
+          started_at: '2024-01-15T10:00:00Z',
+          status: 'ACTIVE',
+          current_round: 3,
+          rounds_elapsed: 2,
+          time_elapsed_seconds: 60,
+          damage_dealt_by_player: 100,
+          damage_taken_by_player: 30,
+          enemies_defeated: 1,
+          allies_lost: 0,
+        },
+        {
+          id: 'combat-paused-1',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-no-retreat',
+          started_at: '2024-01-15T11:00:00Z',
+          status: 'PAUSED',
+          current_round: 1,
+          rounds_elapsed: 0,
+          time_elapsed_seconds: 15,
+          damage_dealt_by_player: 20,
+          damage_taken_by_player: 10,
+          enemies_defeated: 0,
+          allies_lost: 0,
+        },
+      ]);
+    });
+
+    it('should return active combats for character', async () => {
+      const request = createTestRequest('GET', '/api/combat/active?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          activeCombats: Array<{
+            id: string;
+            status: string;
+            currentRound: number;
+            stats: { damageDealt: number };
+          }>;
+          count: number;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.activeCombats).toHaveLength(2);
+      expect(data.data?.count).toBe(2);
+    });
+
+    it('should include encounter info', async () => {
+      const request = createTestRequest('GET', '/api/combat/active?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          activeCombats: Array<{
+            encounter: { id: string; name: string | null };
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const ambushCombat = data.data?.activeCombats.find(c => c.encounter?.id === 'enc-warehouse-ambush');
+      expect(ambushCombat).toBeDefined();
+    });
+
+    it('should return combat stats', async () => {
+      const request = createTestRequest('GET', '/api/combat/active?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          activeCombats: Array<{
+            id: string;
+            stats: {
+              damageDealt: number;
+              damageTaken: number;
+              enemiesDefeated: number;
+            };
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const activeCombat = data.data?.activeCombats.find(c => c.id === 'combat-active-1');
+      expect(activeCombat?.stats.damageDealt).toBe(100);
+      expect(activeCombat?.stats.damageTaken).toBe(30);
+      expect(activeCombat?.stats.enemiesDefeated).toBe(1);
+    });
+
+    it('should require characterId parameter', async () => {
+      const request = createTestRequest('GET', '/api/combat/active');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('MISSING_PARAM');
+    });
+
+    it('should return empty for character with no active combat', async () => {
+      const request = createTestRequest('GET', '/api/combat/active?characterId=char-player-2');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: { activeCombats: unknown[]; count: number };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.activeCombats).toHaveLength(0);
+      expect(data.data?.count).toBe(0);
+    });
+  });
+
+  // ===========================================================================
+  // GET /combat/instances/:id TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/instances/:id', () => {
+    beforeEach(() => {
+      env.DB._seed('combat_instances', [
+        {
+          id: 'combat-detail-1',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-warehouse-ambush',
+          started_at: '2024-01-15T10:00:00Z',
+          status: 'ACTIVE',
+          current_round: 4,
+          current_turn_entity_id: 'char-player-1',
+          turn_order: JSON.stringify([
+            { id: 'char-player-1', type: 'player' },
+            { id: 'enemy-1', type: 'enemy' },
+          ]),
+          player_participants: JSON.stringify([
+            { id: 'char-player-1', name: 'Test Runner', type: 'player', isActive: true },
+          ]),
+          enemy_participants: JSON.stringify([
+            { id: 'enemy-1', name: 'Ganger', hp: 30 },
+          ]),
+          neutral_participants: null,
+          reinforcements_called: 0,
+          damage_dealt_by_player: 120,
+          damage_taken_by_player: 45,
+          enemies_defeated: 2,
+          allies_lost: 0,
+          rounds_elapsed: 3,
+          time_elapsed_seconds: 90,
+          ammo_expended: JSON.stringify({ pistol: 12, rifle: 5 }),
+          items_used: JSON.stringify(['medkit']),
+          abilities_used: JSON.stringify(['quickdraw']),
+          health_items_used: 1,
+          ended_at: null,
+          outcome: null,
+        },
+      ]);
+    });
+
+    it('should return combat instance details', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-detail-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            id: string;
+            characterId: string;
+            status: string;
+            turn: {
+              currentRound: number;
+              currentEntityId: string;
+              turnOrder: unknown[];
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.combat.id).toBe('combat-detail-1');
+      expect(data.data?.combat.characterId).toBe('char-player-1');
+      expect(data.data?.combat.status).toBe('ACTIVE');
+      expect(data.data?.combat.turn.currentRound).toBe(4);
+      expect(data.data?.combat.turn.currentEntityId).toBe('char-player-1');
+    });
+
+    it('should return participants', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-detail-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            participants: {
+              players: Array<{ id: string; name: string }>;
+              enemies: Array<{ id: string; name: string }>;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.combat.participants.players).toHaveLength(1);
+      expect(data.data?.combat.participants.players[0]?.name).toBe('Test Runner');
+      expect(data.data?.combat.participants.enemies).toHaveLength(1);
+    });
+
+    it('should return resource usage', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/combat-detail-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            resourcesUsed: {
+              ammo: { pistol: number; rifle: number };
+              items: string[];
+              abilities: string[];
+              healthItems: number;
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.combat.resourcesUsed.ammo.pistol).toBe(12);
+      expect(data.data?.combat.resourcesUsed.items).toContain('medkit');
+      expect(data.data?.combat.resourcesUsed.abilities).toContain('quickdraw');
+      expect(data.data?.combat.resourcesUsed.healthItems).toBe(1);
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('GET', '/api/combat/instances/nonexistent');
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // POST /combat/instances/:id/end TESTS
+  // ===========================================================================
+
+  describe('POST /api/combat/instances/:id/end', () => {
+    beforeEach(() => {
+      env.DB._seed('combat_instances', [
+        {
+          id: 'combat-to-end',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-warehouse-ambush',
+          started_at: '2024-01-15T10:00:00Z',
+          status: 'ACTIVE',
+          current_round: 5,
+          damage_dealt_by_player: 200,
+          damage_taken_by_player: 80,
+          enemies_defeated: 4,
+          allies_lost: 0,
+          rounds_elapsed: 4,
+          time_elapsed_seconds: 150,
+        },
+        {
+          id: 'combat-no-retreat',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-no-retreat',
+          started_at: '2024-01-15T11:00:00Z',
+          status: 'ACTIVE',
+          current_round: 2,
+          damage_dealt_by_player: 50,
+          damage_taken_by_player: 100,
+          enemies_defeated: 0,
+          allies_lost: 0,
+          rounds_elapsed: 1,
+          time_elapsed_seconds: 45,
+        },
+        {
+          id: 'combat-already-ended',
+          character_id: 'char-player-1',
+          encounter_id: 'enc-warehouse-ambush',
+          started_at: '2024-01-14T10:00:00Z',
+          status: 'COMPLETED',
+          current_round: 3,
+          ended_at: '2024-01-14T10:05:00Z',
+          outcome: 'VICTORY',
+        },
+      ]);
+    });
+
+    it('should end combat with victory', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-to-end/end', {
+        body: {
+          outcome: 'VICTORY',
+          objectivesCompleted: ['Defeat all enemies', 'Find the stash'],
+          loot: [{ itemId: 'item-weapon', quantity: 1 }],
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            id: string;
+            status: string;
+            outcome: string;
+            rewards: {
+              xpEarned: number;
+              creditsEarned: number;
+              loot: unknown[];
+              objectivesCompleted: string[];
+            };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.combat.status).toBe('COMPLETED');
+      expect(data.data?.combat.outcome).toBe('VICTORY');
+      expect(data.data?.combat.rewards.xpEarned).toBe(150); // Full XP
+      expect(data.data?.combat.rewards.creditsEarned).toBe(500);
+      expect(data.data?.combat.rewards.objectivesCompleted).toHaveLength(2);
+    });
+
+    it('should end combat with defeat (no rewards)', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-to-end/end', {
+        body: {
+          outcome: 'DEFEAT',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            outcome: string;
+            rewards: { xpEarned: number; creditsEarned: number };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.combat.outcome).toBe('DEFEAT');
+      expect(data.data?.combat.rewards.xpEarned).toBe(0);
+      expect(data.data?.combat.rewards.creditsEarned).toBe(0);
+    });
+
+    it('should end combat with retreat (partial XP)', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-to-end/end', {
+        body: {
+          outcome: 'RETREAT',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          combat: {
+            outcome: string;
+            rewards: { xpEarned: number };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.combat.outcome).toBe('RETREAT');
+      expect(data.data?.combat.rewards.xpEarned).toBe(37); // 25% of 150
+    });
+
+    it('should prevent retreat when not allowed', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-no-retreat/end', {
+        body: {
+          outcome: 'RETREAT',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('RETREAT_NOT_ALLOWED');
+    });
+
+    it('should prevent ending already ended combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-already-ended/end', {
+        body: {
+          outcome: 'VICTORY',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('ALREADY_ENDED');
+    });
+
+    it('should reject invalid outcome', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/combat-to-end/end', {
+        body: {
+          outcome: 'INVALID_OUTCOME',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('INVALID_OUTCOME');
+    });
+
+    it('should return 404 for non-existent combat', async () => {
+      const request = createTestRequest('POST', '/api/combat/instances/nonexistent/end', {
+        body: {
+          outcome: 'VICTORY',
+        },
+      });
+
+      const response = await app.fetch(request, env);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ===========================================================================
+  // GET /combat/history TESTS
+  // ===========================================================================
+
+  describe('GET /api/combat/history', () => {
+    it('should return combat history for character', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          history: Array<{
+            id: string;
+            outcome: string;
+            stats: { damageDealt: number };
+            rewards: { xpEarned: number };
+          }>;
+          summary: {
+            totalCombats: number;
+            outcomes: { victories: number; defeats: number; retreats: number };
+          };
+          pagination: { total: number };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data?.history).toHaveLength(3);
+      expect(data.data?.pagination.total).toBe(3);
+    });
+
+    it('should filter by outcome', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1&outcome=VICTORY');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          history: Array<{ outcome: string }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.history).toHaveLength(1);
+      expect(data.data?.history[0]?.outcome).toBe('VICTORY');
+    });
+
+    it('should include combat stats', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          history: Array<{
+            id: string;
+            stats: {
+              damageDealt: number;
+              damageTaken: number;
+              enemiesDefeated: number;
+              roundsElapsed: number;
+            };
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const victory = data.data?.history.find(h => h.id === 'combat-completed-1');
+      expect(victory?.stats.damageDealt).toBe(150);
+      expect(victory?.stats.damageTaken).toBe(50);
+      expect(victory?.stats.enemiesDefeated).toBe(3);
+    });
+
+    it('should include rewards and achievements', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          history: Array<{
+            id: string;
+            rewards: {
+              xpEarned: number;
+              loot: Array<{ itemId: string; quantity: number }>;
+              objectivesCompleted: string[];
+            };
+            achievements: string[];
+          }>;
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      const victory = data.data?.history.find(h => h.id === 'combat-completed-1');
+      expect(victory?.rewards.xpEarned).toBe(150);
+      expect(victory?.rewards.loot).toHaveLength(1);
+      expect(victory?.achievements).toContain('FLAWLESS');
+    });
+
+    it('should calculate outcome summary', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          summary: {
+            totalCombats: number;
+            outcomes: { victories: number; defeats: number; retreats: number };
+          };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.summary.totalCombats).toBe(3);
+      expect(data.data?.summary.outcomes.victories).toBe(1);
+      expect(data.data?.summary.outcomes.defeats).toBe(1);
+      expect(data.data?.summary.outcomes.retreats).toBe(1);
+    });
+
+    it('should require characterId parameter', async () => {
+      const request = createTestRequest('GET', '/api/combat/history');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+      expect(response.status).toBe(400);
+      expect(data.errors?.[0]?.code).toBe('MISSING_PARAM');
+    });
+
+    it('should paginate results', async () => {
+      const request = createTestRequest('GET', '/api/combat/history?characterId=char-player-1&limit=2&offset=0');
+
+      const response = await app.fetch(request, env);
+      const data = await parseJsonResponse<{
+        success: boolean;
+        data?: {
+          history: unknown[];
+          pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+        };
+      }>(response);
+
+      expect(response.status).toBe(200);
+      expect(data.data?.history).toHaveLength(2);
+      expect(data.data?.pagination.hasMore).toBe(true);
+    });
+  });
+});
