@@ -6,6 +6,7 @@
 
 import { useEffect, useCallback } from 'preact/hooks';
 import { characterService } from '@/api';
+import { api } from '@/api/client';
 import {
   items,
   setItems,
@@ -114,12 +115,20 @@ export function useInventoryData() {
 
   /**
    * Use a consumable item
-   * Note: Backend support pending - throws error to allow caller to handle gracefully
    */
-  const useItem = useCallback(async (_itemId: string) => {
-    // Backend endpoint not yet available
-    throw new Error('Item use requires backend support');
-  }, []);
+  const useItem = useCallback(async (inventoryId: string) => {
+    const result = await api.post<{
+      itemUsed: string;
+      effects: string[];
+      remainingQuantity: number;
+      message: string;
+    }>(`/items/inventory/${inventoryId}/use`);
+
+    // Refresh inventory to reflect changes
+    loadInventory();
+
+    return result;
+  }, [loadInventory]);
 
   /**
    * Drop/discard an item

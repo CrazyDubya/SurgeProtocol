@@ -92,10 +92,14 @@ export function Inventory() {
   const handleUse = async () => {
     if (selectedItem.value) {
       try {
-        await useItem(selectedItem.value.id);
-        toast.success(`Used ${selectedItem.value.name}`);
-      } catch {
-        toast.error('Unable to use item - feature coming soon');
+        const result = await useItem(selectedItem.value.id);
+        toast.success(result.message || `Used ${selectedItem.value.name}`);
+        if (result.remainingQuantity === 0) {
+          selectItem(null);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unable to use item';
+        toast.error(message);
       }
     }
   };
