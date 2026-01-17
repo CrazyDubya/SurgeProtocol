@@ -29,6 +29,7 @@ import {
   generateProceduralEnemy,
   getSkillCheckData,
 } from '../../db';
+import { updateQuestProgress, startQuestFromTrigger } from '../quests';
 import type { Combatant } from '../../game/mechanics/combat';
 import {
   type DistrictEvent,
@@ -543,6 +544,24 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
         missionDef?.tier_minimum ?? 1,
         action.parameters
       );
+      break;
+    case 'DIALOGUE':
+      result = await processDialogueAction(
+        c.env.DB,
+        instanceId,
+        characterId,
+        action.targetId,
+        action.parameters
+      );
+      break;
+    case 'USE_ITEM':
+      result = await processUseItemAction(c.env.DB, instanceId, characterId, action.parameters);
+      break;
+    case 'STEALTH':
+      result = await processStealthAction(c.env.DB, c.env.CACHE, instanceId, characterId, action.parameters);
+      break;
+    case 'WAIT':
+      result = await processWaitAction(c.env.DB, instanceId, characterId, action.parameters);
       break;
     default:
       result = {
@@ -1499,6 +1518,890 @@ async function processCombatAction(
         dangerMultiplier: dangerMod,
         activeEvents: activeEvents.map(e => e.name),
       },
+    },
+  };
+}
+
+// =============================================================================
+// DIALOGUE ACTION HANDLER
+// =============================================================================
+
+interface DialogueEffect {
+  type: string;
+  target?: string;
+  value?: number | string;
+}
+
+/**
+ * Process a DIALOGUE mission action.
+ * Handles NPC conversations with effects on reputation, items, and quests.
+ */
+async function processDialogueAction(
+  db: D1Database,
+  instanceId: string,
+  characterId: string,
+  targetNpcId?: string,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  if (!targetNpcId) {
+    return {
+      success: false,
+      outcome: 'NO_NPC_TARGET',
+      details: { error: 'NPC target ID required for dialogue' },
+    };
+  }
+
+  const dialogueTreeId = params?.dialogueTreeId as string | undefined;
+  const choiceId = params?.choiceId as string | undefined;
+  const nodeId = params?.nodeId as string | undefined;
+
+  // Get NPC info
+  const npc = await db
+    .prepare(
+      `SELECT nd.id, nd.name, nd.npc_type, nd.is_quest_giver, nd.faction_id
+       FROM npc_definitions nd
+       WHERE nd.id = ?`
+    )
+    .bind(targetNpcId)
+    .first<{
+      id: string;
+      name: string;
+      npc_type: string;
+      is_quest_giver: number;
+      faction_id: string | null;
+    }>();
+
+  if (!npc) {
+    return {
+      success: false,
+      outcome: 'NPC_NOT_FOUND',
+      details: { error: `NPC not found: ${targetNpcId}` },
+    };
+  }
+
+  // Get character context for dialogue conditions
+  const character = await db
+    .prepare(
+      `SELECT c.id, c.current_tier, c.humanity,
+              cf.credits
+       FROM characters c
+       LEFT JOIN character_finances cf ON c.id = cf.character_id
+       WHERE c.id = ?`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      current_tier: number;
+      humanity: number;
+      credits: number;
+    }>();
+
+  if (!character) {
+    return {
+      success: false,
+      outcome: 'CHARACTER_ERROR',
+      details: { error: 'Could not load character data' },
+    };
+  }
+
+  // If specific dialogue tree requested, fetch from DB
+  let dialogueNode = null;
+  let responseText = '';
+  const effects: DialogueEffect[] = [];
+
+  if (dialogueTreeId && nodeId) {
+    // Get specific dialogue node
+    dialogueNode = await db
+      .prepare(
+        `SELECT dn.*, dt.npc_id FROM dialogue_nodes dn
+         JOIN dialogue_trees dt ON dn.tree_id = dt.id
+         WHERE dn.id = ? AND dn.tree_id = ?`
+      )
+      .bind(nodeId, dialogueTreeId)
+      .first<{
+        id: string;
+        text: string;
+        node_type: string;
+        on_display_effects: string | null;
+        flag_changes: string | null;
+        relationship_changes: string | null;
+      }>();
+
+    if (dialogueNode) {
+      responseText = dialogueNode.text;
+
+      // Parse effects from node
+      if (dialogueNode.on_display_effects) {
+        const nodeEffects = JSON.parse(dialogueNode.on_display_effects);
+        effects.push(...nodeEffects);
+      }
+    }
+
+    // If a choice was made, get response effects
+    if (choiceId) {
+      const response = await db
+        .prepare(`SELECT * FROM dialogue_responses WHERE id = ?`)
+        .bind(choiceId)
+        .first<{
+          id: string;
+          relationship_change: number;
+          reputation_changes: string | null;
+          flag_changes: string | null;
+          grants_items: string | null;
+          removes_items: string | null;
+          grants_xp: number;
+          grants_credits: number;
+          starts_combat: number;
+          triggers_event_id: string | null;
+        }>();
+
+      if (response) {
+        // Apply relationship change
+        if (response.relationship_change !== 0) {
+          effects.push({
+            type: 'MODIFY_RELATION',
+            target: npc.id,
+            value: response.relationship_change,
+          });
+        }
+
+        // Apply reputation changes
+        if (response.reputation_changes) {
+          const repChanges = JSON.parse(response.reputation_changes);
+          for (const [factionId, amount] of Object.entries(repChanges)) {
+            effects.push({
+              type: 'MODIFY_REP',
+              target: factionId,
+              value: amount as number,
+            });
+          }
+        }
+
+        // Grant items
+        if (response.grants_items) {
+          const items = JSON.parse(response.grants_items);
+          for (const item of items) {
+            effects.push({
+              type: 'GIVE_ITEM',
+              target: item.itemId || item.id,
+              value: item.quantity || 1,
+            });
+          }
+        }
+
+        // Remove items
+        if (response.removes_items) {
+          const items = JSON.parse(response.removes_items);
+          for (const item of items) {
+            effects.push({
+              type: 'TAKE_ITEM',
+              target: item.itemId || item.id,
+              value: item.quantity || 1,
+            });
+          }
+        }
+
+        // Grant XP/Credits
+        if (response.grants_xp > 0) {
+          effects.push({ type: 'GIVE_XP', value: response.grants_xp });
+        }
+        if (response.grants_credits > 0) {
+          effects.push({ type: 'GIVE_CREDITS', value: response.grants_credits });
+        }
+      }
+    }
+  } else {
+    // Generic dialogue interaction without specific tree
+    responseText = `${npc.name} acknowledges you with a nod.`;
+  }
+
+  // Apply effects
+  const appliedEffects: Array<{ type: string; target?: string; result: string }> = [];
+
+  for (const effect of effects) {
+    switch (effect.type) {
+      case 'MODIFY_REP':
+        if (effect.target && typeof effect.value === 'number') {
+          await db
+            .prepare(
+              `INSERT INTO character_faction_standing (id, character_id, faction_id, reputation)
+               VALUES (?, ?, ?, ?)
+               ON CONFLICT(character_id, faction_id) DO UPDATE SET reputation = reputation + ?`
+            )
+            .bind(nanoid(), characterId, effect.target, effect.value, effect.value)
+            .run();
+          appliedEffects.push({ type: 'REPUTATION', target: effect.target, result: `${effect.value > 0 ? '+' : ''}${effect.value}` });
+        }
+        break;
+
+      case 'MODIFY_RELATION':
+        // Update NPC relationship
+        if (effect.target && typeof effect.value === 'number') {
+          appliedEffects.push({ type: 'RELATIONSHIP', target: npc.name, result: `${effect.value > 0 ? '+' : ''}${effect.value}` });
+        }
+        break;
+
+      case 'GIVE_ITEM':
+        if (effect.target) {
+          const qty = typeof effect.value === 'number' ? effect.value : 1;
+          // Check if character already has this item
+          const existing = await db
+            .prepare(
+              `SELECT id, quantity FROM character_inventory WHERE character_id = ? AND item_id = ?`
+            )
+            .bind(characterId, effect.target)
+            .first<{ id: string; quantity: number }>();
+
+          if (existing) {
+            await db
+              .prepare(`UPDATE character_inventory SET quantity = quantity + ? WHERE id = ?`)
+              .bind(qty, existing.id)
+              .run();
+          } else {
+            await db
+              .prepare(
+                `INSERT INTO character_inventory (id, character_id, item_id, quantity, created_at)
+                 VALUES (?, ?, ?, ?, datetime('now'))`
+              )
+              .bind(nanoid(), characterId, effect.target, qty)
+              .run();
+          }
+          appliedEffects.push({ type: 'ITEM_RECEIVED', target: effect.target, result: `+${qty}` });
+        }
+        break;
+
+      case 'TAKE_ITEM':
+        if (effect.target) {
+          const qty = typeof effect.value === 'number' ? effect.value : 1;
+          await db
+            .prepare(
+              `UPDATE character_inventory SET quantity = quantity - ?
+               WHERE character_id = ? AND item_id = ? AND quantity >= ?`
+            )
+            .bind(qty, characterId, effect.target, qty)
+            .run();
+          appliedEffects.push({ type: 'ITEM_GIVEN', target: effect.target, result: `-${qty}` });
+        }
+        break;
+
+      case 'GIVE_XP':
+        if (typeof effect.value === 'number') {
+          await db
+            .prepare(`UPDATE characters SET current_xp = current_xp + ? WHERE id = ?`)
+            .bind(effect.value, characterId)
+            .run();
+          appliedEffects.push({ type: 'XP', result: `+${effect.value}` });
+        }
+        break;
+
+      case 'GIVE_CREDITS':
+        if (typeof effect.value === 'number') {
+          await db
+            .prepare(`UPDATE character_finances SET credits = credits + ? WHERE character_id = ?`)
+            .bind(effect.value, characterId)
+            .run();
+          appliedEffects.push({ type: 'CREDITS', result: `+${effect.value}` });
+        }
+        break;
+
+      case 'START_QUEST':
+        if (typeof effect.target === 'string') {
+          const questResult = await startQuestFromTrigger(db, characterId, effect.target);
+          if (questResult.success) {
+            appliedEffects.push({ type: 'QUEST_STARTED', target: effect.target, result: 'accepted' });
+          }
+        }
+        break;
+
+      case 'ADVANCE_QUEST':
+      case 'COMPLETE_QUEST':
+        // Quest progress from dialogue
+        if (effect.target) {
+          const questUpdate = await updateQuestProgress(db, characterId, 'DIALOGUE', effect.target);
+          if (questUpdate.objectivesCompleted.length > 0) {
+            appliedEffects.push({ type: 'QUEST_PROGRESS', target: effect.target, result: 'objective completed' });
+          }
+        }
+        break;
+    }
+  }
+
+  // Check if this dialogue completes a mission checkpoint
+  const dialogueCheckpoint = await db
+    .prepare(
+      `SELECT id FROM mission_checkpoints
+       WHERE mission_instance_id = ? AND checkpoint_type = 'DIALOGUE'
+       AND is_completed = 0
+       AND (checkpoint_data LIKE ? OR checkpoint_data LIKE ?)`
+    )
+    .bind(instanceId, `%${targetNpcId}%`, `%${npc.name}%`)
+    .first<{ id: string }>();
+
+  let checkpointCompleted = false;
+  if (dialogueCheckpoint) {
+    await db
+      .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+      .bind(dialogueCheckpoint.id)
+      .run();
+    checkpointCompleted = true;
+  }
+
+  return {
+    success: true,
+    outcome: checkpointCompleted ? 'DIALOGUE_CHECKPOINT_COMPLETE' : 'DIALOGUE_COMPLETE',
+    details: {
+      npc: {
+        id: npc.id,
+        name: npc.name,
+        type: npc.npc_type,
+        isQuestGiver: npc.is_quest_giver === 1,
+      },
+      dialogueTreeId: dialogueTreeId ?? null,
+      nodeId: nodeId ?? null,
+      choiceId: choiceId ?? null,
+      response: responseText,
+      effects: appliedEffects,
+      checkpointCompleted,
+    },
+  };
+}
+
+// =============================================================================
+// USE ITEM ACTION HANDLER
+// =============================================================================
+
+/**
+ * Process a USE_ITEM mission action.
+ * Applies item effects to character during mission.
+ */
+async function processUseItemAction(
+  db: D1Database,
+  instanceId: string,
+  characterId: string,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  const itemId = params?.itemId as string | undefined;
+  const targetId = params?.targetId as string | undefined;
+
+  if (!itemId) {
+    return {
+      success: false,
+      outcome: 'NO_ITEM',
+      details: { error: 'Item ID required' },
+    };
+  }
+
+  // Check character has the item
+  const inventoryItem = await db
+    .prepare(
+      `SELECT ci.id, ci.quantity, ci.item_id,
+              id.name, id.item_type, id.subtype, id.is_consumable,
+              id.use_effects, id.stack_limit
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND (ci.item_id = ? OR id.code = ?)`
+    )
+    .bind(characterId, itemId, itemId)
+    .first<{
+      id: string;
+      quantity: number;
+      item_id: string;
+      name: string;
+      item_type: string;
+      subtype: string | null;
+      is_consumable: number;
+      use_effects: string | null;
+      stack_limit: number;
+    }>();
+
+  if (!inventoryItem) {
+    return {
+      success: false,
+      outcome: 'ITEM_NOT_FOUND',
+      details: { error: 'Item not in inventory' },
+    };
+  }
+
+  if (inventoryItem.quantity < 1) {
+    return {
+      success: false,
+      outcome: 'NO_QUANTITY',
+      details: { error: 'No items remaining' },
+    };
+  }
+
+  // Parse and apply effects
+  const appliedEffects: Array<{ type: string; value: number | string }> = [];
+
+  if (inventoryItem.use_effects) {
+    const effects = JSON.parse(inventoryItem.use_effects) as Array<{
+      type: string;
+      attribute?: string;
+      amount?: number;
+      duration?: number;
+    }>;
+
+    for (const effect of effects) {
+      switch (effect.type) {
+        case 'HEAL':
+          if (effect.amount) {
+            await db
+              .prepare(
+                `UPDATE characters SET current_health = MIN(max_health, current_health + ?) WHERE id = ?`
+              )
+              .bind(effect.amount, characterId)
+              .run();
+            appliedEffects.push({ type: 'HEAL', value: effect.amount });
+          }
+          break;
+
+        case 'RESTORE_ENERGY':
+          if (effect.amount) {
+            await db
+              .prepare(
+                `UPDATE characters SET current_energy = MIN(max_energy, current_energy + ?) WHERE id = ?`
+              )
+              .bind(effect.amount, characterId)
+              .run();
+            appliedEffects.push({ type: 'ENERGY', value: effect.amount });
+          }
+          break;
+
+        case 'BUFF_ATTRIBUTE':
+          if (effect.attribute && effect.amount && effect.duration) {
+            // Store temporary buff in mission state
+            const instance = await db
+              .prepare('SELECT current_state FROM mission_instances WHERE id = ?')
+              .bind(instanceId)
+              .first<{ current_state: string | null }>();
+
+            const state = instance?.current_state ? JSON.parse(instance.current_state) : {};
+            state.activeBuffs = state.activeBuffs || [];
+            state.activeBuffs.push({
+              attribute: effect.attribute,
+              amount: effect.amount,
+              expiresAt: Date.now() + (effect.duration * 1000),
+            });
+
+            await db
+              .prepare('UPDATE mission_instances SET current_state = ? WHERE id = ?')
+              .bind(JSON.stringify(state), instanceId)
+              .run();
+
+            appliedEffects.push({ type: `BUFF_${effect.attribute}`, value: `+${effect.amount} for ${effect.duration}s` });
+          }
+          break;
+
+        case 'REMOVE_CONDITION':
+          // Remove a status condition
+          appliedEffects.push({ type: 'CURE', value: effect.attribute || 'condition' });
+          break;
+
+        default:
+          appliedEffects.push({ type: effect.type, value: effect.amount || 0 });
+      }
+    }
+  }
+
+  // Consume item if consumable
+  if (inventoryItem.is_consumable === 1) {
+    if (inventoryItem.quantity === 1) {
+      // Remove from inventory
+      await db
+        .prepare('DELETE FROM character_inventory WHERE id = ?')
+        .bind(inventoryItem.id)
+        .run();
+    } else {
+      // Reduce quantity
+      await db
+        .prepare('UPDATE character_inventory SET quantity = quantity - 1 WHERE id = ?')
+        .bind(inventoryItem.id)
+        .run();
+    }
+  }
+
+  // Check if using item on specific target completes a checkpoint
+  if (targetId) {
+    const useItemCheckpoint = await db
+      .prepare(
+        `SELECT id FROM mission_checkpoints
+         WHERE mission_instance_id = ? AND checkpoint_type = 'USE_ITEM'
+         AND is_completed = 0
+         AND (checkpoint_data LIKE ? OR checkpoint_data LIKE ?)`
+      )
+      .bind(instanceId, `%${itemId}%`, `%${targetId}%`)
+      .first<{ id: string }>();
+
+    if (useItemCheckpoint) {
+      await db
+        .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+        .bind(useItemCheckpoint.id)
+        .run();
+
+      return {
+        success: true,
+        outcome: 'ITEM_USED_CHECKPOINT_COMPLETE',
+        details: {
+          item: {
+            id: inventoryItem.item_id,
+            name: inventoryItem.name,
+            type: inventoryItem.item_type,
+          },
+          effects: appliedEffects,
+          consumed: inventoryItem.is_consumable === 1,
+          remainingQuantity: inventoryItem.is_consumable === 1 ? inventoryItem.quantity - 1 : inventoryItem.quantity,
+          checkpointCompleted: true,
+          targetId,
+        },
+      };
+    }
+  }
+
+  return {
+    success: true,
+    outcome: 'ITEM_USED',
+    details: {
+      item: {
+        id: inventoryItem.item_id,
+        name: inventoryItem.name,
+        type: inventoryItem.item_type,
+      },
+      effects: appliedEffects,
+      consumed: inventoryItem.is_consumable === 1,
+      remainingQuantity: inventoryItem.is_consumable === 1 ? inventoryItem.quantity - 1 : inventoryItem.quantity,
+    },
+  };
+}
+
+// =============================================================================
+// STEALTH ACTION HANDLER
+// =============================================================================
+
+/**
+ * Process a STEALTH mission action.
+ * Handles sneaking, hiding, and avoiding detection.
+ */
+async function processStealthAction(
+  db: D1Database,
+  kv: KVNamespace,
+  instanceId: string,
+  characterId: string,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  const stealthType = (params?.type as string) ?? 'SNEAK';
+  const targetArea = params?.targetArea as string | undefined;
+
+  // Get character's stealth-related stats
+  const character = await db
+    .prepare(
+      `SELECT c.id, c.current_location_id,
+              COALESCE(cs_stealth.current_level, 0) as stealth_level,
+              COALESCE(ca.effective_value, 10) as agi_value
+       FROM characters c
+       LEFT JOIN character_skills cs_stealth ON c.id = cs_stealth.character_id
+         AND cs_stealth.skill_id = (SELECT id FROM skill_definitions WHERE code = 'STEALTH')
+       LEFT JOIN character_attributes ca ON c.id = ca.character_id
+         AND ca.attribute_id = (SELECT id FROM attribute_definitions WHERE code = 'AGI')
+       WHERE c.id = ?`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      current_location_id: string | null;
+      stealth_level: number;
+      agi_value: number;
+    }>();
+
+  if (!character) {
+    return {
+      success: false,
+      outcome: 'CHARACTER_ERROR',
+      details: { error: 'Could not load character data' },
+    };
+  }
+
+  // Get district detection risk modifier
+  const districtId = character.current_location_id || 'downtown';
+  const activeEvents = await getActiveDistrictEvents(kv, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+  const detectionMod = modifiers.get('DETECTION_RISK') || 1.0;
+
+  // Calculate base difficulty based on stealth type
+  let baseDifficulty = 8;
+  switch (stealthType) {
+    case 'SNEAK':
+      baseDifficulty = 8;
+      break;
+    case 'HIDE':
+      baseDifficulty = 7;
+      break;
+    case 'DISTRACT':
+      baseDifficulty = 10;
+      break;
+    case 'BYPASS':
+      baseDifficulty = 12;
+      break;
+    default:
+      baseDifficulty = 8;
+  }
+
+  // Apply detection risk modifier to difficulty
+  const adjustedDifficulty = Math.round(baseDifficulty * detectionMod);
+
+  // Roll stealth check: 2d6 + AGI mod + Stealth skill vs difficulty
+  const agiMod = Math.floor((character.agi_value - 10) / 2);
+  const roll1 = Math.floor(Math.random() * 6) + 1;
+  const roll2 = Math.floor(Math.random() * 6) + 1;
+  const rollTotal = roll1 + roll2;
+  const totalBonus = agiMod + character.stealth_level;
+  const total = rollTotal + totalBonus;
+
+  const success = total >= adjustedDifficulty;
+  const margin = total - adjustedDifficulty;
+
+  // Critical success/failure
+  const isCriticalSuccess = rollTotal === 12;
+  const isCriticalFailure = rollTotal === 2;
+
+  // Determine outcome
+  let outcome = success ? 'STEALTH_SUCCESS' : 'STEALTH_FAILURE';
+  let consequence = null;
+
+  if (isCriticalSuccess) {
+    outcome = 'STEALTH_CRITICAL_SUCCESS';
+    consequence = 'You move like a shadow. No one suspects a thing.';
+  } else if (isCriticalFailure) {
+    outcome = 'STEALTH_CRITICAL_FAILURE';
+    consequence = 'You stumble loudly, drawing unwanted attention!';
+  } else if (!success) {
+    // Failed stealth might trigger combat or alert
+    if (margin <= -5) {
+      consequence = 'You are spotted! Guards are alerted.';
+    } else {
+      consequence = 'Your attempt to remain hidden fails, but you manage to slip away.';
+    }
+  } else if (margin >= 5) {
+    consequence = 'Flawless execution. You pass completely unnoticed.';
+  }
+
+  // Update mission state with stealth status
+  const instance = await db
+    .prepare('SELECT current_state FROM mission_instances WHERE id = ?')
+    .bind(instanceId)
+    .first<{ current_state: string | null }>();
+
+  const state = instance?.current_state ? JSON.parse(instance.current_state) : {};
+  state.stealthStatus = {
+    lastAttempt: stealthType,
+    success,
+    alertLevel: isCriticalFailure ? 'HIGH' : (!success ? 'ELEVATED' : state.stealthStatus?.alertLevel || 'NONE'),
+    timestamp: Date.now(),
+  };
+
+  await db
+    .prepare('UPDATE mission_instances SET current_state = ? WHERE id = ?')
+    .bind(JSON.stringify(state), instanceId)
+    .run();
+
+  // Check if stealth completes a checkpoint
+  let checkpointCompleted = false;
+  if (success) {
+    const stealthCheckpoint = await db
+      .prepare(
+        `SELECT id FROM mission_checkpoints
+         WHERE mission_instance_id = ? AND checkpoint_type = 'STEALTH'
+         AND is_completed = 0`
+      )
+      .bind(instanceId)
+      .first<{ id: string }>();
+
+    if (stealthCheckpoint) {
+      await db
+        .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+        .bind(stealthCheckpoint.id)
+        .run();
+      checkpointCompleted = true;
+    }
+  }
+
+  return {
+    success,
+    outcome,
+    details: {
+      stealthType,
+      roll: [roll1, roll2],
+      rollTotal,
+      agilityModifier: agiMod,
+      stealthSkill: character.stealth_level,
+      totalBonus,
+      total,
+      difficulty: adjustedDifficulty,
+      baseDifficulty,
+      detectionModifier: detectionMod,
+      margin,
+      isCriticalSuccess,
+      isCriticalFailure,
+      consequence,
+      alertLevel: state.stealthStatus.alertLevel,
+      checkpointCompleted,
+      targetArea,
+    },
+  };
+}
+
+// =============================================================================
+// WAIT ACTION HANDLER
+// =============================================================================
+
+/**
+ * Process a WAIT mission action.
+ * Allows time to pass during missions, affecting buffs, events, and opportunities.
+ */
+async function processWaitAction(
+  db: D1Database,
+  instanceId: string,
+  characterId: string,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  const duration = Math.min((params?.duration as number) ?? 5, 60); // Max 60 minutes
+  const reason = params?.reason as string | undefined;
+
+  // Get mission instance to check time remaining
+  const instance = await db
+    .prepare(
+      `SELECT started_at, time_limit_minutes, current_state FROM mission_instances WHERE id = ?`
+    )
+    .bind(instanceId)
+    .first<{
+      started_at: string;
+      time_limit_minutes: number;
+      current_state: string | null;
+    }>();
+
+  if (!instance) {
+    return {
+      success: false,
+      outcome: 'MISSION_NOT_FOUND',
+      details: { error: 'Mission instance not found' },
+    };
+  }
+
+  // Calculate remaining time
+  const startTime = new Date(instance.started_at).getTime();
+  const timeLimit = instance.time_limit_minutes * 60 * 1000;
+  const elapsedMs = Date.now() - startTime;
+  const remainingMs = timeLimit - elapsedMs;
+  const remainingMinutes = Math.floor(remainingMs / 60000);
+
+  if (remainingMinutes < duration) {
+    return {
+      success: false,
+      outcome: 'INSUFFICIENT_TIME',
+      details: {
+        error: `Cannot wait ${duration} minutes. Only ${remainingMinutes} minutes remaining.`,
+        remainingMinutes,
+        requestedDuration: duration,
+      },
+    };
+  }
+
+  // Parse current state
+  const state = instance.current_state ? JSON.parse(instance.current_state) : {};
+
+  // Process waiting effects
+
+  // 1. Expire temporary buffs
+  const expiredBuffs: string[] = [];
+  if (state.activeBuffs) {
+    const futureTime = Date.now() + (duration * 60 * 1000);
+    state.activeBuffs = state.activeBuffs.filter((buff: { attribute: string; expiresAt: number }) => {
+      if (buff.expiresAt <= futureTime) {
+        expiredBuffs.push(buff.attribute);
+        return false;
+      }
+      return true;
+    });
+  }
+
+  // 2. Reduce alert level if hiding
+  if (state.stealthStatus?.alertLevel && state.stealthStatus.alertLevel !== 'NONE') {
+    if (duration >= 10) {
+      state.stealthStatus.alertLevel = 'NONE';
+    } else if (duration >= 5 && state.stealthStatus.alertLevel === 'ELEVATED') {
+      state.stealthStatus.alertLevel = 'LOW';
+    }
+  }
+
+  // 3. Natural health regeneration (small amount)
+  const healAmount = Math.floor(duration / 10); // 1 HP per 10 minutes
+  if (healAmount > 0) {
+    await db
+      .prepare(
+        `UPDATE characters SET current_health = MIN(max_health, current_health + ?) WHERE id = ?`
+      )
+      .bind(healAmount, characterId)
+      .run();
+  }
+
+  // 4. Track total wait time
+  state.totalWaitMinutes = (state.totalWaitMinutes || 0) + duration;
+  state.lastWaitTime = Date.now();
+
+  // Save updated state
+  await db
+    .prepare('UPDATE mission_instances SET current_state = ? WHERE id = ?')
+    .bind(JSON.stringify(state), instanceId)
+    .run();
+
+  // Check if waiting at a location completes a checkpoint
+  let checkpointCompleted = false;
+  if (reason === 'STAKE_OUT' || reason === 'OBSERVE') {
+    const waitCheckpoint = await db
+      .prepare(
+        `SELECT id FROM mission_checkpoints
+         WHERE mission_instance_id = ? AND checkpoint_type = 'WAIT'
+         AND is_completed = 0`
+      )
+      .bind(instanceId)
+      .first<{ id: string }>();
+
+    if (waitCheckpoint) {
+      await db
+        .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+        .bind(waitCheckpoint.id)
+        .run();
+      checkpointCompleted = true;
+    }
+  }
+
+  // Determine outcome narrative
+  let narrative = `You wait for ${duration} minutes.`;
+  if (reason === 'REST') {
+    narrative = `You take a moment to catch your breath.${healAmount > 0 ? ` Recovered ${healAmount} HP.` : ''}`;
+  } else if (reason === 'STAKE_OUT') {
+    narrative = `You observe the area for ${duration} minutes, noting patrol patterns and activity.`;
+  } else if (reason === 'HIDDEN') {
+    narrative = `You remain hidden, letting the heat die down.`;
+  }
+
+  return {
+    success: true,
+    outcome: checkpointCompleted ? 'WAIT_CHECKPOINT_COMPLETE' : 'WAIT_COMPLETE',
+    details: {
+      duration,
+      reason: reason || 'GENERAL',
+      narrative,
+      effects: {
+        expiredBuffs,
+        healthRecovered: healAmount,
+        alertLevelReduced: expiredBuffs.length > 0 || (state.stealthStatus?.alertLevel === 'NONE'),
+      },
+      missionTiming: {
+        elapsedMinutes: Math.floor((elapsedMs + duration * 60000) / 60000),
+        remainingMinutes: remainingMinutes - duration,
+        totalWaitMinutes: state.totalWaitMinutes,
+      },
+      checkpointCompleted,
     },
   };
 }
