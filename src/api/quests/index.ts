@@ -144,89 +144,10 @@ questRoutes.get('/', async (c) => {
 });
 
 /**
- * GET /quests/:id
- * Get detailed quest information including objectives.
- */
-questRoutes.get('/:id', async (c) => {
-  const questId = c.req.param('id');
-
-  const quest = await c.env.DB
-    .prepare(
-      `SELECT qd.*,
-              nd.name as quest_giver_name, nd.npc_type as quest_giver_type,
-              l.name as quest_giver_location_name
-       FROM quest_definitions qd
-       LEFT JOIN npc_definitions nd ON qd.quest_giver_npc_id = nd.id
-       LEFT JOIN locations l ON qd.quest_giver_location_id = l.id
-       WHERE qd.id = ? OR qd.code = ?`
-    )
-    .bind(questId, questId)
-    .first<QuestDefinition & {
-      quest_giver_name: string | null;
-      quest_giver_type: string | null;
-      quest_giver_location_name: string | null;
-    }>();
-
-  if (!quest) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Quest not found' }],
-    }, 404);
-  }
-
-  // Get objectives
-  const objectives = await c.env.DB
-    .prepare(
-      `SELECT * FROM quest_objectives
-       WHERE quest_definition_id = ?
-       ORDER BY sequence_order ASC`
-    )
-    .bind(quest.id)
-    .all<QuestObjective>();
-
-  // Parse JSON fields
-  const requiredQuests = quest.required_quests ? JSON.parse(quest.required_quests) : [];
-  const requiredReputation = quest.required_reputation ? JSON.parse(quest.required_reputation) : [];
-  const itemRewards = quest.item_rewards ? JSON.parse(quest.item_rewards) : [];
-  const reputationRewards = quest.reputation_rewards ? JSON.parse(quest.reputation_rewards) : [];
-
-  return c.json({
-    success: true,
-    data: {
-      quest: {
-        ...quest,
-        objectives: objectives.results.map(obj => ({
-          ...obj,
-          isOptional: obj.is_optional === 1,
-          isHidden: obj.is_hidden === 1,
-        })),
-        requiredQuests,
-        requiredReputation,
-        itemRewards,
-        reputationRewards,
-        isLinear: quest.is_linear === 1,
-        hasTimeLimit: quest.has_time_limit === 1,
-        canFail: quest.can_fail === 1,
-        isHidden: quest.is_hidden === 1,
-        isRepeatable: quest.repeatable === 1,
-        questGiver: quest.quest_giver_npc_id
-          ? {
-              id: quest.quest_giver_npc_id,
-              name: quest.quest_giver_name,
-              type: quest.quest_giver_type,
-              locationId: quest.quest_giver_location_id,
-              locationName: quest.quest_giver_location_name,
-            }
-          : null,
-      },
-    },
-  });
-});
-
-/**
  * GET /quests/character
  * Get current character's active and completed quests.
  * Requires character to be selected.
+ * NOTE: This route must be defined before /:id to prevent "character" from being treated as an ID.
  */
 questRoutes.get('/character', requireCharacterMiddleware(), async (c) => {
   const characterId = c.get('characterId')!;
@@ -414,6 +335,87 @@ questRoutes.get('/character/:questId', requireCharacterMiddleware(), async (c) =
         items: charQuest.item_rewards ? JSON.parse(charQuest.item_rewards) : [],
         reputation: charQuest.reputation_rewards ? JSON.parse(charQuest.reputation_rewards) : [],
         claimed: charQuest.rewards_claimed === 1,
+      },
+    },
+  });
+});
+
+/**
+ * GET /quests/:id
+ * Get detailed quest information including objectives.
+ * NOTE: This route is defined after /character routes to prevent "character" from being matched as an :id.
+ */
+questRoutes.get('/:id', async (c) => {
+  const questId = c.req.param('id');
+
+  const quest = await c.env.DB
+    .prepare(
+      `SELECT qd.*,
+              nd.name as quest_giver_name, nd.npc_type as quest_giver_type,
+              l.name as quest_giver_location_name
+       FROM quest_definitions qd
+       LEFT JOIN npc_definitions nd ON qd.quest_giver_npc_id = nd.id
+       LEFT JOIN locations l ON qd.quest_giver_location_id = l.id
+       WHERE qd.id = ? OR qd.code = ?`
+    )
+    .bind(questId, questId)
+    .first<QuestDefinition & {
+      quest_giver_name: string | null;
+      quest_giver_type: string | null;
+      quest_giver_location_name: string | null;
+    }>();
+
+  if (!quest) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Quest not found' }],
+    }, 404);
+  }
+
+  // Get objectives
+  const objectives = await c.env.DB
+    .prepare(
+      `SELECT * FROM quest_objectives
+       WHERE quest_definition_id = ?
+       ORDER BY sequence_order ASC`
+    )
+    .bind(quest.id)
+    .all<QuestObjective>();
+
+  // Parse JSON fields
+  const requiredQuests = quest.required_quests ? JSON.parse(quest.required_quests) : [];
+  const requiredReputation = quest.required_reputation ? JSON.parse(quest.required_reputation) : [];
+  const itemRewards = quest.item_rewards ? JSON.parse(quest.item_rewards) : [];
+  const reputationRewards = quest.reputation_rewards ? JSON.parse(quest.reputation_rewards) : [];
+
+  return c.json({
+    success: true,
+    data: {
+      quest: {
+        ...quest,
+        objectives: objectives.results.map(obj => ({
+          ...obj,
+          isOptional: obj.is_optional === 1,
+          isHidden: obj.is_hidden === 1,
+        })),
+        requiredQuests,
+        requiredReputation,
+        itemRewards,
+        reputationRewards,
+        isLinear: quest.is_linear === 1,
+        hasTimeLimit: quest.has_time_limit === 1,
+        canFail: quest.can_fail === 1,
+        isHidden: quest.is_hidden === 1,
+        isRepeatable: quest.repeatable === 1,
+        questGiver: quest.quest_giver_npc_id
+          ? {
+              id: quest.quest_giver_npc_id,
+              name: quest.quest_giver_name,
+              type: quest.quest_giver_type,
+              locationId: quest.quest_giver_location_id,
+              locationName: quest.quest_giver_location_name,
+            }
+          : null,
       },
     },
   });

@@ -430,13 +430,25 @@ describe('Character Management Integration', () => {
     });
 
     it('should reject duplicate handle on update', async () => {
-      env.DB._seed('characters', [{
-        id: 'other-char',
-        player_id: 'other-user',
-        handle: 'taken',
-        legal_name: 'Other',
-        created_at: new Date().toISOString(),
-      }]);
+      // Re-seed characters with both char-1 (the one we're updating) and another character with the target handle
+      // Note: _seed replaces the entire table, so we need to include both characters
+      env.DB._seed('characters', [
+        {
+          id: 'char-1',
+          player_id: testUserId,
+          legal_name: 'Test Character',
+          street_name: 'OldName',
+          handle: 'oldhandle',
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: 'other-char',
+          player_id: 'other-user',
+          handle: 'taken',
+          legal_name: 'Other',
+          created_at: new Date().toISOString(),
+        },
+      ]);
 
       const request = createTestRequest('PATCH', '/api/characters/char-1', {
         headers: { Authorization: `Bearer ${authToken}` },

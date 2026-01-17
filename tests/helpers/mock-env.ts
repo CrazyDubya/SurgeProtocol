@@ -167,6 +167,7 @@ export class MockD1Database {
       leftCol: string;
       rightTable: string;
       rightCol: string;
+      additionalConditions?: Array<{ col: string; value: unknown }>;
     }> = joinMatches.map(m => ({
       table: m[1]!,
       alias: m[2] || m[1]!,
@@ -175,6 +176,44 @@ export class MockD1Database {
       rightTable: m[5]!,
       rightCol: m[6]!,
     }));
+
+    // Parse complex JOIN clauses with multiple conditions (AND) and subqueries
+    // Pattern: LEFT JOIN table alias ON main.col = alias.col AND alias.col2 = (SELECT id FROM table2 WHERE code = 'value')
+    const complexJoinPattern = /(?:LEFT\s+)?JOIN\s+(\w+)\s+(\w+)\s+ON\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)\s+AND\s+(\w+)\.(\w+)\s*=\s*\(\s*SELECT\s+(\w+)\s+FROM\s+(\w+)\s+WHERE\s+(\w+)\s*=\s*'([^']+)'\s*\)/gi;
+    const complexJoinMatches = [...sql.matchAll(complexJoinPattern)];
+
+    for (const m of complexJoinMatches) {
+      // Look up the subquery result
+      const subqueryCol = m[9]!;
+      const subqueryTable = m[10]!;
+      const subqueryWhereCol = m[11]!;
+      const subqueryWhereVal = m[12]!;
+      const subqueryResult = (this.tables.get(subqueryTable) || [])
+        .find(r => r[subqueryWhereCol] === subqueryWhereVal);
+
+      // Add or update the join with the additional condition
+      const existingJoin = joins.find(j => j.alias === m[2]);
+      if (existingJoin) {
+        existingJoin.additionalConditions = existingJoin.additionalConditions || [];
+        existingJoin.additionalConditions.push({
+          col: m[8]!,
+          value: subqueryResult?.[subqueryCol],
+        });
+      } else {
+        joins.push({
+          table: m[1]!,
+          alias: m[2]!,
+          leftTable: m[3]!,
+          leftCol: m[4]!,
+          rightTable: m[5]!,
+          rightCol: m[6]!,
+          additionalConditions: [{
+            col: m[8]!,
+            value: subqueryResult?.[subqueryCol],
+          }],
+        });
+      }
+    }
 
     // Parse main table (could have alias)
     const tableMatch = sql.match(/FROM\s+(\w+)(?:\s+(?:AS\s+)?(\w+))?/i);
@@ -194,17 +233,29 @@ export class MockD1Database {
         let leftVal: unknown;
         let rightVal: unknown;
 
+        // Helper to check additional conditions
+        const matchesAdditionalConditions = (jr: D1Row): boolean => {
+          if (!join.additionalConditions) return true;
+          return join.additionalConditions.every(cond =>
+            jr[cond.col] === cond.value
+          );
+        };
+
         // Check if leftTable is main table alias
         if (join.leftTable === tableAlias || join.leftTable === tableName) {
           leftVal = row[join.leftCol];
-          const joinRow = joinTable.find(jr => jr[join.rightCol] === leftVal);
+          const joinRow = joinTable.find(jr =>
+            jr[join.rightCol] === leftVal && matchesAdditionalConditions(jr)
+          );
           if (joinRow) {
             // Merge with main table taking precedence (don't overwrite main table columns)
             return { ...joinRow, ...row };
           }
         } else if (join.rightTable === tableAlias || join.rightTable === tableName) {
           rightVal = row[join.rightCol];
-          const joinRow = joinTable.find(jr => jr[join.leftCol] === rightVal);
+          const joinRow = joinTable.find(jr =>
+            jr[join.leftCol] === rightVal && matchesAdditionalConditions(jr)
+          );
           if (joinRow) {
             return { ...joinRow, ...row };
           }
@@ -219,10 +270,54 @@ export class MockD1Database {
       rows = this._filterByWhere(rows, whereMatch[1]!, params);
     }
 
-    // Handle LIMIT
-    const limitMatch = sql.match(/LIMIT\s+(\d+)/i);
+    // Handle LIMIT and OFFSET (both literal values and placeholders)
+    const limitMatch = sql.match(/LIMIT\s+(\d+|\?)/i);
+    const offsetMatch = sql.match(/OFFSET\s+(\d+|\?)/i);
+
+    // Count how many ? placeholders are used in WHERE clause to determine param indices for LIMIT/OFFSET
+    const whereClauseForCounting = sql.match(/WHERE\s+(.+?)(?:ORDER|GROUP|LIMIT|$)/is)?.[1] || '';
+    const whereParamCount = (whereClauseForCounting.match(/\?/g) || []).length;
+
+    // Find LIMIT value (either literal or from params)
+    let limitValue: number | undefined;
     if (limitMatch) {
-      rows = rows.slice(0, parseInt(limitMatch[1]!, 10));
+      if (limitMatch[1] === '?') {
+        // Check if OFFSET comes before LIMIT in params (LIMIT ? OFFSET ? means limit is first param after WHERE)
+        const limitOffsetOrder = sql.match(/LIMIT\s+\?\s+OFFSET\s+\?/i);
+        if (limitOffsetOrder) {
+          limitValue = params[whereParamCount] as number;
+        } else {
+          // Just LIMIT ? without OFFSET
+          limitValue = params[whereParamCount] as number;
+        }
+      } else {
+        limitValue = parseInt(limitMatch[1]!, 10);
+      }
+    }
+
+    // Find OFFSET value (either literal or from params)
+    let offsetValue: number | undefined;
+    if (offsetMatch) {
+      if (offsetMatch[1] === '?') {
+        const limitOffsetOrder = sql.match(/LIMIT\s+\?\s+OFFSET\s+\?/i);
+        if (limitOffsetOrder) {
+          // OFFSET is the second param after WHERE when using LIMIT ? OFFSET ?
+          offsetValue = params[whereParamCount + 1] as number;
+        } else {
+          // Just OFFSET ? without LIMIT placeholder
+          offsetValue = params[whereParamCount] as number;
+        }
+      } else {
+        offsetValue = parseInt(offsetMatch[1]!, 10);
+      }
+    }
+
+    if (offsetValue !== undefined) {
+      rows = rows.slice(offsetValue);
+    }
+
+    if (limitValue !== undefined) {
+      rows = rows.slice(0, limitValue);
     }
 
     // Handle aggregate functions (COUNT, SUM, etc.)
@@ -257,12 +352,38 @@ export class MockD1Database {
       return { results: [result] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
     }
 
-    // Check for simple SUM
-    const sumMatch = selectClause.match(/SUM\s*\(\s*(\w+)\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/i);
+    // Check for COALESCE(SUM(...), default) pattern - must check before simple SUM
+    const coalesceSumMatch = selectClause.match(/COALESCE\s*\(\s*SUM\s*\(\s*(?:\w+\.)?(\w+)\s*\)\s*,\s*(\d+)\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/i);
+    if (coalesceSumMatch) {
+      const [, col, defaultVal, alias = 'used'] = coalesceSumMatch;
+      const sum = rows.reduce((acc, r) => acc + (Number(r[col!]) || 0), 0);
+      const result = sum === 0 ? Number(defaultVal) : sum;
+      return { results: [{ [alias]: result }] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
+    }
+
+    // Check for simple SUM (with optional table prefix)
+    const sumMatch = selectClause.match(/SUM\s*\(\s*(?:\w+\.)?(\w+)\s*\)\s*(?:[Aa][Ss]\s+(\w+))?/i);
     if (sumMatch) {
       const [, col, alias = 'sum'] = sumMatch;
       const sum = rows.reduce((acc, r) => acc + (Number(r[col!]) || 0), 0);
       return { results: [{ [alias]: sum }] as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
+    }
+
+    // Handle COALESCE(column, default) AS alias patterns
+    // Pattern: COALESCE(table.col, default) as alias
+    const coalesceColMatches = [...selectClause.matchAll(/COALESCE\s*\(\s*(?:\w+\.)?(\w+)\s*,\s*(\d+)\s*\)\s+[Aa][Ss]\s+(\w+)/gi)];
+    if (coalesceColMatches.length > 0) {
+      rows = rows.map(row => {
+        const newRow = { ...row };
+        for (const m of coalesceColMatches) {
+          const col = m[1]!;
+          const defaultVal = Number(m[2]!);
+          const alias = m[3]!;
+          const value = row[col];
+          newRow[alias] = (value !== null && value !== undefined) ? value : defaultVal;
+        }
+        return newRow;
+      });
     }
 
     // Apply column aliases
