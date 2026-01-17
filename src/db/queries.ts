@@ -729,3 +729,565 @@ export async function getTopCarriers(
 
   return result.results;
 }
+
+// =============================================================================
+// COMBAT QUERIES
+// =============================================================================
+
+/** Combat attributes for a character */
+export interface CharacterCombatData {
+  id: string;
+  name: string;
+  currentHealth: number;
+  maxHealth: number;
+  currentTier: number;
+  attributes: {
+    PWR: number;
+    AGI: number;
+    END: number;
+    VEL: number;
+    PRC: number;
+  };
+  skills: {
+    melee: number;
+    firearms: number;
+  };
+  equippedWeapon: {
+    id: string;
+    name: string;
+    type: 'MELEE' | 'RANGED';
+    baseDamage: string;
+    attackMod: number;
+  } | null;
+  equippedArmor: {
+    id: string;
+    name: string;
+    value: number;
+    agiPenalty: number;
+  } | null;
+}
+
+/**
+ * Get character's combat-relevant data.
+ */
+export async function getCharacterCombatData(
+  db: D1Database,
+  characterId: string
+): Promise<CharacterCombatData | null> {
+  // Get base character data
+  const character = await db
+    .prepare(
+      `SELECT id, street_name, legal_name, current_health, max_health, current_tier
+       FROM characters WHERE id = ?`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      street_name: string | null;
+      legal_name: string;
+      current_health: number;
+      max_health: number;
+      current_tier: number;
+    }>();
+
+  if (!character) return null;
+
+  // Get attributes
+  const attributes = await db
+    .prepare(
+      `SELECT ad.code, ca.current_value + ca.bonus_from_augments + ca.bonus_from_items +
+              ca.bonus_from_conditions + ca.temporary_modifier as value
+       FROM character_attributes ca
+       JOIN attribute_definitions ad ON ca.attribute_id = ad.id
+       WHERE ca.character_id = ? AND ad.code IN ('PWR', 'AGI', 'END', 'VEL', 'PRC')`
+    )
+    .bind(characterId)
+    .all<{ code: string; value: number }>();
+
+  const attrMap: Record<string, number> = {};
+  for (const attr of attributes.results) {
+    attrMap[attr.code] = attr.value;
+  }
+
+  // Get combat skills
+  const skills = await db
+    .prepare(
+      `SELECT sd.code, cs.current_level
+       FROM character_skills cs
+       JOIN skill_definitions sd ON cs.skill_id = sd.id
+       WHERE cs.character_id = ? AND sd.code IN ('melee_combat', 'firearms')`
+    )
+    .bind(characterId)
+    .all<{ code: string; current_level: number }>();
+
+  const skillMap: Record<string, number> = { melee: 0, firearms: 0 };
+  for (const skill of skills.results) {
+    if (skill.code === 'melee_combat') skillMap.melee = skill.current_level;
+    if (skill.code === 'firearms') skillMap.firearms = skill.current_level;
+  }
+
+  // Get equipped weapon
+  const weapon = await db
+    .prepare(
+      `SELECT id.id, id.name, id.item_type, id.base_value,
+              COALESCE(json_extract(id.properties, '$.damage'), '1d6') as damage,
+              COALESCE(json_extract(id.properties, '$.attackMod'), 0) as attackMod
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND id.item_type IN ('WEAPON_MELEE', 'WEAPON_RANGED')
+       LIMIT 1`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      name: string;
+      item_type: string;
+      base_value: number;
+      damage: string;
+      attackMod: number;
+    }>();
+
+  // Get equipped armor
+  const armor = await db
+    .prepare(
+      `SELECT id.id, id.name,
+              COALESCE(json_extract(id.properties, '$.armorValue'), 0) as armorValue,
+              COALESCE(json_extract(id.properties, '$.agiPenalty'), 0) as agiPenalty
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND id.item_type = 'ARMOR'
+       LIMIT 1`
+    )
+    .bind(characterId)
+    .first<{
+      id: string;
+      name: string;
+      armorValue: number;
+      agiPenalty: number;
+    }>();
+
+  return {
+    id: character.id,
+    name: character.street_name || character.legal_name,
+    currentHealth: character.current_health ?? character.max_health ?? 30,
+    maxHealth: character.max_health ?? 30,
+    currentTier: character.current_tier,
+    attributes: {
+      PWR: attrMap.PWR ?? 10,
+      AGI: attrMap.AGI ?? 10,
+      END: attrMap.END ?? 10,
+      VEL: attrMap.VEL ?? 10,
+      PRC: attrMap.PRC ?? 10,
+    },
+    skills: skillMap as { melee: number; firearms: number },
+    equippedWeapon: weapon
+      ? {
+          id: weapon.id,
+          name: weapon.name,
+          type: weapon.item_type === 'WEAPON_MELEE' ? 'MELEE' : 'RANGED',
+          baseDamage: weapon.damage,
+          attackMod: weapon.attackMod,
+        }
+      : null,
+    equippedArmor: armor
+      ? {
+          id: armor.id,
+          name: armor.name,
+          value: armor.armorValue,
+          agiPenalty: armor.agiPenalty,
+        }
+      : null,
+  };
+}
+
+/** NPC combat data from definitions */
+export interface NPCCombatData {
+  id: string;
+  code: string;
+  name: string;
+  threatLevel: number;
+  combatStyle: string | null;
+  skills: Record<string, number>;
+  equipment: Array<{ type: string; name: string; stats: Record<string, unknown> }>;
+}
+
+/**
+ * Get NPC definition for combat.
+ */
+export async function getNPCCombatData(
+  db: D1Database,
+  npcCode: string
+): Promise<NPCCombatData | null> {
+  const npc = await db
+    .prepare(
+      `SELECT id, code, name, threat_level, combat_style, skills, typical_equipment
+       FROM npc_definitions
+       WHERE code = ? AND combat_capable = 1`
+    )
+    .bind(npcCode)
+    .first<{
+      id: string;
+      code: string;
+      name: string;
+      threat_level: number;
+      combat_style: string | null;
+      skills: string | null;
+      typical_equipment: string | null;
+    }>();
+
+  if (!npc) return null;
+
+  return {
+    id: npc.id,
+    code: npc.code,
+    name: npc.name,
+    threatLevel: npc.threat_level,
+    combatStyle: npc.combat_style,
+    skills: npc.skills ? JSON.parse(npc.skills) : {},
+    equipment: npc.typical_equipment ? JSON.parse(npc.typical_equipment) : [],
+  };
+}
+
+/** Weapon subtype union */
+type WeaponSubtype = 'LIGHT_PISTOL' | 'HEAVY_PISTOL' | 'SMG' | 'ASSAULT_RIFLE' | 'SHOTGUN' | 'SNIPER' | 'LIGHT_MELEE' | 'HEAVY_MELEE' | 'UNARMED';
+
+/** Generated enemy combatant */
+export interface GeneratedEnemy {
+  id: string;
+  name: string;
+  attributes: { PWR: number; AGI: number; END: number; VEL: number; PRC: number };
+  skills: { melee: number; firearms: number };
+  hp: number;
+  hpMax: number;
+  armor: { id: string; name: string; value: number; agiPenalty: number; velPenalty: number } | null;
+  weapon: {
+    id: string;
+    name: string;
+    type: 'MELEE' | 'RANGED';
+    subtype: WeaponSubtype;
+    baseDamage: string;
+    scalingAttribute: 'PWR' | 'VEL';
+    scalingDivisor: number;
+    attackMod: number;
+  };
+  cover: null;
+  augmentBonuses: { initiative: number; attack: number; defense: number; damage: number };
+  conditions: string[];
+}
+
+/**
+ * Generate a procedural enemy combatant based on mission tier.
+ * Used when no specific NPC is defined for the encounter.
+ */
+export function generateProceduralEnemy(
+  missionTier: number,
+  enemyType: 'GANGER' | 'CORPORATE' | 'DRONE' | 'BEAST' | 'BOSS' = 'GANGER'
+): GeneratedEnemy {
+  // Base stats scale with tier
+  const baseAttr = 8 + Math.floor(missionTier * 0.5);
+  const baseSkill = Math.floor(missionTier * 0.8);
+  const baseHP = 15 + missionTier * 5;
+
+  // Enemy type modifiers
+  const gangerNames = ['Street Punk', 'Gang Enforcer', 'Crew Lieutenant', 'Gang Boss'] as const;
+  const corpNames = ['Security Guard', 'Corporate Soldier', 'Elite Operative', 'Black Ops Agent'] as const;
+  const droneNames = ['Patrol Drone', 'Combat Drone', 'Hunter-Killer', 'Assault Platform'] as const;
+  const beastNames = ['Cyber-Rat', 'Street Hound', 'Mutant Beast', 'Apex Predator'] as const;
+  const bossNames = ['Gang Leader', 'Corporate Executive', 'Cyberpsycho', 'Legendary Fixer'] as const;
+
+  const nameIndex = Math.min(Math.floor(missionTier / 3), 3);
+
+  const typeConfigs = {
+    GANGER: {
+      name: gangerNames[nameIndex],
+      attrMod: { PWR: 1, AGI: 0, END: 0, VEL: 0, PRC: -1 },
+      weapon: { name: 'Street Iron', type: 'RANGED' as const, damage: '2d6', attackMod: 0, subtype: 'HEAVY_PISTOL' as const },
+      armor: missionTier >= 3 ? { name: 'Leather Jacket', value: 1, agiPenalty: 0 } : null,
+    },
+    CORPORATE: {
+      name: corpNames[nameIndex],
+      attrMod: { PWR: 0, AGI: 1, END: 0, VEL: 1, PRC: 1 },
+      weapon: { name: 'Militech Sidearm', type: 'RANGED' as const, damage: '2d6+1', attackMod: 1, subtype: 'HEAVY_PISTOL' as const },
+      armor: { name: 'Corporate Armor', value: 2 + Math.floor(missionTier / 3), agiPenalty: 1 },
+    },
+    DRONE: {
+      name: droneNames[nameIndex],
+      attrMod: { PWR: 2, AGI: -1, END: 2, VEL: 0, PRC: 2 },
+      weapon: { name: 'Integrated Weapon', type: 'RANGED' as const, damage: '2d6+2', attackMod: 2, subtype: 'SMG' as const },
+      armor: { name: 'Armor Plating', value: 3 + Math.floor(missionTier / 2), agiPenalty: 0 },
+    },
+    BEAST: {
+      name: beastNames[nameIndex],
+      attrMod: { PWR: 2, AGI: 2, END: 1, VEL: 1, PRC: 0 },
+      weapon: { name: 'Claws/Fangs', type: 'MELEE' as const, damage: '2d6+1', attackMod: 1, subtype: 'UNARMED' as const },
+      armor: null,
+    },
+    BOSS: {
+      name: bossNames[nameIndex],
+      attrMod: { PWR: 2, AGI: 2, END: 2, VEL: 2, PRC: 2 },
+      weapon: { name: 'Custom Weapon', type: 'RANGED' as const, damage: '3d6', attackMod: 2, subtype: 'ASSAULT_RIFLE' as const },
+      armor: { name: 'Heavy Armor', value: 4 + Math.floor(missionTier / 2), agiPenalty: 2 },
+    },
+  };
+
+  const config = typeConfigs[enemyType];
+  const enemyId = `enemy_${enemyType.toLowerCase()}_${generateId()}`;
+  const enemyName = config.name ?? 'Unknown Enemy';
+
+  const attributes = {
+    PWR: baseAttr + config.attrMod.PWR,
+    AGI: baseAttr + config.attrMod.AGI,
+    END: baseAttr + config.attrMod.END,
+    VEL: baseAttr + config.attrMod.VEL,
+    PRC: baseAttr + config.attrMod.PRC,
+  };
+
+  const hpMax = baseHP + (enemyType === 'BOSS' ? missionTier * 10 : 0);
+
+  return {
+    id: enemyId,
+    name: enemyName,
+    attributes,
+    skills: {
+      melee: baseSkill + (config.weapon.type === 'MELEE' ? 2 : 0),
+      firearms: baseSkill + (config.weapon.type === 'RANGED' ? 2 : 0),
+    },
+    hp: hpMax,
+    hpMax,
+    armor: config.armor
+      ? {
+          id: `armor_${enemyId}`,
+          name: config.armor.name,
+          value: config.armor.value,
+          agiPenalty: config.armor.agiPenalty,
+          velPenalty: 0,
+        }
+      : null,
+    weapon: {
+      id: `weapon_${enemyId}`,
+      name: config.weapon.name,
+      type: config.weapon.type,
+      subtype: config.weapon.subtype,
+      baseDamage: config.weapon.damage,
+      scalingAttribute: config.weapon.type === 'MELEE' ? 'PWR' : 'VEL',
+      scalingDivisor: 2,
+      attackMod: config.weapon.attackMod,
+    },
+    cover: null,
+    augmentBonuses: {
+      initiative: enemyType === 'BOSS' ? 2 : 0,
+      attack: enemyType === 'BOSS' ? 1 : 0,
+      defense: enemyType === 'DRONE' ? 1 : 0,
+      damage: enemyType === 'BOSS' ? 1 : 0,
+    },
+    conditions: [],
+  };
+}
+
+// =============================================================================
+// SKILL CHECK QUERIES
+// =============================================================================
+
+/** Skill check data interface */
+export interface SkillCheckData {
+  skillCode: string;
+  skillName: string;
+  skillLevel: number;
+  governingAttribute: {
+    code: string;
+    name: string;
+    effectiveValue: number;
+  } | null;
+  attributeModifier: number;
+  equipmentBonus: number;
+  conditionPenalty: number;
+  totalBonus: number;
+}
+
+/**
+ * Get all data needed for a skill check.
+ * Includes skill level, attribute modifier, equipment bonuses, and condition penalties.
+ */
+export async function getSkillCheckData(
+  db: D1Database,
+  characterId: string,
+  skillCode: string
+): Promise<SkillCheckData | null> {
+  // Get skill definition with governing attribute
+  const skillDef = await db
+    .prepare(
+      `SELECT sd.id as skill_id, sd.code, sd.name, sd.governing_attribute_id,
+              ad.code as attr_code, ad.name as attr_name
+       FROM skill_definitions sd
+       LEFT JOIN attribute_definitions ad ON sd.governing_attribute_id = ad.id
+       WHERE sd.code = ?`
+    )
+    .bind(skillCode)
+    .first<{
+      skill_id: string;
+      code: string;
+      name: string;
+      governing_attribute_id: string | null;
+      attr_code: string | null;
+      attr_name: string | null;
+    }>();
+
+  if (!skillDef) {
+    return null;
+  }
+
+  // Get character's skill level
+  const charSkill = await db
+    .prepare(
+      `SELECT current_level FROM character_skills
+       WHERE character_id = ? AND skill_id = ?`
+    )
+    .bind(characterId, skillDef.skill_id)
+    .first<{ current_level: number }>();
+
+  const skillLevel = charSkill?.current_level ?? 0;
+
+  // Get governing attribute's effective value if one exists
+  let attrValue = 10; // Default if no attribute
+  let attrModifier = 0;
+
+  if (skillDef.attr_code) {
+    const attrResult = await db
+      .prepare(
+        `SELECT ca.current_value + ca.bonus_from_augments + ca.bonus_from_items +
+                ca.bonus_from_conditions + ca.temporary_modifier as effective_value
+         FROM character_attributes ca
+         JOIN attribute_definitions ad ON ca.attribute_id = ad.id
+         WHERE ca.character_id = ? AND ad.code = ?`
+      )
+      .bind(characterId, skillDef.attr_code)
+      .first<{ effective_value: number }>();
+
+    attrValue = attrResult?.effective_value ?? 10;
+    // Calculate attribute modifier: floor((attr - 10) / 2)
+    // e.g., 10 = +0, 12 = +1, 14 = +2, 8 = -1
+    attrModifier = Math.floor((attrValue - 10) / 2);
+  }
+
+  // Get equipment bonuses for this skill from equipped items
+  // Items store skill bonuses in passive_effects or equip_effects JSON
+  const equippedItems = await db
+    .prepare(
+      `SELECT id.passive_effects, id.equip_effects
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_id = id.id
+       WHERE ci.character_id = ? AND ci.is_equipped = 1
+       AND (id.passive_effects IS NOT NULL OR id.equip_effects IS NOT NULL)`
+    )
+    .bind(characterId)
+    .all<{ passive_effects: string | null; equip_effects: string | null }>();
+
+  let equipmentBonus = 0;
+  for (const item of equippedItems.results) {
+    // Check passive_effects
+    if (item.passive_effects) {
+      try {
+        const effects = JSON.parse(item.passive_effects) as Record<string, unknown>;
+        if (effects.skill_bonuses && typeof effects.skill_bonuses === 'object') {
+          const bonuses = effects.skill_bonuses as Record<string, number>;
+          if (bonuses[skillCode]) {
+            equipmentBonus += bonuses[skillCode];
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+    // Check equip_effects
+    if (item.equip_effects) {
+      try {
+        const effects = JSON.parse(item.equip_effects) as Record<string, unknown>;
+        if (effects.skill_bonuses && typeof effects.skill_bonuses === 'object') {
+          const bonuses = effects.skill_bonuses as Record<string, number>;
+          if (bonuses[skillCode]) {
+            equipmentBonus += bonuses[skillCode];
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+  }
+
+  // Get active condition penalties
+  // Conditions can have stat_modifiers or skill penalties
+  const activeConditions = await db
+    .prepare(
+      `SELECT cd.stat_modifiers, cd.attribute_modifiers, cc.current_stacks
+       FROM character_conditions cc
+       JOIN condition_definitions cd ON cc.condition_id = cd.id
+       WHERE cc.character_id = ?
+       AND (cc.duration_remaining_seconds IS NULL OR cc.duration_remaining_seconds > 0)`
+    )
+    .bind(characterId)
+    .all<{
+      stat_modifiers: string | null;
+      attribute_modifiers: string | null;
+      current_stacks: number;
+    }>();
+
+  let conditionPenalty = 0;
+  for (const cond of activeConditions.results) {
+    const stacks = cond.current_stacks || 1;
+
+    // Check stat_modifiers for skill penalties
+    if (cond.stat_modifiers) {
+      try {
+        const modifiers = JSON.parse(cond.stat_modifiers) as Record<string, unknown>;
+        // Check for global skill penalty
+        if (typeof modifiers.skill_check_penalty === 'number') {
+          conditionPenalty += modifiers.skill_check_penalty * stacks;
+        }
+        // Check for specific skill penalty
+        if (modifiers.skill_penalties && typeof modifiers.skill_penalties === 'object') {
+          const penalties = modifiers.skill_penalties as Record<string, number>;
+          if (penalties[skillCode]) {
+            conditionPenalty += penalties[skillCode] * stacks;
+          }
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+
+    // Check attribute_modifiers that might affect the governing attribute
+    if (cond.attribute_modifiers && skillDef.attr_code) {
+      try {
+        const modifiers = JSON.parse(cond.attribute_modifiers) as Record<string, number>;
+        if (modifiers[skillDef.attr_code]) {
+          // Already accounted for in bonus_from_conditions, but double-check
+          // This would apply to the attribute, not directly to skill
+        }
+      } catch {
+        // Invalid JSON, skip
+      }
+    }
+  }
+
+  // Calculate total bonus
+  const totalBonus = skillLevel + attrModifier + equipmentBonus - conditionPenalty;
+
+  return {
+    skillCode: skillDef.code,
+    skillName: skillDef.name,
+    skillLevel,
+    governingAttribute: skillDef.attr_code
+      ? {
+          code: skillDef.attr_code,
+          name: skillDef.attr_name ?? skillDef.attr_code,
+          effectiveValue: attrValue,
+        }
+      : null,
+    attributeModifier: attrModifier,
+    equipmentBonus,
+    conditionPenalty,
+    totalBonus,
+  };
+}

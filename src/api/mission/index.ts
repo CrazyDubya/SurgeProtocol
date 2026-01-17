@@ -25,7 +25,17 @@ import {
   getActiveMission,
   createMissionInstance,
   getCharacter,
+  getCharacterCombatData,
+  generateProceduralEnemy,
+  getSkillCheckData,
 } from '../../db';
+import type { Combatant } from '../../game/mechanics/combat';
+import {
+  type DistrictEvent,
+  type EventModifier,
+  EVENT_TEMPLATES,
+  getEventSummary,
+} from '../../game/events/district';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -35,6 +45,7 @@ type Bindings = {
   DB: D1Database;
   CACHE: KVNamespace;
   JWT_SECRET: string;
+  COMBAT_SESSION: DurableObjectNamespace;
 };
 
 // =============================================================================
@@ -75,15 +86,16 @@ missionRoutes.use('*', requireCharacterMiddleware());
 /**
  * GET /missions/available
  * List missions available for the character's current tier.
+ * Applies district event modifiers to mission data.
  */
 missionRoutes.get('/available', async (c) => {
   const characterId = c.get('characterId')!;
 
-  // Get character's current tier
+  // Get character's current tier and location
   const character = await c.env.DB
-    .prepare('SELECT current_tier, carrier_rating FROM characters WHERE id = ?')
+    .prepare('SELECT current_tier, carrier_rating, current_location_id FROM characters WHERE id = ?')
     .bind(characterId)
-    .first<{ current_tier: number; carrier_rating: number }>();
+    .first<{ current_tier: number; carrier_rating: number; current_location_id: string | null }>();
 
   if (!character) {
     return c.json({
@@ -93,14 +105,49 @@ missionRoutes.get('/available', async (c) => {
   }
 
   // Get available missions for this tier range
-  const missions = await getAvailableMissions(
+  const baseMissions = await getAvailableMissions(
     c.env.DB,
     character.current_tier,
     character.carrier_rating
   );
 
+  // Get character's current district (default to 'downtown' if not set)
+  const districtId = character.current_location_id || 'downtown';
+
+  // Get active district events
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+
+  // Apply event modifiers to missions
+  const missions = baseMissions.map(mission => {
+    const rewardMod = modifiers.get('MISSION_REWARD') || 1.0;
+    const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
+
+    return {
+      ...mission,
+      // Show modified rewards
+      effective_credits: Math.round(mission.base_credits * rewardMod),
+      effective_xp: Math.round(mission.base_xp * rewardMod),
+      // Show danger level modification
+      danger_modifier: dangerMod,
+      danger_warning: dangerMod > 1.3 ? 'HIGH' : dangerMod > 1.0 ? 'ELEVATED' : null,
+      // Original values for reference
+      base_credits: mission.base_credits,
+      base_xp: mission.base_xp,
+    };
+  });
+
   // Get active mission to check if player can accept new ones
   const activeMission = await getActiveMission(c.env.DB, characterId);
+
+  // Format active events for response
+  const eventWarnings = activeEvents.map(e => ({
+    type: e.type,
+    name: e.name,
+    severity: e.severity,
+    summary: getEventSummary(e),
+    endsAt: e.endTime.toISOString(),
+  }));
 
   return c.json({
     success: true,
@@ -109,6 +156,14 @@ missionRoutes.get('/available', async (c) => {
       count: missions.length,
       canAcceptNew: !activeMission,
       currentTier: character.current_tier,
+      currentDistrict: districtId,
+      activeEvents: eventWarnings,
+      modifiers: {
+        missionReward: modifiers.get('MISSION_REWARD') || 1.0,
+        routeDanger: modifiers.get('ROUTE_DANGER') || 1.0,
+        routeTime: modifiers.get('ROUTE_TIME') || 1.0,
+        detectionRisk: modifiers.get('DETECTION_RISK') || 1.0,
+      },
     },
   });
 });
@@ -157,6 +212,7 @@ missionRoutes.get('/active', async (c) => {
 /**
  * GET /missions/:id
  * Get details of a specific mission definition.
+ * Includes district event warnings and modified rewards.
  */
 missionRoutes.get('/:id', async (c) => {
   const missionId = c.req.param('id');
@@ -171,11 +227,11 @@ missionRoutes.get('/:id', async (c) => {
     }, 404);
   }
 
-  // Get character's tier to check if mission is accessible
+  // Get character's tier and location to check if mission is accessible
   const character = await c.env.DB
-    .prepare('SELECT current_tier FROM characters WHERE id = ?')
+    .prepare('SELECT current_tier, current_location_id FROM characters WHERE id = ?')
     .bind(characterId)
-    .first<{ current_tier: number }>();
+    .first<{ current_tier: number; current_location_id: string | null }>();
 
   const isAccessible = character &&
     mission.tier_minimum <= character.current_tier &&
@@ -193,13 +249,55 @@ missionRoutes.get('/:id', async (c) => {
     .bind(missionId)
     .all();
 
+  // Get district events and calculate modifiers
+  const districtId = character?.current_location_id || 'downtown';
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+
+  const rewardMod = modifiers.get('MISSION_REWARD') || 1.0;
+  const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
+  const timeMod = modifiers.get('ROUTE_TIME') || 1.0;
+
+  // Format event warnings
+  const eventWarnings = activeEvents.map(e => ({
+    type: e.type,
+    name: e.name,
+    severity: e.severity,
+    description: e.description,
+    effects: e.modifiers.map(m => ({
+      type: m.type,
+      multiplier: m.value,
+      description: m.type === 'ROUTE_DANGER' ? 'Increased danger' :
+                   m.type === 'ROUTE_TIME' ? 'Travel delays' :
+                   m.type === 'MISSION_REWARD' ? 'Modified rewards' :
+                   m.type === 'DETECTION_RISK' ? 'Detection risk' : m.type,
+    })),
+  }));
+
   return c.json({
     success: true,
     data: {
-      mission,
+      mission: {
+        ...mission,
+        effective_credits: Math.round(mission.base_credits * rewardMod),
+        effective_xp: Math.round(mission.base_xp * rewardMod),
+        effective_time_limit: mission.time_limit_minutes
+          ? Math.round(mission.time_limit_minutes / timeMod)
+          : null,
+      },
       requirements: requirements.results,
       rewards: rewards.results,
       isAccessible,
+      districtConditions: {
+        districtId,
+        dangerLevel: dangerMod > 1.5 ? 'EXTREME' :
+                     dangerMod > 1.3 ? 'HIGH' :
+                     dangerMod > 1.0 ? 'ELEVATED' : 'NORMAL',
+        dangerMultiplier: dangerMod,
+        rewardMultiplier: rewardMod,
+        timeMultiplier: timeMod,
+        activeEvents: eventWarnings,
+      },
     },
   });
 });
@@ -415,6 +513,9 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
     }, 400);
   }
 
+  // Get mission definition for tier info
+  const missionDef = await getMission(c.env.DB, instance.mission_id as string);
+
   // Process action based on type
   let result: {
     success: boolean;
@@ -431,6 +532,17 @@ missionRoutes.post('/:id/action', zValidator('json', missionActionSchema), async
       break;
     case 'INTERACT':
       result = await processInteraction(c.env.DB, instanceId, characterId, action.targetId, action.parameters);
+      break;
+    case 'COMBAT':
+      result = await processCombatAction(
+        c.env.DB,
+        c.env.COMBAT_SESSION,
+        c.env.CACHE,
+        instanceId,
+        characterId,
+        missionDef?.tier_minimum ?? 1,
+        action.parameters
+      );
       break;
     default:
       result = {
@@ -554,8 +666,20 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   const elapsedMinutes = (Date.now() - new Date(instance.started_at).getTime()) / 60000;
   const timeBonusMultiplier = elapsedMinutes < instance.time_limit_minutes * 0.75 ? 1.1 : 1.0;
 
-  const finalCredits = Math.floor(instance.base_credits * creditMultiplier * timeBonusMultiplier);
-  const finalXp = Math.floor(instance.base_xp * xpMultiplier);
+  // Get character's district and apply event modifiers
+  const character = await c.env.DB
+    .prepare('SELECT current_location_id FROM characters WHERE id = ?')
+    .bind(characterId)
+    .first<{ current_location_id: string | null }>();
+
+  const districtId = character?.current_location_id || 'downtown';
+  const activeEvents = await getActiveDistrictEvents(c.env.CACHE, districtId);
+  const eventModifiers = getEffectiveModifiers(activeEvents);
+  const eventRewardMod = eventModifiers.get('MISSION_REWARD') || 1.0;
+
+  // Apply all multipliers: outcome * time bonus * district events
+  const finalCredits = Math.floor(instance.base_credits * creditMultiplier * timeBonusMultiplier * eventRewardMod);
+  const finalXp = Math.floor(instance.base_xp * xpMultiplier * eventRewardMod);
 
   // Update mission instance
   await c.env.DB
@@ -617,6 +741,17 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   // Get updated character
   const updatedCharacter = await getCharacter(c.env.DB, characterId);
 
+  // Build message with event context
+  let message = completion.outcome === 'SUCCESS'
+    ? 'Delivery confirmed. Payment transferred.'
+    : completion.outcome === 'PARTIAL'
+      ? 'Partial completion noted. Reduced payment processed.'
+      : 'Mission failed. The Algorithm has taken note.';
+
+  if (eventRewardMod > 1.0) {
+    message += ` District conditions granted a ${Math.round((eventRewardMod - 1) * 100)}% bonus.`;
+  }
+
   return c.json({
     success: true,
     data: {
@@ -626,13 +761,156 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
         xp: finalXp,
         ratingChange,
         timeBonus: timeBonusMultiplier > 1,
+        eventBonus: eventRewardMod !== 1.0,
+        eventMultiplier: eventRewardMod,
+      },
+      districtConditions: {
+        districtId,
+        activeEvents: activeEvents.map(e => e.name),
       },
       character: updatedCharacter,
-      message: completion.outcome === 'SUCCESS'
-        ? 'Delivery confirmed. Payment transferred.'
-        : completion.outcome === 'PARTIAL'
-          ? 'Partial completion noted. Reduced payment processed.'
-          : 'Mission failed. The Algorithm has taken note.',
+      message,
+    },
+  });
+});
+
+/**
+ * POST /missions/:id/combat/resolve
+ * Resolve an active combat session and update mission state.
+ */
+missionRoutes.post('/:id/combat/resolve', async (c) => {
+  const instanceId = c.req.param('id');
+  const characterId = c.get('characterId')!;
+
+  // Verify mission ownership
+  const instance = await c.env.DB
+    .prepare(
+      `SELECT * FROM mission_instances
+       WHERE id = ? AND character_id = ? AND status = 'IN_PROGRESS'`
+    )
+    .bind(instanceId, characterId)
+    .first();
+
+  if (!instance) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSION_NOT_ACTIVE', message: 'No active mission with this ID' }],
+    }, 404);
+  }
+
+  // Get combat session ID from mission state
+  const currentState = instance.current_state
+    ? JSON.parse(instance.current_state as string)
+    : {};
+
+  const combatId = currentState.activeCombatId;
+  if (!combatId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NO_COMBAT', message: 'No active combat session for this mission' }],
+    }, 400);
+  }
+
+  // Get combat state from Durable Object
+  const doId = c.env.COMBAT_SESSION.idFromName(combatId);
+  const stub = c.env.COMBAT_SESSION.get(doId);
+
+  const combatResponse = await stub.fetch(
+    new Request('https://combat/state', { method: 'GET' })
+  );
+
+  if (!combatResponse.ok) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_ERROR', message: 'Failed to get combat state' }],
+    }, 500);
+  }
+
+  const combatState = await combatResponse.json() as {
+    phase: string;
+    endReason?: string;
+    combatants: Array<[string, { id: string; hp: number; hpMax: number }]>;
+  };
+
+  // Check if combat is finished
+  if (combatState.phase !== 'COMBAT_END') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_IN_PROGRESS', message: 'Combat is still in progress' }],
+    }, 400);
+  }
+
+  const endReason = combatState.endReason;
+
+  // Update character health based on combat outcome
+  const playerCombatant = combatState.combatants.find(([id]) => !id.startsWith('enemy_'));
+  if (playerCombatant) {
+    const [, combatant] = playerCombatant;
+    await c.env.DB
+      .prepare(
+        `UPDATE characters SET current_health = ?, updated_at = datetime('now') WHERE id = ?`
+      )
+      .bind(Math.max(0, combatant.hp), characterId)
+      .run();
+  }
+
+  // Clear active combat from mission state
+  delete currentState.activeCombatId;
+  currentState.lastCombatResult = endReason;
+
+  await c.env.DB
+    .prepare(
+      `UPDATE mission_instances SET current_state = ? WHERE id = ?`
+    )
+    .bind(JSON.stringify(currentState), instanceId)
+    .run();
+
+  // Handle combat outcome
+  let missionUpdate = {};
+  let checkpointCompleted = false;
+
+  if (endReason === 'VICTORY') {
+    // Check if this completes a combat checkpoint
+    const combatCheckpoint = await c.env.DB
+      .prepare(
+        `SELECT id FROM mission_checkpoints
+         WHERE mission_instance_id = ? AND checkpoint_type = 'COMBAT'
+         AND is_completed = 0
+         LIMIT 1`
+      )
+      .bind(instanceId)
+      .first<{ id: string }>();
+
+    if (combatCheckpoint) {
+      await c.env.DB
+        .prepare("UPDATE mission_checkpoints SET is_completed = 1, completed_at = datetime('now') WHERE id = ?")
+        .bind(combatCheckpoint.id)
+        .run();
+      checkpointCompleted = true;
+    }
+
+    missionUpdate = { outcome: 'VICTORY', checkpointCompleted };
+  } else if (endReason === 'DEFEAT') {
+    // Player was defeated - mission may fail or allow retry
+    missionUpdate = { outcome: 'DEFEAT', canRetry: true };
+  } else if (endReason === 'ESCAPE') {
+    missionUpdate = { outcome: 'ESCAPED' };
+  }
+
+  // Log combat resolution
+  await c.env.DB
+    .prepare(
+      `INSERT INTO mission_log (id, mission_instance_id, event_type, event_data, created_at)
+       VALUES (?, ?, 'COMBAT_RESOLVED', ?, datetime('now'))`
+    )
+    .bind(nanoid(), instanceId, JSON.stringify({ combatId, endReason, ...missionUpdate }))
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      combatResult: endReason,
+      ...missionUpdate,
     },
   });
 });
@@ -781,34 +1059,66 @@ async function processSkillCheck(
     };
   }
 
-  // Get character's skill level
-  const skill = await db
-    .prepare(
-      `SELECT cs.current_level FROM character_skills cs
-       JOIN skill_definitions sd ON cs.skill_id = sd.id
-       WHERE cs.character_id = ? AND sd.code = ?`
-    )
-    .bind(characterId, skillCode)
-    .first<{ current_level: number }>();
+  // Get comprehensive skill check data including:
+  // - Skill level
+  // - Governing attribute modifier
+  // - Equipment bonuses
+  // - Condition penalties
+  const checkData = await getSkillCheckData(db, characterId, skillCode);
 
-  const skillLevel = skill?.current_level ?? 0;
+  if (!checkData) {
+    return {
+      success: false,
+      outcome: 'UNKNOWN_SKILL',
+      details: { error: `Unknown skill: ${skillCode}` },
+    };
+  }
 
-  // Simple 2d6 + skill vs difficulty
+  // Roll 2d6 + total bonus vs difficulty
   const roll1 = Math.floor(Math.random() * 6) + 1;
   const roll2 = Math.floor(Math.random() * 6) + 1;
-  const total = roll1 + roll2 + skillLevel;
+  const rollTotal = roll1 + roll2;
+  const total = rollTotal + checkData.totalBonus;
   const success = total >= difficulty;
 
+  // Determine margin of success/failure
+  const margin = total - difficulty;
+
+  // Critical success on natural 12, critical failure on natural 2
+  const isCriticalSuccess = rollTotal === 12;
+  const isCriticalFailure = rollTotal === 2;
+
+  let outcome = success ? 'SKILL_SUCCESS' : 'SKILL_FAILURE';
+  if (isCriticalSuccess) outcome = 'CRITICAL_SUCCESS';
+  if (isCriticalFailure) outcome = 'CRITICAL_FAILURE';
+
   return {
-    success,
-    outcome: success ? 'SKILL_SUCCESS' : 'SKILL_FAILURE',
+    success: success || isCriticalSuccess,
+    outcome,
     details: {
-      skill: skillCode,
+      skill: checkData.skillCode,
+      skillName: checkData.skillName,
       roll: [roll1, roll2],
-      skillBonus: skillLevel,
+      rollTotal,
+      // Breakdown of bonuses
+      skillLevel: checkData.skillLevel,
+      attributeModifier: checkData.attributeModifier,
+      governingAttribute: checkData.governingAttribute
+        ? {
+            code: checkData.governingAttribute.code,
+            name: checkData.governingAttribute.name,
+            value: checkData.governingAttribute.effectiveValue,
+          }
+        : null,
+      equipmentBonus: checkData.equipmentBonus,
+      conditionPenalty: checkData.conditionPenalty,
+      totalBonus: checkData.totalBonus,
+      // Final calculation
       total,
       difficulty,
-      margin: total - difficulty,
+      margin,
+      isCriticalSuccess,
+      isCriticalFailure,
     },
   };
 }
@@ -858,3 +1168,350 @@ async function processInteraction(
     details: { targetId },
   };
 }
+
+/**
+ * Process a COMBAT mission action.
+ * Creates a combat session and returns WebSocket connection info.
+ */
+// =============================================================================
+// DISTRICT EVENT HELPERS
+// =============================================================================
+
+/** Stored event format in KV */
+interface StoredDistrictEvent {
+  id: string;
+  type: string;
+  districtId: string;
+  severity: string;
+  name: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  modifiers: EventModifier[];
+}
+
+/**
+ * Get active district events from KV storage.
+ */
+async function getActiveDistrictEvents(
+  kv: KVNamespace,
+  districtId: string
+): Promise<DistrictEvent[]> {
+  const key = `district_events:${districtId}`;
+  const stored = await kv.get<StoredDistrictEvent[]>(key, 'json');
+
+  if (!stored) return [];
+
+  const now = new Date();
+  return stored
+    .filter(e => new Date(e.endTime) > now)
+    .map(e => ({
+      ...e,
+      type: e.type as DistrictEvent['type'],
+      severity: e.severity as DistrictEvent['severity'],
+      startTime: new Date(e.startTime),
+      endTime: new Date(e.endTime),
+    }));
+}
+
+/**
+ * Get combined event modifiers for a district.
+ */
+function getEffectiveModifiers(
+  events: DistrictEvent[]
+): Map<EventModifier['type'], number> {
+  const modifiers = new Map<EventModifier['type'], number>();
+
+  // Start with base values
+  const modifierTypes: EventModifier['type'][] = [
+    'ROUTE_TIME', 'ROUTE_DANGER', 'SHOP_PRICE',
+    'NPC_AVAILABILITY', 'MISSION_REWARD', 'DETECTION_RISK'
+  ];
+  for (const type of modifierTypes) {
+    modifiers.set(type, 1.0);
+  }
+
+  // Apply event modifiers (multiplicative)
+  for (const event of events) {
+    for (const mod of event.modifiers) {
+      const current = modifiers.get(mod.type) || 1.0;
+      modifiers.set(mod.type, current * mod.value);
+    }
+  }
+
+  return modifiers;
+}
+
+/**
+ * Apply a modifier to a base value.
+ * Reserved for future use (timing modifiers, stealth checks, etc.)
+ */
+function _applyModifier(
+  modifiers: Map<EventModifier['type'], number>,
+  type: EventModifier['type'],
+  baseValue: number
+): number {
+  const modifier = modifiers.get(type) || 1.0;
+  return Math.round(baseValue * modifier);
+}
+
+/**
+ * Generate a random event for testing/demo purposes.
+ * In production, events would be triggered by game logic or admin actions.
+ */
+function _generateRandomEvent(districtId: string, durationMinutes: number = 60): DistrictEvent {
+  const types = Object.keys(EVENT_TEMPLATES) as Array<keyof typeof EVENT_TEMPLATES>;
+  const type = types[Math.floor(Math.random() * types.length)]!;
+  const template = EVENT_TEMPLATES[type];
+
+  const now = new Date();
+  return {
+    id: nanoid(),
+    districtId,
+    startTime: now,
+    endTime: new Date(now.getTime() + durationMinutes * 60 * 1000),
+    ...template,
+  };
+}
+
+/**
+ * Store a district event in KV.
+ * Reserved for admin endpoints and game event triggers.
+ */
+async function _storeDistrictEvent(
+  kv: KVNamespace,
+  event: DistrictEvent
+): Promise<void> {
+  const key = `district_events:${event.districtId}`;
+  const existing = await kv.get<StoredDistrictEvent[]>(key, 'json') || [];
+
+  const stored: StoredDistrictEvent = {
+    ...event,
+    startTime: event.startTime.toISOString(),
+    endTime: event.endTime.toISOString(),
+  };
+
+  // Filter out expired events and add new one
+  const now = new Date();
+  const updated = [
+    ...existing.filter(e => new Date(e.endTime) > now),
+    stored,
+  ];
+
+  // Store with TTL matching the longest event duration
+  const maxEndTime = Math.max(...updated.map(e => new Date(e.endTime).getTime()));
+  const ttlSeconds = Math.ceil((maxEndTime - now.getTime()) / 1000) + 60;
+
+  await kv.put(key, JSON.stringify(updated), { expirationTtl: ttlSeconds });
+}
+
+// =============================================================================
+// COMBAT ACTION HANDLER
+// =============================================================================
+
+async function processCombatAction(
+  db: D1Database,
+  combatDO: DurableObjectNamespace,
+  kv: KVNamespace,
+  instanceId: string,
+  characterId: string,
+  missionTier: number,
+  params?: Record<string, unknown>
+): Promise<{ success: boolean; outcome: string; details: Record<string, unknown> }> {
+  // Check if there's already an active combat
+  const instance = await db
+    .prepare('SELECT current_state FROM mission_instances WHERE id = ?')
+    .bind(instanceId)
+    .first<{ current_state: string | null }>();
+
+  const currentState = instance?.current_state
+    ? JSON.parse(instance.current_state)
+    : {};
+
+  if (currentState.activeCombatId) {
+    return {
+      success: false,
+      outcome: 'COMBAT_ALREADY_ACTIVE',
+      details: {
+        combatId: currentState.activeCombatId,
+        message: 'Resolve current combat before starting another',
+      },
+    };
+  }
+
+  // Get character combat data and district info
+  const characterData = await getCharacterCombatData(db, characterId);
+  if (!characterData) {
+    return {
+      success: false,
+      outcome: 'CHARACTER_ERROR',
+      details: { error: 'Could not load character combat data' },
+    };
+  }
+
+  // Get character's current district for event modifiers
+  const character = await db
+    .prepare('SELECT current_location_id FROM characters WHERE id = ?')
+    .bind(characterId)
+    .first<{ current_location_id: string | null }>();
+
+  const districtId = character?.current_location_id || 'downtown';
+
+  // Fetch district events and calculate danger modifier
+  const activeEvents = await getActiveDistrictEvents(kv, districtId);
+  const modifiers = getEffectiveModifiers(activeEvents);
+  const dangerMod = modifiers.get('ROUTE_DANGER') || 1.0;
+
+  // Convert character to Combatant format
+  const playerCombatant: Combatant = {
+    id: characterData.id,
+    name: characterData.name,
+    attributes: characterData.attributes,
+    skills: characterData.skills,
+    hp: characterData.currentHealth,
+    hpMax: characterData.maxHealth,
+    armor: characterData.equippedArmor
+      ? {
+          id: characterData.equippedArmor.id,
+          name: characterData.equippedArmor.name,
+          value: characterData.equippedArmor.value,
+          agiPenalty: characterData.equippedArmor.agiPenalty,
+          velPenalty: 0,
+        }
+      : null,
+    weapon: characterData.equippedWeapon
+      ? {
+          id: characterData.equippedWeapon.id,
+          name: characterData.equippedWeapon.name,
+          type: characterData.equippedWeapon.type,
+          subtype: characterData.equippedWeapon.type === 'MELEE' ? 'LIGHT_MELEE' as const : 'HEAVY_PISTOL' as const,
+          baseDamage: characterData.equippedWeapon.baseDamage,
+          scalingAttribute: characterData.equippedWeapon.type === 'MELEE' ? 'PWR' : 'VEL',
+          scalingDivisor: 2,
+          attackMod: characterData.equippedWeapon.attackMod,
+        }
+      : null,
+    cover: null,
+    augmentBonuses: { initiative: 0, attack: 0, defense: 0, damage: 0 },
+    conditions: [],
+  };
+
+  // Determine enemy type from parameters or default based on mission
+  const enemyType = (params?.enemyType as 'GANGER' | 'CORPORATE' | 'DRONE' | 'BEAST' | 'BOSS') ?? 'GANGER';
+  const enemyCount = Math.min((params?.enemyCount as number) ?? 1, 3); // Max 3 enemies
+
+  // Generate enemies with danger modifier applied
+  // Danger increases: HP, attack bonus, and potentially enemy count
+  const enemies: Combatant[] = [];
+  const effectiveEnemyCount = dangerMod > 1.5
+    ? Math.min(enemyCount + 1, 4) // Extra enemy at extreme danger
+    : enemyCount;
+
+  for (let i = 0; i < effectiveEnemyCount; i++) {
+    const enemy = generateProceduralEnemy(missionTier, enemyType);
+
+    // Scale enemy stats based on danger modifier
+    if (dangerMod > 1.0) {
+      // Increase HP (up to +50% at 1.5x danger)
+      const hpBonus = Math.floor(enemy.hpMax * (dangerMod - 1));
+      enemy.hp += hpBonus;
+      enemy.hpMax += hpBonus;
+
+      // Increase attack modifier based on danger
+      if (enemy.weapon) {
+        enemy.weapon.attackMod += Math.floor((dangerMod - 1) * 2);
+      }
+
+      // Add danger indicator to name
+      if (dangerMod > 1.3) {
+        enemy.name = `Elite ${enemy.name}`;
+      }
+    }
+
+    enemies.push(enemy);
+  }
+
+  // Create unique combat ID tied to mission
+  const combatId = `mission_${instanceId}_combat_${nanoid(8)}`;
+
+  // Initialize combat session via Durable Object
+  const doId = combatDO.idFromName(combatId);
+  const stub = combatDO.get(doId);
+
+  const initResponse = await stub.fetch(
+    new Request('https://combat/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        combatId,
+        combatants: [playerCombatant, ...enemies],
+        arenaId: currentState.location ?? 'unknown',
+        environment: {
+          lighting: 'DIM',
+          weather: 'CLEAR',
+          hazards: [],
+        },
+      }),
+    })
+  );
+
+  if (!initResponse.ok) {
+    const error = await initResponse.text();
+    return {
+      success: false,
+      outcome: 'COMBAT_INIT_FAILED',
+      details: { error },
+    };
+  }
+
+  // Store combat session ID in mission state
+  currentState.activeCombatId = combatId;
+  await db
+    .prepare(
+      `UPDATE mission_instances SET current_state = ? WHERE id = ?`
+    )
+    .bind(JSON.stringify(currentState), instanceId)
+    .run();
+
+  return {
+    success: true,
+    outcome: 'COMBAT_STARTED',
+    details: {
+      combatId,
+      websocketUrl: `/ws/combat/${combatId}?combatantId=${characterId}`,
+      enemies: enemies.map(e => ({
+        id: e.id,
+        name: e.name,
+        hp: e.hp,
+        hpMax: e.hpMax,
+      })),
+      player: {
+        id: playerCombatant.id,
+        name: playerCombatant.name,
+        hp: playerCombatant.hp,
+        hpMax: playerCombatant.hpMax,
+      },
+      districtConditions: {
+        districtId,
+        dangerLevel: dangerMod > 1.5 ? 'EXTREME' :
+                     dangerMod > 1.3 ? 'HIGH' :
+                     dangerMod > 1.0 ? 'ELEVATED' : 'NORMAL',
+        dangerMultiplier: dangerMod,
+        activeEvents: activeEvents.map(e => e.name),
+      },
+    },
+  };
+}
+
+// =============================================================================
+// EXPORTED UTILITIES
+// =============================================================================
+// These utilities are exported for admin endpoints and testing
+
+export {
+  getActiveDistrictEvents,
+  getEffectiveModifiers,
+  _applyModifier as applyEventModifier,
+  _generateRandomEvent as generateRandomEvent,
+  _storeDistrictEvent as storeDistrictEvent,
+};
