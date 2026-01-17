@@ -296,6 +296,65 @@ Central registry of all NPCs in Surge Protocol narrative system. Tracks main cas
 
 ---
 
+## MERCHANT NPCs - TECH VENDORS (8 Characters)
+
+*Added: Phase 6 Day 16*
+
+| Character | Tier Range | Specialty | File |
+|-----------|------------|-----------|------|
+| Pixel | 0-2 | Budget Tech | `/merchant_npcs/tech_vendors.md` |
+| Madam Kozlov | 3-6 | Premium Chrome | `/merchant_npcs/tech_vendors.md` |
+| Junk Jimmy | 1-4 | Salvage/Reclaimed | `/merchant_npcs/tech_vendors.md` |
+| Serena Vance | 3-6 | Medical Chrome | `/merchant_npcs/tech_vendors.md` |
+| Blackout Marcus | 4-7 | Security Tech | `/merchant_npcs/tech_vendors.md` |
+| Sparkle Yuki | 2-5 | Aesthetic Chrome | `/merchant_npcs/tech_vendors.md` |
+| Old Henrik | 2-5 | Vintage/Pre-Algorithm | `/merchant_npcs/tech_vendors.md` |
+| Ghost Alexandra | 5-8 | Black Market | `/merchant_npcs/tech_vendors.md` |
+
+---
+
+## MERCHANT NPCs - SERVICE PROVIDERS (5 New Characters)
+
+*Added: Phase 6 Day 16*
+
+| Character | Role | Tier Range | File |
+|-----------|------|------------|------|
+| Dr. Santos | Medical Services | 1-4 | `/merchant_npcs/service_providers.md` |
+| Master Kai | Combat Training | 3-6 | `/merchant_npcs/service_providers.md` |
+| Mira Okonkwo | Legal Aid | 4-7 | `/merchant_npcs/service_providers.md` |
+| Cleaner Vasquez | Problem Solving | 5-8 | `/merchant_npcs/service_providers.md` |
+| Professor Yang | Academic Resources | 4-7 | `/merchant_npcs/service_providers.md` |
+
+*Note: Rosa, Delilah, Static referenced as existing characters*
+
+---
+
+## COURIER NPCs - RIVALS & PEERS (8 New Characters)
+
+*Added: Phase 6 Day 17*
+
+| Character | Tier Range | Relationship | File |
+|-----------|------------|--------------|------|
+| "Ghost" Elena Santos | 4-6 | Silent Peer | `/courier_npcs/rival_couriers.md` |
+| "Thunder" Marcus Cole | 3-5 | Loud Rival | `/courier_npcs/rival_couriers.md` |
+| "Precision" Yuki Tanaka | 4-6 | Methodical Peer | `/courier_npcs/rival_couriers.md` |
+| "Old Road" Tommy Chen | 5-7 | Veteran Mentor | `/courier_npcs/rival_couriers.md` |
+| "Spark" Diya Patel | 1-3 | Enthusiastic Rookie | `/courier_npcs/rival_couriers.md` |
+| "Shadow" Karl Erikson | 4-6 | Corporate Contrast | `/courier_npcs/rival_couriers.md` |
+| "Pulse" Zara Mohammed | 3-5 | Algorithm Focused | `/courier_npcs/rival_couriers.md` |
+| "Blank" Alex Reyes | 3-5 | Anti-Algorithm | `/courier_npcs/rival_couriers.md` |
+
+*Note: Jin and Hayes referenced as existing characters*
+
+### Courier Relationship Web
+- **Tier 1-3**: Spark (rookie), Hayes (rival)
+- **Tier 3-5**: Thunder, Precision, Pulse, Blank
+- **Tier 4-6**: Ghost, Shadow
+- **Tier 5-7**: Old Road (veteran)
+- **All Tiers**: Jin (tracks with player)
+
+---
+
 ## NPC TOTALS BY PHASE
 
 | Phase | NPCs Added | Running Total |
@@ -304,7 +363,7 @@ Central registry of all NPCs in Surge Protocol narrative system. Tracks main cas
 | Phase 6 Week 1 | 13 (general) + 30 (procedural) | 52 |
 | Phase 6 Week 2 | 40 (18 tier + 22 location) | 92 |
 | Phase 6 Week 3 | 18 (6 each Tier 6, 7, 8) | 110 |
-| Phase 6 Week 4 | (pending) | — |
+| Phase 6 Week 4 | 21 (8 vendors + 5 services + 8 couriers) | 131 |
 
 ---
 
@@ -581,6 +640,78 @@ GRANDMOTHER_FAREWELL
 
 ---
 
+## FLAG REGISTRY - NEW FLAGS (Week 4)
+
+### Merchant NPC Flags
+```
+MET_PIXEL_VENDOR
+PIXEL_PURCHASES (integer)
+MET_MADAM_KOZLOV
+KOZLOV_ACCESS_GRANTED
+KOZLOV_PURCHASES (integer)
+MET_JUNK_JIMMY
+JIMMY_TRUST (integer)
+JIMMY_RARE_FINDS (integer)
+MET_SERENA_VANCE
+VANCE_MEDICAL_ADVICE (integer)
+MET_BLACKOUT_MARCUS
+BLACKOUT_SECURITY_LEVEL (integer)
+MET_SPARKLE_YUKI
+YUKI_AESTHETICS (integer)
+MET_OLD_HENRIK
+HENRIK_VINTAGE_ACCESS
+MET_GHOST_ALEXANDRA
+BLACK_MARKET_ELITE_ACCESS
+```
+
+### Service Provider Flags
+```
+MET_DR_SANTOS
+SANTOS_TREATMENTS (integer)
+MET_MASTER_KAI
+KAI_TRAINING_LEVEL (integer)
+MET_MIRA_OKONKWO
+LEGAL_CONSULTATIONS (integer)
+MET_CLEANER_VASQUEZ
+VASQUEZ_JOBS (integer)
+MET_PROFESSOR_YANG
+YANG_RESEARCH_ACCESS
+YANG_INTEL (integer)
+```
+
+### Rival Courier Flags
+```
+MET_GHOST_ELENA
+ELENA_ALLIANCE
+MET_THUNDER_MARCUS
+MARCUS_RESPECT (integer)
+MET_PRECISION_YUKI
+YUKI_ROUTE_DATA
+MET_OLD_ROAD_TOMMY
+TOMMY_MENTORSHIP (integer)
+MET_SPARK_DIYA
+DIYA_MENTORED
+DIYA_TIER (integer)
+MET_SHADOW_KARL
+KARL_RESPECT_EARNED
+MET_PULSE_ZARA
+ZARA_ALGORITHM_TALKS (integer)
+MET_BLANK_ALEX
+ALEX_BASELINE_SOLIDARITY
+```
+
+### Courier Culture Quest Flags
+```
+CHALLENGE_RUN_COMPLETE
+CHALLENGE_RUN_OUTCOME (WIN / LOSS_RESPECT / LOSS_BITTER / TRICK)
+MENTORSHIP_QUEST_COMPLETE
+DIYA_FINAL_STATUS (THRIVING / SURVIVING / QUIT / TRANSFERRED)
+MEMORIAL_RUN_COMPLETE
+KIRA_HONORED
+```
+
+---
+
 ## VOICE CASTING NOTES
 
 ### Priority Groups
@@ -622,6 +753,16 @@ GRANDMOTHER_FAREWELL
 - Tier 8 Endgame: The Counselor, Brother Marcus, Switchboard, Dr. Amara, Director Cole, Grandmother Weaver
 - ~50-100 lines each
 
+**Group H - Merchant NPCs** (Medium sessions, Week 4):
+- Tech Vendors: Pixel, Madam Kozlov, Junk Jimmy, Serena Vance, Blackout Marcus, Sparkle Yuki, Old Henrik, Ghost Alexandra
+- Service Providers: Dr. Santos, Master Kai, Mira Okonkwo, Cleaner Vasquez, Professor Yang
+- ~30-75 lines each
+
+**Group I - Rival Couriers** (Medium sessions, Week 4):
+- Ghost Elena, Thunder Marcus, Precision Yuki, Old Road Tommy
+- Spark Diya, Shadow Karl, Pulse Zara, Blank Alex
+- ~30-75 lines each
+
 ---
 
 ## CROSS-REFERENCE NOTES
@@ -650,7 +791,7 @@ GRANDMOTHER_FAREWELL
 
 ---
 
-*NPC Registry v3.0*
-*Phase 6 Week 3 Integration*
+*NPC Registry v4.0*
+*Phase 6 Complete*
 *Updated: 2026-01-17*
-*110 NPCs tracked*
+*131 NPCs tracked*
