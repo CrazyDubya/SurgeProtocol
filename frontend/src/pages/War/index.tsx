@@ -5,7 +5,7 @@
  * Uses WebSocket for real-time updates from the WarTheater Durable Object.
  */
 
-import { Card, Badge, Button, Skeleton } from '@components/ui';
+import { Card, Badge, Button, SkeletonWarCard, SkeletonFactionRank, SkeletonEventCard } from '@components/ui';
 import { useWarTheater } from '@/hooks/useWarTheater';
 import type { Territory, War, WarEvent, Faction } from '@/stores/warTheaterStore';
 import styles from './War.module.css';
@@ -13,7 +13,6 @@ import styles from './War.module.css';
 export function War() {
   const {
     isConnected,
-    factions,
     territories,
     activeWars,
     brewingWars,
@@ -22,7 +21,6 @@ export function War() {
     recentEvents,
     playerContribution,
     selectedTerritory,
-    selectedTerritoryDetails,
     selectedWarDetails,
     selectTerritory,
     selectWar,
@@ -56,8 +54,8 @@ export function War() {
 
             {!isConnected ? (
               <div class={styles.loading}>
-                <Skeleton height="60px" />
-                <Skeleton height="60px" />
+                <SkeletonWarCard />
+                <SkeletonWarCard />
               </div>
             ) : activeWars.value.length === 0 ? (
               <div class={styles.emptyState}>
@@ -153,13 +151,21 @@ export function War() {
           <Card variant="terminal" padding="md" class={styles.rankingsSection}>
             <h2 class={styles.sectionTitle}>Power Rankings</h2>
             <div class={styles.rankings}>
-              {factionRankings.value.map((faction, index) => (
-                <FactionRankCard
-                  key={faction.id}
-                  faction={faction}
-                  rank={index + 1}
-                />
-              ))}
+              {!isConnected ? (
+                <>
+                  <SkeletonFactionRank />
+                  <SkeletonFactionRank />
+                  <SkeletonFactionRank />
+                </>
+              ) : (
+                factionRankings.value.map((faction, index) => (
+                  <FactionRankCard
+                    key={faction.id}
+                    faction={faction}
+                    rank={index + 1}
+                  />
+                ))
+              )}
             </div>
           </Card>
 
@@ -188,7 +194,13 @@ export function War() {
           <Card variant="default" padding="md" class={styles.eventsSection}>
             <h2 class={styles.sectionTitle}>Recent Events</h2>
             <div class={styles.eventList}>
-              {recentEvents.value.length === 0 ? (
+              {!isConnected ? (
+                <>
+                  <SkeletonEventCard />
+                  <SkeletonEventCard />
+                  <SkeletonEventCard />
+                </>
+              ) : recentEvents.value.length === 0 ? (
                 <div class={styles.emptyState}>
                   <p>No recent events.</p>
                 </div>
@@ -305,7 +317,6 @@ function TerritoryCard({
                 e.stopPropagation();
                 onSupport(factionId);
               }}
-              style={{ borderColor: faction?.color }}
             >
               Support {faction?.name || factionId}
             </Button>

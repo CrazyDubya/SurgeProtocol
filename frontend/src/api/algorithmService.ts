@@ -4,7 +4,7 @@
  * API service for Algorithm interactions - messages, responses, standing.
  */
 
-import { apiClient } from './client';
+import api from './client';
 
 // =============================================================================
 // TYPES
@@ -94,7 +94,7 @@ export const algorithmService = {
    * Get pending (unacknowledged) messages
    */
   async getMessages(): Promise<MessagesResponse> {
-    return apiClient.get<MessagesResponse>('/api/algorithm/messages');
+    return api.get<MessagesResponse>('/api/algorithm/messages');
   },
 
   /**
@@ -106,14 +106,14 @@ export const algorithmService = {
     if (options?.offset) params.set('offset', options.offset.toString());
 
     const query = params.toString();
-    return apiClient.get<HistoryResponse>(`/api/algorithm/history${query ? `?${query}` : ''}`);
+    return api.get<HistoryResponse>(`/api/algorithm/history${query ? `?${query}` : ''}`);
   },
 
   /**
    * Respond to a message
    */
   async respond(messageId: string, variant: ResponseVariant, text?: string): Promise<RespondResponse> {
-    return apiClient.post<RespondResponse>(`/api/algorithm/messages/${messageId}/respond`, {
+    return api.post<RespondResponse>(`/api/algorithm/messages/${messageId}/respond`, {
       variant,
       text,
     });
@@ -123,14 +123,14 @@ export const algorithmService = {
    * Get current Algorithm standing
    */
   async getStanding(): Promise<StandingResponse> {
-    return apiClient.get<StandingResponse>('/api/algorithm/standing');
+    return api.get<StandingResponse>('/api/algorithm/standing');
   },
 
   /**
    * Get active directives
    */
   async getDirectives(): Promise<DirectivesResponse> {
-    return apiClient.get<DirectivesResponse>('/api/algorithm/directives');
+    return api.get<DirectivesResponse>('/api/algorithm/directives');
   },
 };
 
