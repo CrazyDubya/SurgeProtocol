@@ -51,9 +51,223 @@
   padding: var(--spacing-4) var(--spacing-6);
 }
 
+/* Tablet breakpoint */
 @media (max-width: 1024px) {
   .content {
     grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+  }
+
+  .rankingsSection {
+    grid-column: 1;
+  }
+
+  .contributionSection {
+    grid-column: 2;
+  }
+
+  .eventsSection {
+    grid-column: span 2;
+  }
+}
+
+/* Small tablet / large phone */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    text-align: center;
+  }
+
+  .title {
+    font-size: var(--text-xl);
+    letter-spacing: 0.2em;
+  }
+
+  .content {
+    padding: var(--spacing-3);
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .rankingsSection,
+  .contributionSection,
+  .eventsSection {
+    grid-column: 1;
+  }
+
+  .territoryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .territoryMap {
+    height: 280px;
+  }
+
+  .mapTerritory {
+    width: 65px;
+    height: 50px;
+  }
+
+  .mapTerritoryName {
+    font-size: 10px;
+    max-width: 55px;
+  }
+
+  /* Improve touch targets for war cards */
+  .warCard {
+    padding: var(--spacing-4);
+  }
+
+  .warFactions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .factionName {
+    font-size: var(--text-sm);
+  }
+
+  /* Stack contribution stats vertically on mobile */
+  .contributionStats {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2);
+  }
+
+  .stat {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+  }
+
+  .statValue {
+    font-size: var(--text-lg);
+    order: 2;
+  }
+
+  .statLabel {
+    order: 1;
+  }
+
+  /* Compact rankings on mobile */
+  .rankStats {
+    font-size: 10px;
+    gap: var(--spacing-1);
+  }
+}
+
+/* Phone breakpoint */
+@media (max-width: 480px) {
+  .header {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  .title {
+    font-size: var(--text-lg);
+    letter-spacing: 0.15em;
+  }
+
+  .headerMeta {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-2);
+  }
+
+  .content {
+    padding: var(--spacing-2);
+    gap: var(--spacing-3);
+  }
+
+  .mainColumn {
+    gap: var(--spacing-3);
+  }
+
+  .sectionTitle {
+    font-size: var(--text-xs);
+    margin-bottom: var(--spacing-2);
+  }
+
+  /* Territory map: horizontal scroll on very small screens */
+  .mapSection {
+    min-height: auto;
+    overflow-x: auto;
+  }
+
+  .territoryMap {
+    min-width: 350px;
+    height: 250px;
+  }
+
+  .mapTerritory {
+    width: 55px;
+    height: 45px;
+  }
+
+  .mapTerritoryName {
+    font-size: 9px;
+    max-width: 48px;
+  }
+
+  /* Territory cards need larger touch targets */
+  .territoryCard {
+    padding: var(--spacing-4);
+  }
+
+  .territoryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  .contestedBy {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .contestedBy button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Events section takes less space */
+  .eventsSection {
+    max-height: 300px;
+  }
+
+  .eventCard {
+    padding: var(--spacing-3);
+  }
+
+  /* Rank cards more compact */
+  .rankCard {
+    padding: var(--spacing-2) var(--spacing-1);
+  }
+
+  .rankNumber {
+    width: 20px;
+    height: 20px;
+    font-size: var(--text-xs);
+  }
+
+  .rankName {
+    font-size: var(--text-xs);
+  }
+
+  .rankStats {
+    flex-wrap: wrap;
+    font-size: 9px;
   }
 }
 
