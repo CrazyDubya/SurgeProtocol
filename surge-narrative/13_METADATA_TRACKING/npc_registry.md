@@ -185,6 +185,68 @@ Central registry of all NPCs in Surge Protocol narrative system. Tracks main cas
 
 ---
 
+## GENERAL NPCs - TIER 6 (6 Characters)
+
+*Added: Phase 6 Day 11*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| Dr. Helena Vance | Fork Counselor | Specialized clinic | `/tier_4-6_npcs/fork_era_contacts.md` |
+| Professor Jean-Claude Moreau | Identity Philosopher | University | `/tier_4-6_npcs/fork_era_contacts.md` |
+| Alex/Andra Chen | Merged Consciousness | Support groups | `/tier_4-6_npcs/fork_era_contacts.md` |
+| Harrison Wade | Corporate Fork Recruiter | Uptown | `/tier_4-6_npcs/fork_era_contacts.md` |
+| "Splitter" Mira Vasquez | Underground Fork Specialist | Hollows deep | `/tier_4-6_npcs/fork_era_contacts.md` |
+| Dominic Reeves | Fork-Skeptic Support Leader | Community center | `/tier_4-6_npcs/fork_era_contacts.md` |
+
+### Tier 6 NPC Decision Spectrum
+- **Pro-Fork**: Harrison Wade (corporate), Splitter Mira (freedom)
+- **Neutral**: Dr. Vance (professional), Professor Moreau (philosophical)
+- **Cautionary**: Dominic Reeves (wounded), Alex/Andra (complicated)
+
+---
+
+## GENERAL NPCs - TIER 7 (6 Characters)
+
+*Added: Phase 6 Day 12*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| "Oracle" Natasha Volkov | Elite Courier Mentor | Private spaces | `/tier_7-9_npcs/high_tier_contacts.md` |
+| Ambassador Kenji Yoshida | Faction Diplomat | Neutral zones | `/tier_7-9_npcs/high_tier_contacts.md` |
+| Dr. Vera Antonova | Corporate Defector | Safe houses | `/tier_7-9_npcs/high_tier_contacts.md` |
+| Professor Kwame Osei | Algorithm Researcher | University | `/tier_7-9_npcs/high_tier_contacts.md` |
+| Sister Miriam Cross | Convergence True Believer | Convergence spaces | `/tier_7-9_npcs/high_tier_contacts.md` |
+| "The Judge" Margaret Hayes | Neutral Arbiter | Arbitration chambers | `/tier_7-9_npcs/high_tier_contacts.md` |
+
+### Tier 7 Faction Alignment
+- **Convergence leaning**: Sister Miriam
+- **Resistance leaning**: Dr. Antonova
+- **Neutral**: Ambassador Yoshida, The Judge, Professor Osei
+- **Above factions**: Oracle (retired from politics)
+
+---
+
+## GENERAL NPCs - TIER 8 (6 Characters)
+
+*Added: Phase 6 Day 13*
+
+| Character | Role | Location | File |
+|-----------|------|----------|------|
+| "The Counselor" Elena Marchetti | Path Advisor | Private consultation | `/tier_7-9_npcs/endgame_contacts.md` |
+| "Evangelist" Brother Marcus | Ascension Advocate | Convergence circles | `/tier_7-9_npcs/endgame_contacts.md` |
+| "Switchboard" Alex Reyes | Ghost Network Contact | Hidden/encrypted | `/tier_7-9_npcs/endgame_contacts.md` |
+| Dr. Amara Okonkwo | Third Path Theorist | University | `/tier_7-9_npcs/endgame_contacts.md` |
+| Director Harrison Cole | Last-Minute Defector | Secure meetings | `/tier_7-9_npcs/endgame_contacts.md` |
+| Grandmother Weaver | Final Delivery Client | Remote residence | `/tier_7-9_npcs/endgame_contacts.md` |
+
+### Tier 8 Path Alignment
+- **Convergence**: Brother Marcus (advocate)
+- **Resistance**: Director Cole (informant), Switchboard (infrastructure)
+- **Third Path**: Dr. Amara Okonkwo (theorist)
+- **Neutral**: The Counselor (advisor), Grandmother Weaver (perspective)
+
+---
+
 ## LOCATION NPCs - RED HARBOR (8 Characters)
 
 *Added: Phase 6 Day 9*
@@ -241,7 +303,7 @@ Central registry of all NPCs in Surge Protocol narrative system. Tracks main cas
 | Phases 1-5 | 9 (main cast) | 9 |
 | Phase 6 Week 1 | 13 (general) + 30 (procedural) | 52 |
 | Phase 6 Week 2 | 40 (18 tier + 22 location) | 92 |
-| Phase 6 Week 3 | (pending) | — |
+| Phase 6 Week 3 | 18 (6 each Tier 6, 7, 8) | 110 |
 | Phase 6 Week 4 | (pending) | — |
 
 ---
@@ -415,6 +477,110 @@ GANG_PEACE_NEGOTIATED / FAILED
 
 ---
 
+## FLAG REGISTRY - NEW FLAGS (Week 3)
+
+### Tier 6 NPC Flags
+```
+MET_DR_VANCE
+FORK_COUNSELING_COMPLETE
+VANCE_SESSIONS (integer)
+MET_PROFESSOR_MOREAU
+PHILOSOPHY_LECTURES_ATTENDED (integer)
+MET_ALEX_ANDRA
+MERGE_OPTION_KNOWN
+MERGED_CONVERSATIONS (integer)
+MET_HARRISON_WADE
+CORPORATE_FORK_OFFER
+CORPORATE_FORK_ACCEPTED / DECLINED
+MET_SPLITTER_MIRA
+UNDERGROUND_FORK_AVAILABLE
+FORKED_OFF_GRID
+MET_DOMINIC_REEVES
+FORK_SUPPORT_GROUP_ATTENDED
+FORK_WARNING_HEARD
+```
+
+### Tier 6 Quest Flags
+```
+FORK_SIMULATION_COMPLETE
+SELF_UNDERSTANDING_GAINED
+ESTRANGED_PAIR_QUEST
+RECONCILIATION_ACHIEVED / FAILED / SEEDED
+MARCUS_INHERITANCE_RESOLVED
+MARCUS_2_RELATIONSHIP (integer)
+MAYA_TORRES_ADVISED
+MAYA_OUTCOME (CORPORATE / INDEPENDENT / ALTERNATIVE)
+WADE_RECOMMENDATION_GIVEN / DECLINED
+```
+
+### Tier 7 NPC Flags
+```
+MET_ORACLE_NATASHA
+ELITE_MENTORSHIP_BEGUN
+NATASHA_LESSONS (integer)
+MET_AMBASSADOR_YOSHIDA
+DIPLOMATIC_CHANNEL_OPEN
+FACTION_NEGOTIATIONS_FACILITATED (integer)
+MET_DR_ANTONOVA
+CORPORATE_SECRET_KNOWN
+ANTONOVA_TRUST (integer)
+MET_PROFESSOR_OSEI
+ALGORITHM_RESEARCH_KNOWN
+OSEI_PAPERS_READ (integer)
+MET_SISTER_MIRIAM
+CONVERGENCE_PERSPECTIVE_HEARD
+CONVERGENCE_SYMPATHY (integer)
+MET_THE_JUDGE
+ARBITRATION_AVAILABLE
+JUDGMENTS_RECEIVED (integer)
+```
+
+### Tier 7 Quest Flags
+```
+ANTONOVA_FILES_ACQUIRED / PARTIAL / NONE
+SUMMIT_FACILITATED / FAILED / COMPROMISED
+CONVERGENCE_DATA_ACQUIRED / REFUSED
+CONVERGENCE_TRUST_BETRAYED
+ELENA_CASE_RESOLVED / UNRESOLVED
+ELENA_RULING (CONVERGENCE / RESISTANCE / SUICIDE / INSUFFICIENT)
+```
+
+### Tier 8 NPC Flags
+```
+MET_THE_COUNSELOR
+PATH_COUNSELING_COMPLETE
+COUNSELOR_SESSIONS (integer)
+MET_BROTHER_MARCUS
+CONVERGENCE_FINAL_INVITATION
+ASCENSION_EXPLAINED
+GHOST_NETWORK_ACCESS
+MET_SWITCHBOARD
+NETWORK_TRUST_LEVEL (integer)
+MET_DR_AMARA_OKONKWO
+THIRD_PATH_THEORY_KNOWN
+THIRD_PATH_RESEARCH_PARTICIPANT
+MET_DIRECTOR_COLE
+CORPORATE_TIMELINE_KNOWN
+COLE_INTELLIGENCE_SHARED
+CONVERGENCE_FORCED_REVEALED
+MET_GRANDMOTHER_WEAVER
+FINAL_DELIVERY_ACCEPTED
+GRANDMOTHER_BLESSING
+```
+
+### Tier 8 Quest Flags
+```
+CIRCLE_GATHERED (integer)
+CONVERGENCE_SABOTAGED (0/1/2/3)
+TIMELINE_EXTENDED
+LEGACY_CREATED
+LEGACY_TYPE (RECORD / GIFT / MESSAGE / ACT)
+FINAL_DELIVERY_COMPLETE
+GRANDMOTHER_FAREWELL
+```
+
+---
+
 ## VOICE CASTING NOTES
 
 ### Priority Groups
@@ -450,6 +616,12 @@ GANG_PEACE_NEGOTIATED / FAILED
 - Uptown: David Park, Officer Chen, Miranda Cole, Lucia Santos, Dr. Richardson, The Shadow
 - ~25-50 lines each
 
+**Group G - Tier 6-8 NPCs** (Medium sessions, Week 3):
+- Tier 6 Fork Era: Dr. Vance, Professor Moreau, Alex/Andra, Harrison Wade, Splitter Mira, Dominic Reeves
+- Tier 7 Elite: Oracle Natasha, Ambassador Yoshida, Dr. Antonova, Professor Osei, Sister Miriam, The Judge
+- Tier 8 Endgame: The Counselor, Brother Marcus, Switchboard, Dr. Amara, Director Cole, Grandmother Weaver
+- ~50-100 lines each
+
 ---
 
 ## CROSS-REFERENCE NOTES
@@ -478,7 +650,7 @@ GANG_PEACE_NEGOTIATED / FAILED
 
 ---
 
-*NPC Registry v2.0*
-*Phase 6 Week 2 Integration*
+*NPC Registry v3.0*
+*Phase 6 Week 3 Integration*
 *Updated: 2026-01-17*
-*92 NPCs tracked*
+*110 NPCs tracked*
