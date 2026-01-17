@@ -17,6 +17,7 @@ import { itemRoutes } from './api/items';
 import { augmentationRoutes } from './api/augmentations';
 import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
+import { algorithmRoutes } from './api/algorithm';
 import { questRoutes } from './api/quests';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
@@ -80,6 +81,7 @@ app.route('/api/skills', skillRoutes);
 app.route('/api/world', worldRoutes);
 app.route('/api/items', itemRoutes);
 app.route('/api/augmentations', augmentationRoutes);
+app.route('/api/algorithm', algorithmRoutes);
 app.route('/api/quests', questRoutes);
 
 // Economy routes with stricter rate limiting for transactions
@@ -98,6 +100,13 @@ app.get('/ws/combat/:combatId', async (c) => {
 
 app.get('/ws/war/:warId', async (c) => {
   const id = c.env.WAR_THEATER.idFromName(c.req.param('warId'));
+  const stub = c.env.WAR_THEATER.get(id);
+  return stub.fetch(c.req.raw);
+});
+
+// Global war theater WebSocket - aggregates all active wars
+app.get('/ws/war-theater', async (c) => {
+  const id = c.env.WAR_THEATER.idFromName('global');
   const stub = c.env.WAR_THEATER.get(id);
   return stub.fetch(c.req.raw);
 });

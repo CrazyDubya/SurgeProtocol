@@ -1,0 +1,182 @@
+/* WorldClockDisplay styles */
+
+.clock {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  transition: all var(--transition-normal);
+}
+
+.clock.compact {
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+.clock.night {
+  background: color-mix(in srgb, var(--color-surface-elevated) 90%, var(--color-primary) 10%);
+  border-color: var(--color-primary-muted);
+}
+
+.clock.dangerous {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 8px var(--color-danger-glow);
+}
+
+.clock.disconnected {
+  opacity: 0.6;
+}
+
+/* Connection indicator */
+.connection {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.connection.connected {
+  background: var(--color-success);
+  box-shadow: 0 0 4px var(--color-success-glow);
+}
+
+/* Time display */
+.time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.timeValue {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.1em;
+}
+
+.compact .timeValue {
+  font-size: var(--text-md);
+}
+
+.timeOfDay {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+/* Date display */
+.date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  padding-left: var(--spacing-2);
+  border-left: 1px solid var(--color-border);
+}
+
+.compact .date {
+  padding-left: var(--spacing-1);
+}
+
+.dateValue {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+.compact .dateValue {
+  font-size: var(--text-xs);
+}
+
+.paused {
+  font-size: var(--text-xs);
+  color: var(--color-warning);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+/* Weather display */
+.weather {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding-left: var(--spacing-2);
+  border-left: 1px solid var(--color-border);
+}
+
+.compact .weather {
+  padding-left: var(--spacing-1);
+}
+
+.weather.warning {
+  color: var(--color-danger);
+}
+
+.weather.warning .weatherIcon {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.weatherIcon {
+  font-size: var(--text-lg);
+}
+
+.compact .weatherIcon {
+  font-size: var(--text-md);
+}
+
+.weatherText {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mini variant */
+.mini {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-family: var(--font-mono);
+}
+
+.miniConnection {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.miniConnection.connected {
+  background: var(--color-success);
+}
+
+.miniTime {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  letter-spacing: 0.05em;
+}
+
+.miniWeather {
+  font-size: var(--text-sm);
+}
+
+.miniWeather.warning {
+  color: var(--color-danger);
+}

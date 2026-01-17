@@ -1,0 +1,208 @@
+/**
+ * SURGE PROTOCOL - Theme: Blood Circuit
+ * Aggressive red/black cyberpunk aesthetic
+ *
+ * Philosophy: The streets run red. Circuits pulse with stolen power.
+ * Violence is currency, and every shadow hides a blade.
+ * For players who embrace the darker side of the sprawl.
+ */
+
+[data-theme="blood-circuit"] {
+  /* ===========================================
+     BACKGROUND COLORS
+     =========================================== */
+  --bg-primary: #080404;         /* Blood-tinged black */
+  --bg-secondary: #100808;       /* Dark crimson undertone */
+  --bg-tertiary: #180c0c;        /* Card surfaces */
+  --bg-elevated: #201010;        /* Raised elements */
+  --bg-overlay: rgba(8, 4, 4, 0.95);
+
+  /* ===========================================
+     TEXT COLORS
+     =========================================== */
+  --text-primary: #f0e8e8;       /* Warm off-white */
+  --text-secondary: #a08888;     /* Muted rose */
+  --text-dim: #604848;           /* Very muted */
+  --text-inverse: #080404;       /* For light backgrounds */
+
+  /* ===========================================
+     ACCENT COLORS
+     =========================================== */
+  --accent-algorithm: #ff2244;   /* Blood red - Algorithm is demanding */
+  --accent-secondary: #ff6644;   /* Hot orange - highlights */
+  --accent-tertiary: #cc0022;    /* Deep crimson */
+
+  --accent-warning: #ff8800;     /* Amber warning */
+  --accent-danger: #ff0033;      /* Pure danger red */
+  --accent-success: #44ff66;     /* Acid green success */
+  --accent-humanity: #ff66aa;    /* Rose - humanity fading */
+  --accent-credits: #ffcc00;     /* Gold - money */
+
+  /* ===========================================
+     FACTION COLORS
+     =========================================== */
+  --faction-omni: #ff4444;       /* OmniDeliver - corporate red */
+  --faction-saints: #ff66aa;     /* Chrome Saints - rose */
+  --faction-tide: #cc0022;       /* Red Tide - blood */
+  --faction-dragons: #ff8800;    /* Neon Dragons - orange flame */
+
+  /* ===========================================
+     TIER COLORS
+     =========================================== */
+  --tier-low: #604040;           /* Tiers 1-3: Muted */
+  --tier-mid: #ff4444;           /* Tiers 4-6: Red */
+  --tier-high: #ff66aa;          /* Tiers 7-8: Rose */
+  --tier-apex: #ffcc00;          /* Tiers 9-10: Gold */
+
+  /* ===========================================
+     STATUS COLORS
+     =========================================== */
+  --status-healthy: #44ff66;
+  --status-wounded: #ff8800;
+  --status-critical: #ff0033;
+  --status-dead: #402020;
+
+  --humanity-high: #ff66aa;      /* 100-60 */
+  --humanity-mid: #cc4488;       /* 59-40 */
+  --humanity-low: #992266;       /* 39-20 */
+  --humanity-critical: #661144;  /* 19-0 */
+
+  /* ===========================================
+     BORDER COLORS
+     =========================================== */
+  --border-subtle: rgba(255, 100, 100, 0.08);
+  --border-default: rgba(255, 100, 100, 0.2);
+  --border-strong: rgba(255, 100, 100, 0.4);
+  --border-accent: var(--accent-algorithm);
+
+  /* ===========================================
+     GLOW EFFECTS
+     =========================================== */
+  --glow-primary: 0 0 20px rgba(255, 34, 68, 0.4),
+                  0 0 40px rgba(255, 34, 68, 0.2);
+
+  --glow-intense: 0 0 20px rgba(255, 34, 68, 0.6),
+                  0 0 40px rgba(255, 34, 68, 0.4),
+                  0 0 60px rgba(255, 34, 68, 0.2);
+
+  --glow-danger: 0 0 20px rgba(255, 0, 51, 0.6),
+                 0 0 40px rgba(255, 0, 51, 0.4);
+
+  --glow-success: 0 0 20px rgba(68, 255, 102, 0.4),
+                  0 0 40px rgba(68, 255, 102, 0.2);
+
+  --glow-warning: 0 0 20px rgba(255, 136, 0, 0.5),
+                  0 0 40px rgba(255, 136, 0, 0.3);
+
+  /* ===========================================
+     SHADOWS
+     =========================================== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5),
+               0 0 10px rgba(255, 34, 68, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5),
+               0 0 20px rgba(255, 34, 68, 0.15);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5),
+               0 0 30px rgba(255, 34, 68, 0.2);
+
+  /* ===========================================
+     FONTS
+     =========================================== */
+  --font-display: 'Orbitron', 'Rajdhani', system-ui, sans-serif;
+  --font-ui: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ===========================================
+     TYPOGRAPHY (inherited from base)
+     =========================================== */
+
+  /* ===========================================
+     BORDER RADIUS (sharper for aggression)
+     =========================================== */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-full: 9999px;
+
+  /* ===========================================
+     TRANSITIONS
+     =========================================== */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ===========================================
+     Z-INDEX
+     =========================================== */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 400;
+  --z-tooltip: 500;
+  --z-max: 9999;
+
+  /* ===========================================
+     SPACING (inherited from base)
+     =========================================== */
+}
+
+/* ===========================================
+   COMPONENT OVERRIDES
+   =========================================== */
+
+/* Buttons have a more aggressive look */
+[data-theme="blood-circuit"] .button {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Cards have a subtle red border glow on hover */
+[data-theme="blood-circuit"] .card:hover {
+  box-shadow: var(--shadow-md), 0 0 15px rgba(255, 34, 68, 0.15);
+}
+
+/* Progress bars pulse subtly */
+[data-theme="blood-circuit"] .progress-fill {
+  animation: bloodPulse 2s ease-in-out infinite;
+}
+
+@keyframes bloodPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* Input focus has red glow */
+[data-theme="blood-circuit"] input:focus,
+[data-theme="blood-circuit"] select:focus,
+[data-theme="blood-circuit"] textarea:focus {
+  box-shadow: 0 0 0 2px rgba(255, 34, 68, 0.3);
+}
+
+/* Scrollbar styling */
+[data-theme="blood-circuit"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="blood-circuit"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="blood-circuit"] ::-webkit-scrollbar-thumb {
+  background: var(--accent-algorithm);
+  border-radius: var(--radius-sm);
+}
+
+[data-theme="blood-circuit"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}
+
+/* Selection color */
+[data-theme="blood-circuit"] ::selection {
+  background: rgba(255, 34, 68, 0.4);
+  color: var(--text-primary);
+}

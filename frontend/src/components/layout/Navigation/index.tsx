@@ -7,6 +7,8 @@ const NAV_ITEMS = [
   { path: '/algorithm', label: 'Algorithm', icon: '◇', description: 'AI handler' },
   { path: '/character', label: 'Character', icon: '◉', description: 'Stats & augments' },
   { path: '/inventory', label: 'Inventory', icon: '◫', description: 'Gear & items' },
+  { path: '/factions', label: 'Factions', icon: '⬡', description: 'Alliances & rep' },
+  { path: '/war', label: 'War', icon: '⚔', description: 'Faction conflicts' },
 ] as const;
 
 export function Navigation() {

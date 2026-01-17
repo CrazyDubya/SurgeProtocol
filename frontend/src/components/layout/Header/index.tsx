@@ -1,5 +1,6 @@
 import { Link } from 'wouter-preact';
 import { ThemeSwitcher } from '../ThemeSwitcher';
+import { WorldClockDisplay } from '@components/game';
 import styles from './Header.module.css';
 
 export function Header() {
@@ -10,6 +11,10 @@ export function Header() {
           <span class={styles.logoIcon}>◈</span>
           <span class={styles.logoText}>Surge Protocol</span>
         </Link>
+
+        <div class={styles.center}>
+          <WorldClockDisplay compact />
+        </div>
 
         <div class={styles.right}>
           <ThemeSwitcher />

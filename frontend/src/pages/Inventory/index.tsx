@@ -4,10 +4,12 @@
  * Integrates with stores for real-time data.
  */
 
+import { useState } from 'preact/hooks';
 import type { InventoryItem as InventoryItemType } from '@/types';
 import { Button, Card, Skeleton } from '@components/ui';
-import { InventoryGrid, ItemDetail } from '@components/game';
+import { InventoryGrid, ItemDetail, VendorSellModal } from '@components/game';
 import { useInventoryData } from '@/hooks';
+import { toast } from '@/stores/uiStore';
 import {
   items,
   equippedItems,
@@ -23,6 +25,9 @@ import {
 import styles from './Inventory.module.css';
 
 export function Inventory() {
+  // Local state
+  const [showSellModal, setShowSellModal] = useState(false);
+
   // Load data via hook
   const {
     isLoading,
@@ -86,7 +91,16 @@ export function Inventory() {
 
   const handleUse = async () => {
     if (selectedItem.value) {
-      await useItem(selectedItem.value.id);
+      try {
+        const result = await useItem(selectedItem.value.id);
+        toast.success(result.message || `Used ${selectedItem.value.name}`);
+        if (result.remainingQuantity === 0) {
+          selectItem(null);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unable to use item';
+        toast.error(message);
+      }
     }
   };
 
@@ -104,16 +118,39 @@ export function Inventory() {
 
   const handleDrop = async () => {
     if (selectedItem.value) {
-      await discardItem(selectedItem.value.id);
-      selectItem(null);
+      try {
+        const result = await discardItem(selectedItem.value.id);
+        toast.success(result.message || `Discarded ${selectedItem.value.name}`);
+        if (result.remainingQuantity === 0) {
+          selectItem(null);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unable to discard item';
+        toast.error(message);
+      }
     }
   };
 
-  const handleSell = async () => {
-    // TODO: Open vendor sell modal
+  const handleSell = () => {
     if (selectedItem.value) {
-      console.log('Sell item:', selectedItem.value.id);
+      setShowSellModal(true);
     }
+  };
+
+  const handleSellConfirm = async (itemId: string, quantity: number, vendorId?: string) => {
+    const item = items.value.find((i) => i.id === itemId);
+    if (item) {
+      const sellPrice = Math.floor((item.baseValue || 0) * 0.6 * quantity);
+      if (vendorId) {
+        toast.success(`Sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
+      } else {
+        toast.success(`Quick sold ${quantity}x ${item.name} for ₡${sellPrice.toLocaleString()}`);
+      }
+      // Refresh inventory after successful sale
+      refresh();
+    }
+    setShowSellModal(false);
+    selectItem(null);
   };
 
   // Loading state
@@ -237,6 +274,15 @@ export function Inventory() {
           </Button>
         </div>
       </aside>
+
+      {/* Vendor Sell Modal */}
+      {showSellModal && selectedInventoryItem && (
+        <VendorSellModal
+          item={selectedInventoryItem}
+          onSell={handleSellConfirm}
+          onClose={() => setShowSellModal(false)}
+        />
+      )}
     </div>
   );
 }

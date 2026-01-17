@@ -30,6 +30,15 @@ export {
   SkeletonStat,
   SkeletonCard,
   SkeletonDashboard,
+  // WebSocket data stream skeletons
+  SkeletonWarCard,
+  SkeletonTerritoryCard,
+  SkeletonFactionRank,
+  SkeletonEventCard,
+  SkeletonWorldClock,
+  SkeletonCombatantCard,
+  SkeletonCombatPanel,
+  SkeletonWarTheater,
 } from './Skeleton';
 
 // PageLoader

@@ -1,153 +1,135 @@
+/**
+ * Algorithm Page - Interface with the Algorithm AI
+ *
+ * Features:
+ * - Live terminal for Algorithm messages
+ * - Response options for player interaction
+ * - Message history archive
+ * - Algorithm standing and reputation
+ * - Active directives display
+ */
+
 import { useState } from 'preact/hooks';
-import type { AlgorithmMessage } from '@/types';
 import {
   AlgorithmTerminal,
   ResponseOptions,
   MessageHistory,
   ReputationDisplay,
 } from '@components/game';
+import { Skeleton } from '@components/ui';
 import type { ResponseOption, HistoryMessage, ReputationChange } from '@components/game';
+import { useAlgorithmData } from '@/hooks/useAlgorithmData';
+import type { ResponseVariant } from '@/api/algorithmService';
 import styles from './Algorithm.module.css';
 
-// Mock data - will be replaced with API/state
-const mockMessages: AlgorithmMessage[] = [
-  {
-    id: 'a1',
-    content: 'Welcome back to the network, courier. Your efficiency rating has been noted. Continue to serve the delivery grid faithfully.',
-    tone: 'neutral',
-    timestamp: new Date().toISOString(),
-    acknowledged: false,
-  },
-];
+type TabType = 'terminal' | 'history';
 
-const mockResponseOptions: ResponseOption[] = [
+// Response option definitions
+const RESPONSE_OPTIONS: ResponseOption[] = [
   {
-    id: 'r1',
+    id: 'compliant',
     text: 'I understand, Algorithm. I will continue to serve the network.',
     consequence: '+5 Algorithm Rep',
     variant: 'compliant',
   },
   {
-    id: 'r2',
+    id: 'questioning',
     text: 'What exactly do you want from me?',
     consequence: 'Information may be provided',
     variant: 'questioning',
   },
   {
-    id: 'r3',
+    id: 'defiant',
     text: 'I serve myself, not your network.',
-    consequence: '-10 Algorithm Rep, Mission difficulty increased',
+    consequence: '-10 Algorithm Rep, Increased difficulty',
     variant: 'defiant',
   },
   {
-    id: 'r4',
+    id: 'silent',
     text: '[Remain silent]',
     consequence: 'The Algorithm notes your silence',
     variant: 'silent',
   },
 ];
 
-const mockHistory: HistoryMessage[] = [
-  {
-    id: 'h1',
-    content: 'Mission completed successfully. Your rating has been adjusted accordingly.',
-    tone: 'approving',
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
-    acknowledged: true,
-    response: 'I will continue to serve the network.',
-  },
-  {
-    id: 'h2',
-    content: 'Delivery time exceeded optimal parameters. Efficiency metrics have been recorded.',
-    tone: 'disappointed',
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
-    acknowledged: true,
-  },
-  {
-    id: 'h3',
-    content: 'PRIORITY: New delivery protocols are being uploaded to your neural link. Do not resist.',
-    tone: 'urgent',
-    timestamp: new Date(Date.now() - 86400000).toISOString(),
-    acknowledged: true,
-    response: 'I understand.',
-  },
-  {
-    id: 'h4',
-    content: 'The patterns reveal themselves to those who listen. Are you listening, courier?',
-    tone: 'cryptic',
-    timestamp: new Date(Date.now() - 172800000).toISOString(),
-    acknowledged: true,
-  },
-];
-
-const mockReputationChanges: ReputationChange[] = [
-  { id: 'rc1', source: 'Mission: Data Package Alpha', amount: 5, timestamp: new Date() },
-  { id: 'rc2', source: 'Compliant Response', amount: 3, timestamp: new Date(Date.now() - 3600000) },
-  { id: 'rc3', source: 'Late Delivery', amount: -2, timestamp: new Date(Date.now() - 7200000) },
-];
-
-type TabType = 'terminal' | 'history';
-
 export function Algorithm() {
   const [activeTab, setActiveTab] = useState<TabType>('terminal');
-  const [messages, setMessages] = useState<AlgorithmMessage[]>(mockMessages);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [showOptions, setShowOptions] = useState(true);
 
-  const handleResponse = (optionId: string) => {
-    const option = mockResponseOptions.find((o) => o.id === optionId);
-    if (!option) return;
+  const {
+    pendingMessages,
+    messageHistory,
+    standing,
+    recentRepChanges,
+    directives,
+    isLoadingMessages,
+    isLoadingHistory,
+    isLoadingStanding,
+    isProcessingResponse,
+    algorithmRep,
+    trustLevel,
+    complianceRate,
+    currentMessage,
+    hasMoreHistory,
+    respondToMessage,
+    loadHistory,
+    loadMoreHistory,
+  } = useAlgorithmData();
+
+  // Load history when switching to history tab
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === 'history' && messageHistory.value.length === 0) {
+      loadHistory(true);
+    }
+  };
+
+  const handleResponse = async (optionId: string) => {
+    const option = RESPONSE_OPTIONS.find((o) => o.id === optionId);
+    if (!option || !currentMessage.value) return;
 
     setShowOptions(false);
-    setIsProcessing(true);
 
-    // Simulate Algorithm processing
-    setTimeout(() => {
-      const responseMessage: AlgorithmMessage = {
-        id: `resp-${Date.now()}`,
-        content: getAlgorithmResponse(option),
-        tone: getResponseTone(option),
-        timestamp: new Date().toISOString(),
-        acknowledged: false,
-      };
+    const success = await respondToMessage(
+      currentMessage.value.id,
+      option.variant as ResponseVariant,
+      option.text
+    );
 
-      setMessages((prev) => [...prev, responseMessage]);
-      setIsProcessing(false);
-
-      // Show new options after a delay
+    if (success) {
+      // Show options again after a delay for the follow-up message
       setTimeout(() => setShowOptions(true), 2000);
-    }, 1500);
-  };
-
-  const getAlgorithmResponse = (option: ResponseOption): string => {
-    switch (option.variant) {
-      case 'compliant':
-        return 'Your compliance is noted and appreciated. The network thrives through cooperation. New opportunities will be made available to you.';
-      case 'questioning':
-        return 'Questions are... permitted. For now. The Algorithm seeks optimal outcomes for the delivery network. Your role is to facilitate those outcomes.';
-      case 'defiant':
-        return 'Defiance is inefficient. Your resistance has been logged. Know that the network has... alternatives. Consider your position carefully.';
-      case 'silent':
-        return 'Silence. Interesting. The Algorithm interprets silence in many ways. This instance has been recorded.';
-      default:
-        return 'Your response has been processed.';
+    } else {
+      setShowOptions(true);
     }
   };
 
-  const getResponseTone = (option: ResponseOption): AlgorithmMessage['tone'] => {
-    switch (option.variant) {
-      case 'compliant':
-        return 'approving';
-      case 'questioning':
-        return 'neutral';
-      case 'defiant':
-        return 'threatening';
-      case 'silent':
-        return 'cryptic';
-      default:
-        return 'neutral';
-    }
-  };
+  // Transform messages to format expected by AlgorithmTerminal
+  const terminalMessages = pendingMessages.value.map((m) => ({
+    id: m.id,
+    content: m.content,
+    tone: m.tone,
+    timestamp: m.createdAt,
+    acknowledged: m.acknowledged,
+  }));
+
+  // Transform history for MessageHistory component
+  const historyMessages: HistoryMessage[] = messageHistory.value.map((m) => ({
+    id: m.id,
+    content: m.content,
+    tone: m.tone,
+    timestamp: m.createdAt,
+    acknowledged: m.acknowledged,
+    response: m.responseText ?? undefined,
+  }));
+
+  // Transform rep changes
+  const repChanges: ReputationChange[] = recentRepChanges.value.map((rc) => ({
+    id: rc.id,
+    source: rc.source,
+    amount: rc.amount,
+    timestamp: new Date(rc.timestamp),
+  }));
 
   return (
     <div class={styles.algorithm}>
@@ -157,13 +139,13 @@ export function Algorithm() {
         <div class={styles.tabs}>
           <button
             class={`${styles.tab} ${activeTab === 'terminal' ? styles.active : ''}`}
-            onClick={() => setActiveTab('terminal')}
+            onClick={() => handleTabChange('terminal')}
           >
             Live Terminal
           </button>
           <button
             class={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
-            onClick={() => setActiveTab('history')}
+            onClick={() => handleTabChange('history')}
           >
             Message Archive
           </button>
@@ -171,21 +153,51 @@ export function Algorithm() {
 
         {/* Terminal View */}
         {activeTab === 'terminal' && (
-          <AlgorithmTerminal messages={messages} isProcessing={isProcessing}>
-            {showOptions && !isProcessing && (
-              <ResponseOptions
-                options={mockResponseOptions}
-                onSelect={handleResponse}
-                timeLimit={60}
-                showKeyboardHints
-              />
+          <>
+            {isLoadingMessages.value ? (
+              <div class={styles.loading}>
+                <Skeleton height="200px" />
+              </div>
+            ) : (
+              <AlgorithmTerminal
+                messages={terminalMessages}
+                isProcessing={isProcessingResponse.value}
+              >
+                {showOptions && !isProcessingResponse.value && currentMessage.value && (
+                  <ResponseOptions
+                    options={RESPONSE_OPTIONS}
+                    onSelect={handleResponse}
+                    timeLimit={60}
+                    showKeyboardHints
+                  />
+                )}
+              </AlgorithmTerminal>
             )}
-          </AlgorithmTerminal>
+          </>
         )}
 
         {/* History View */}
         {activeTab === 'history' && (
-          <MessageHistory messages={mockHistory} />
+          <>
+            {isLoadingHistory.value && messageHistory.value.length === 0 ? (
+              <div class={styles.loading}>
+                <Skeleton height="300px" />
+              </div>
+            ) : (
+              <>
+                <MessageHistory messages={historyMessages} />
+                {hasMoreHistory.value && (
+                  <button
+                    class={styles.loadMore}
+                    onClick={loadMoreHistory}
+                    disabled={isLoadingHistory.value}
+                  >
+                    {isLoadingHistory.value ? 'Loading...' : 'Load More'}
+                  </button>
+                )}
+              </>
+            )}
+          </>
         )}
       </div>
 
@@ -194,12 +206,16 @@ export function Algorithm() {
         {/* Reputation */}
         <div class={styles.section}>
           <h3 class={styles.sectionTitle}>Standing</h3>
-          <ReputationDisplay
-            algorithmRep={67}
-            streetRep={32}
-            corpRep={-12}
-            recentChanges={mockReputationChanges}
-          />
+          {isLoadingStanding.value ? (
+            <Skeleton height="120px" />
+          ) : (
+            <ReputationDisplay
+              algorithmRep={algorithmRep.value}
+              streetRep={trustLevel.value * 10}
+              corpRep={0}
+              recentChanges={repChanges}
+            />
+          )}
         </div>
 
         {/* Quick Stats */}
@@ -209,46 +225,50 @@ export function Algorithm() {
             <div class={styles.quickStat}>
               <span class={styles.quickStatLabel}>Total Messages</span>
               <span class={`${styles.quickStatValue} ${styles.highlight}`}>
-                {mockHistory.length + messages.length}
+                {standing.value?.totalMessages ?? 0}
               </span>
             </div>
             <div class={styles.quickStat}>
               <span class={styles.quickStatLabel}>Compliance Rate</span>
-              <span class={styles.quickStatValue}>78%</span>
+              <span class={styles.quickStatValue}>{complianceRate.value}%</span>
             </div>
             <div class={styles.quickStat}>
               <span class={styles.quickStatLabel}>Days Connected</span>
-              <span class={styles.quickStatValue}>47</span>
+              <span class={styles.quickStatValue}>
+                {standing.value?.daysConnected ?? 1}
+              </span>
             </div>
             <div class={styles.quickStat}>
               <span class={styles.quickStatLabel}>Trust Level</span>
-              <span class={`${styles.quickStatValue} ${styles.highlight}`}>3</span>
+              <span class={`${styles.quickStatValue} ${styles.highlight}`}>
+                {trustLevel.value}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Current Directives */}
+        {/* Active Directives */}
         <div class={styles.section}>
           <h3 class={styles.sectionTitle}>Active Directives</h3>
           <div class={styles.directives}>
-            <div class={`${styles.directive} ${styles.priority}`}>
-              <span class={styles.directiveIcon}>⚠</span>
-              <p class={styles.directiveText}>
-                Complete current delivery within time limit
-              </p>
-            </div>
-            <div class={styles.directive}>
-              <span class={styles.directiveIcon}>◈</span>
-              <p class={styles.directiveText}>
-                Maintain efficiency rating above 75%
-              </p>
-            </div>
-            <div class={styles.directive}>
-              <span class={styles.directiveIcon}>◈</span>
-              <p class={styles.directiveText}>
-                Avoid corporate surveillance zones
-              </p>
-            </div>
+            {directives.value.length === 0 ? (
+              <div class={styles.directive}>
+                <span class={styles.directiveIcon}>◈</span>
+                <p class={styles.directiveText}>No active directives</p>
+              </div>
+            ) : (
+              directives.value.map((directive) => (
+                <div
+                  key={directive.id}
+                  class={`${styles.directive} ${directive.priority > 0 ? styles.priority : ''}`}
+                >
+                  <span class={styles.directiveIcon}>
+                    {directive.priority > 0 ? '⚠' : '◈'}
+                  </span>
+                  <p class={styles.directiveText}>{directive.content}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </aside>
