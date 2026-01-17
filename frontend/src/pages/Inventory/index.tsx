@@ -119,11 +119,14 @@ export function Inventory() {
   const handleDrop = async () => {
     if (selectedItem.value) {
       try {
-        await discardItem(selectedItem.value.id);
-        toast.success(`Discarded ${selectedItem.value.name}`);
-        selectItem(null);
-      } catch {
-        toast.error('Unable to discard item - feature coming soon');
+        const result = await discardItem(selectedItem.value.id);
+        toast.success(result.message || `Discarded ${selectedItem.value.name}`);
+        if (result.remainingQuantity === 0) {
+          selectItem(null);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unable to discard item';
+        toast.error(message);
       }
     }
   };

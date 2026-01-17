@@ -8,6 +8,7 @@
  * - POST /items/inventory/:inventoryId/use - Use a consumable item
  * - POST /items/inventory/:inventoryId/equip - Equip an item
  * - POST /items/inventory/:inventoryId/unequip - Unequip an item
+ * - DELETE /items/inventory/:inventoryId - Discard/drop an item
  */
 
 import { Hono } from 'hono';
@@ -627,6 +628,90 @@ itemRoutes.post('/inventory/:inventoryId/unequip', requireCharacterMiddleware(),
         previousSlot,
       },
       message: `Unequipped ${invItem.name} from ${previousSlot}.`,
+    },
+  });
+});
+
+/**
+ * DELETE /items/inventory/:inventoryId
+ * Discard/drop an item from inventory.
+ */
+itemRoutes.delete('/inventory/:inventoryId', requireCharacterMiddleware(), async (c) => {
+  const inventoryId = c.req.param('inventoryId');
+  const characterId = c.get('characterId')!;
+  const quantityParam = c.req.query('quantity');
+  const quantity = quantityParam ? parseInt(quantityParam, 10) : 1;
+
+  // Get the inventory item
+  const invItem = await c.env.DB
+    .prepare(
+      `SELECT ci.*, id.name, id.equip_effects
+       FROM character_inventory ci
+       JOIN item_definitions id ON ci.item_definition_id = id.id
+       WHERE ci.id = ? AND ci.character_id = ?`
+    )
+    .bind(inventoryId, characterId)
+    .first<{
+      id: string;
+      item_definition_id: string;
+      quantity: number;
+      equipped_slot: string | null;
+      name: string;
+      equip_effects: string | null;
+    }>();
+
+  if (!invItem) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Item not found in inventory' }],
+    }, 404);
+  }
+
+  // Cannot discard equipped items
+  if (invItem.equipped_slot) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'ITEM_EQUIPPED', message: 'Unequip item before discarding' }],
+    }, 400);
+  }
+
+  // Check quantity
+  if (quantity > invItem.quantity) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INSUFFICIENT_QUANTITY', message: `Only have ${invItem.quantity} to discard` }],
+    }, 400);
+  }
+
+  // Discard the item(s)
+  if (quantity >= invItem.quantity) {
+    // Remove entirely
+    await c.env.DB
+      .prepare('DELETE FROM character_inventory WHERE id = ?')
+      .bind(inventoryId)
+      .run();
+  } else {
+    // Reduce quantity
+    await c.env.DB
+      .prepare(
+        `UPDATE character_inventory
+         SET quantity = quantity - ?, updated_at = datetime('now')
+         WHERE id = ?`
+      )
+      .bind(quantity, inventoryId)
+      .run();
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      discarded: {
+        inventoryId,
+        name: invItem.name,
+        quantity,
+      },
+      remainingQuantity: Math.max(0, invItem.quantity - quantity),
+      message: `Discarded ${quantity}x ${invItem.name}.`,
     },
   });
 });

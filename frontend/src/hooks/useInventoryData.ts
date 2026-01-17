@@ -132,12 +132,19 @@ export function useInventoryData() {
 
   /**
    * Drop/discard an item
-   * Note: Backend support pending - throws error to allow caller to handle gracefully
    */
-  const discardItem = useCallback(async (_itemId: string, _quantity: number = 1) => {
-    // Backend endpoint not yet available
-    throw new Error('Item discard requires backend support');
-  }, []);
+  const discardItem = useCallback(async (inventoryId: string, quantity: number = 1) => {
+    const result = await api.delete<{
+      discarded: { inventoryId: string; name: string; quantity: number };
+      remainingQuantity: number;
+      message: string;
+    }>(`/items/inventory/${inventoryId}?quantity=${quantity}`);
+
+    // Refresh inventory to reflect changes
+    loadInventory();
+
+    return result;
+  }, [loadInventory]);
 
   /**
    * Refresh inventory data
