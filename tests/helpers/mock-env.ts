@@ -102,18 +102,71 @@ export class MockD1Database {
   }
 
   private _handleSelect<T>(sql: string, params: unknown[]): MockD1Result<T> {
-    // Simple SELECT parsing
-    const tableMatch = sql.match(/FROM\s+(\w+)/i);
+    // Parse column aliases (e.g., "col AS alias" or "col as alias")
+    const columnAliases: Array<{ original: string; alias: string }> = [];
+    const aliasMatches = [...sql.matchAll(/(?:(\w+)\.)?(\w+)\s+[Aa][Ss]\s+(\w+)/g)];
+    for (const m of aliasMatches) {
+      columnAliases.push({ original: m[2]!, alias: m[3]! });
+    }
+
+    // Parse JOIN clauses - simplified regex
+    const joinMatches = [...sql.matchAll(/(?:LEFT\s+)?JOIN\s+(\w+)(?:\s+(\w+))?\s+ON\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)/gi)];
+    const joins: Array<{
+      table: string;
+      alias: string;
+      leftTable: string;
+      leftCol: string;
+      rightTable: string;
+      rightCol: string;
+    }> = joinMatches.map(m => ({
+      table: m[1]!,
+      alias: m[2] || m[1]!,
+      leftTable: m[3]!,
+      leftCol: m[4]!,
+      rightTable: m[5]!,
+      rightCol: m[6]!,
+    }));
+
+    // Parse main table (could have alias)
+    const tableMatch = sql.match(/FROM\s+(\w+)(?:\s+(?:AS\s+)?(\w+))?/i);
     if (!tableMatch) {
       return { results: [], success: true, meta: { changes: 0, last_row_id: 0 } };
     }
 
     const tableName = tableMatch[1]!;
-    let rows = this.tables.get(tableName) || [];
+    const tableAlias = tableMatch[2] || tableName;
+    let rows = [...(this.tables.get(tableName) || [])];
+
+    // Apply JOINs
+    for (const join of joins) {
+      const joinTable = this.tables.get(join.table) || [];
+      rows = rows.map(row => {
+        // Determine which side of the join has the value
+        let leftVal: unknown;
+        let rightVal: unknown;
+
+        // Check if leftTable is main table alias
+        if (join.leftTable === tableAlias || join.leftTable === tableName) {
+          leftVal = row[join.leftCol];
+          const joinRow = joinTable.find(jr => jr[join.rightCol] === leftVal);
+          if (joinRow) {
+            // Merge with main table taking precedence (don't overwrite main table columns)
+            return { ...joinRow, ...row };
+          }
+        } else if (join.rightTable === tableAlias || join.rightTable === tableName) {
+          rightVal = row[join.rightCol];
+          const joinRow = joinTable.find(jr => jr[join.leftCol] === rightVal);
+          if (joinRow) {
+            return { ...joinRow, ...row };
+          }
+        }
+        return row;
+      });
+    }
 
     // Handle WHERE clause
-    const whereMatch = sql.match(/WHERE\s+(.+?)(?:ORDER|LIMIT|$)/is);
-    if (whereMatch && params.length > 0) {
+    const whereMatch = sql.match(/WHERE\s+(.+?)(?:ORDER|GROUP|LIMIT|$)/is);
+    if (whereMatch) {
       rows = this._filterByWhere(rows, whereMatch[1]!, params);
     }
 
@@ -123,22 +176,86 @@ export class MockD1Database {
       rows = rows.slice(0, parseInt(limitMatch[1]!, 10));
     }
 
+    // Apply column aliases
+    if (columnAliases.length > 0) {
+      rows = rows.map(row => {
+        const newRow = { ...row };
+        for (const alias of columnAliases) {
+          if (alias.original in newRow) {
+            newRow[alias.alias] = newRow[alias.original];
+          }
+        }
+        return newRow;
+      });
+    }
+
     return { results: rows as T[], success: true, meta: { changes: 0, last_row_id: 0 } };
   }
 
   private _filterByWhere(rows: D1Row[], whereClause: string, params: unknown[]): D1Row[] {
-    // Simple WHERE parsing for = conditions
-    const conditions = whereClause.split(/\s+AND\s+/i);
-    let paramIndex = 0;
+    // Skip "1=1" always-true condition
+    const cleanedWhere = whereClause.replace(/1\s*=\s*1/g, '').trim();
+    if (!cleanedWhere) return rows;
+
+    // Split by AND, respecting parentheses (simple split for now)
+    const conditions = cleanedWhere.split(/\s+AND\s+/i).filter(c => c.trim());
 
     return rows.filter(row => {
+      // Reset param index for each row
+      let paramIndex = 0;
+
       return conditions.every(cond => {
-        const match = cond.match(/(\w+)\s*=\s*\?/);
-        if (match) {
-          const col = match[1]!;
-          const value = params[paramIndex++];
-          return row[col] === value;
+        const trimmedCond = cond.trim();
+
+        // Handle OR conditions first (simple case: col = ? OR col = ?)
+        if (/\bOR\b/i.test(trimmedCond)) {
+          const orParts = trimmedCond.split(/\s+OR\s+/i);
+          const startIndex = paramIndex;
+          const matched = orParts.some((part, i) => {
+            const orMatch = part.trim().match(/(?:(\w+)\.)?(\w+)\s*=\s*\?/);
+            if (orMatch) {
+              const col = orMatch[2]!;
+              const value = params[startIndex + i];
+              return row[col] === value;
+            }
+            return false;
+          });
+          paramIndex += orParts.length; // Consume all OR params
+          return matched;
         }
+
+        // Handle column.field = ? (with table aliases)
+        const aliasMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s*(=|<=|>=|<|>|!=|<>)\s*\?/);
+        if (aliasMatch) {
+          const col = aliasMatch[2]!;
+          const operator = aliasMatch[3]!;
+          const value = params[paramIndex++];
+          const rowValue = row[col];
+
+          // Type-safe comparison
+          if (rowValue === undefined || rowValue === null) {
+            return operator === '=' ? value === null : false;
+          }
+
+          switch (operator) {
+            case '=':
+              return rowValue === value;
+            case '!=':
+            case '<>':
+              return rowValue !== value;
+            case '<':
+              return (rowValue as number) < (value as number);
+            case '>':
+              return (rowValue as number) > (value as number);
+            case '<=':
+              return (rowValue as number) <= (value as number);
+            case '>=':
+              return (rowValue as number) >= (value as number);
+            default:
+              return true;
+          }
+        }
+
         return true;
       });
     });
@@ -223,6 +340,36 @@ export class MockD1Database {
   _clear(): void {
     this.tables.clear();
     this.autoIncrement.clear();
+  }
+
+  // Batch execute multiple statements
+  async batch(statements: MockD1PreparedStatement[]): Promise<Array<{ success: boolean; meta: { changes: number } }>> {
+    const results = [];
+    for (const stmt of statements) {
+      results.push(await stmt.run());
+    }
+    return results;
+  }
+
+  // Update rows matching condition (helper for tests)
+  _updateWhere(tableName: string, where: Record<string, unknown>, updates: Record<string, unknown>): number {
+    const rows = this.tables.get(tableName) || [];
+    let updateCount = 0;
+
+    rows.forEach(row => {
+      const matches = Object.entries(where).every(([key, value]) => row[key] === value);
+      if (matches) {
+        Object.assign(row, updates);
+        updateCount++;
+      }
+    });
+
+    return updateCount;
+  }
+
+  // Get rows from a table (helper for tests)
+  _getTable(tableName: string): D1Row[] {
+    return this.tables.get(tableName) || [];
   }
 }
 
