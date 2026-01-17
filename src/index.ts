@@ -100,6 +100,13 @@ app.get('/ws/war/:warId', async (c) => {
   return stub.fetch(c.req.raw);
 });
 
+// Global war theater WebSocket - aggregates all active wars
+app.get('/ws/war-theater', async (c) => {
+  const id = c.env.WAR_THEATER.idFromName('global');
+  const stub = c.env.WAR_THEATER.get(id);
+  return stub.fetch(c.req.raw);
+});
+
 app.get('/ws/world', async (c) => {
   const id = c.env.WORLD_CLOCK.idFromName('global');
   const stub = c.env.WORLD_CLOCK.get(id);
