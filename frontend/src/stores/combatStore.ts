@@ -61,7 +61,8 @@ function normalizeCombatant(c: Combatant, playerId?: string): Combatant {
   const hpPercent = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
   return {
     ...c,
-    isPlayer: c.id === playerId,
+    // Preserve existing isPlayer/isAlly if set, otherwise derive from playerId
+    isPlayer: c.isPlayer ?? (playerId ? c.id === playerId : false),
     isAlly: c.isAlly ?? false,
     initiative: c.initiative ?? 0,
     position: c.position ?? { x: 0, y: 0 },
@@ -188,11 +189,13 @@ export function startCombat(id: string): void {
 }
 
 /** Update full combat state from server */
-export function setCombatState(state: Partial<CombatState>): void {
+export function setCombatState(state: Partial<CombatState>, playerId?: string): void {
   if (state.combatId !== undefined) combatId.value = state.combatId;
   if (state.phase !== undefined) phase.value = state.phase;
   if (state.round !== undefined) round.value = state.round;
-  if (state.combatants !== undefined) combatants.value = state.combatants;
+  if (state.combatants !== undefined) {
+    combatants.value = state.combatants.map((c) => normalizeCombatant(c, playerId));
+  }
   if (state.currentTurnId !== undefined) currentTurnId.value = state.currentTurnId;
   if (state.actionLog !== undefined) actionLog.value = state.actionLog;
   if (state.endReason !== undefined) endReason.value = state.endReason;

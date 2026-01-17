@@ -642,6 +642,14 @@ itemRoutes.delete('/inventory/:inventoryId', requireCharacterMiddleware(), async
   const quantityParam = c.req.query('quantity');
   const quantity = quantityParam ? parseInt(quantityParam, 10) : 1;
 
+  // Validate quantity is a finite positive integer
+  if (!Number.isFinite(quantity) || !Number.isInteger(quantity) || quantity < 1) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_QUANTITY', message: 'Quantity must be a positive integer' }],
+    }, 400);
+  }
+
   // Get the inventory item
   const invItem = await c.env.DB
     .prepare(

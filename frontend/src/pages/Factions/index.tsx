@@ -201,6 +201,17 @@ export function Factions() {
 
       {/* Sidebar */}
       <aside class={styles.sidebar}>
+        {/* Overall Reputation Overview */}
+        <Card variant="outlined" padding="md">
+          <h3 class={styles.sidebarTitle}>Reputation Overview</h3>
+          <ReputationDisplay
+            algorithmRep={50}
+            streetRep={characterFactions.value.filter(f => f.tier === 'FRIENDLY' || f.tier === 'ALLIED' || f.tier === 'REVERED').length * 10}
+            corpRep={characterFactions.value.filter(f => f.tier === 'HOSTILE' || f.tier === 'UNFRIENDLY').length * -10}
+            compact
+          />
+        </Card>
+
         {/* Your Standings Summary */}
         <Card variant="outlined" padding="md">
           <h3 class={styles.sidebarTitle}>Your Standings</h3>

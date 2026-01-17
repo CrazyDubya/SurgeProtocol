@@ -8,7 +8,7 @@
 import { Hono } from 'hono';
 import { nanoid } from 'nanoid';
 import { authMiddleware, type AuthVariables } from '../middleware/auth';
-import { getAlgorithmCommentary } from '../game/mechanics/rating';
+import { getAlgorithmCommentary, type RatingChange } from '../../game/mechanics/rating';
 
 type Bindings = {
   DB: D1Database;
@@ -185,19 +185,27 @@ app.post('/messages/:id/respond', async (c) => {
     WHERE id = ?
   `).bind(now, body.variant, body.text || null, messageId).run();
 
-  // Update algorithm standing
+  // Update algorithm standing - use (total_messages + 1) as divisor to avoid div by zero
   await c.env.DB.prepare(`
     UPDATE algorithm_standing
     SET algorithm_rep = algorithm_rep + ?,
         total_messages = total_messages + 1,
         compliance_rate = CASE
-          WHEN ? = 'compliant' THEN (compliance_rate * (total_messages - 1) + 100) / total_messages
-          WHEN ? = 'defiant' THEN (compliance_rate * (total_messages - 1) + 0) / total_messages
-          ELSE compliance_rate
+          WHEN ? = 'compliant' THEN (compliance_rate * total_messages + 100) / (total_messages + 1)
+          WHEN ? = 'defiant' THEN (compliance_rate * total_messages + 0) / (total_messages + 1)
+          ELSE (compliance_rate * total_messages + 50) / (total_messages + 1)
         END,
         last_interaction = ?
     WHERE character_id = ?
   `).bind(repChange, body.variant, body.variant, now, characterId).run();
+
+  // Record reputation change in audit trail
+  const repChangeId = nanoid();
+  await c.env.DB.prepare(`
+    INSERT INTO algorithm_rep_changes
+    (id, character_id, source, amount, created_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(repChangeId, characterId, `response:${body.variant}`, repChange, now).run();
 
   // Generate follow-up message
   const followUpContent = getFollowUpMessage(body.variant);
@@ -274,10 +282,27 @@ app.get('/standing', async (c) => {
     LIMIT 10
   `).bind(characterId).all();
 
+  // Generate dynamic Algorithm commentary based on recent changes
+  let commentary: string | null = null;
+  if (recentChanges.results.length > 0) {
+    const lastChange = recentChanges.results[0] as { amount: number };
+    const ratingChange: RatingChange = {
+      previousRating: (standing.algorithmRep as number) - lastChange.amount,
+      newRating: standing.algorithmRep as number,
+      delta: lastChange.amount,
+      tierChanged: false,
+      previousTier: Math.floor(((standing.algorithmRep as number) - lastChange.amount) / 20) + 1,
+      newTier: Math.floor((standing.algorithmRep as number) / 20) + 1,
+    };
+    ratingChange.tierChanged = ratingChange.previousTier !== ratingChange.newTier;
+    commentary = getAlgorithmCommentary(ratingChange);
+  }
+
   return c.json({
     success: true,
     standing,
     recentChanges: recentChanges.results,
+    commentary,
   });
 });
 

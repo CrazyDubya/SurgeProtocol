@@ -155,6 +155,14 @@ export function CombatPanel({
               Overwatch
             </Button>
             <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => useItem('healing_stim')}
+              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
+            >
+              Use Item
+            </Button>
+            <Button
               variant="warning"
               size="sm"
               onClick={() => disengage()}
