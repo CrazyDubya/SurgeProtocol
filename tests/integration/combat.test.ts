@@ -2834,4 +2834,729 @@ describe('Combat System Day 4 - Actions & Turn Management', () => {
       expect(response.status).toBe(404);
     });
   });
+
+  // ===========================================================================
+  // DAY 5: CONDITIONS & STATUS EFFECTS
+  // ===========================================================================
+
+  describe('Combat System Day 5 - Conditions & Status Effects', () => {
+
+    // =========================================================================
+    // POST /combat/instances/:id/apply-condition TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/apply-condition', () => {
+      it('should apply a condition to a participant', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-cond-test',
+          character_id: 'char-cond-test',
+          status: 'ACTIVE',
+          current_round: 1,
+          player_participants: JSON.stringify([{ id: 'player-cond', name: 'Test Player', type: 'player' }]),
+          enemy_participants: JSON.stringify([{ id: 'enemy-cond', name: 'Test Enemy', type: 'enemy' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-burning',
+          code: 'BURNING',
+          name: 'Burning',
+          description: 'Taking fire damage over time',
+          condition_type: 'DEBUFF',
+          severity: 2,
+          is_positive: 0,
+          is_dispellable: 1,
+          default_duration_seconds: 30,
+          stacks: 1,
+          max_stacks: 5,
+          damage_over_time: JSON.stringify({ damagePerSecond: 5, type: 'FIRE' }),
+          stat_modifiers: null,
+          movement_modifier: 1.0,
+          action_restrictions: null,
+          on_apply_effect: null,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-cond-test/apply-condition', {
+          body: {
+            targetId: 'player-cond',
+            conditionCode: 'BURNING',
+            stacks: 2,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            action: string;
+            condition: { code: string; name: string; currentStacks: number };
+            target: { id: string; name: string };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.action).toBe('applied');
+        expect(data.data?.condition.code).toBe('BURNING');
+        expect(data.data?.condition.currentStacks).toBe(2);
+        expect(data.data?.target.id).toBe('player-cond');
+      });
+
+      it('should stack conditions when applying again', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-stack-test',
+          character_id: 'char-stack-test',
+          status: 'ACTIVE',
+          current_round: 1,
+          player_participants: JSON.stringify([{ id: 'player-stack', name: 'Stack Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-bleed',
+          code: 'BLEEDING',
+          name: 'Bleeding',
+          description: 'Losing blood',
+          condition_type: 'DEBUFF',
+          severity: 1,
+          is_positive: 0,
+          is_dispellable: 1,
+          default_duration_seconds: 60,
+          stacks: 1,
+          max_stacks: 10,
+          damage_over_time: JSON.stringify({ damagePerSecond: 2 }),
+        }]);
+        freshEnv.DB._seed('character_conditions', [{
+          id: 'existing-bleed',
+          character_id: 'player-stack',
+          condition_id: 'cond-bleed',
+          current_stacks: 3,
+          duration_remaining_seconds: 60,
+          times_refreshed: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-stack-test/apply-condition', {
+          body: {
+            targetId: 'player-stack',
+            conditionCode: 'BLEEDING',
+            stacks: 2,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { action: string; condition: { currentStacks: number } };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.action).toBe('stacked');
+        expect(data.data?.condition.currentStacks).toBe(5);
+      });
+
+      it('should return 400 for invalid target', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-invalid-target',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'valid-player', name: 'Valid', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-test',
+          code: 'TEST',
+          name: 'Test',
+          default_duration_seconds: 30,
+          max_stacks: 1,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-invalid-target/apply-condition', {
+          body: {
+            targetId: 'nonexistent-target',
+            conditionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('TARGET_NOT_FOUND');
+      });
+
+      it('should return 404 for non-existent condition', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-cond',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-test', name: 'Test', type: 'player' }]),
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-no-cond/apply-condition', {
+          body: {
+            targetId: 'player-test',
+            conditionCode: 'NONEXISTENT',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(404);
+        expect(data.errors?.[0]?.code).toBe('CONDITION_NOT_FOUND');
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-ended',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+          player_participants: JSON.stringify([{ id: 'player-test', name: 'Test', type: 'player' }]),
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-ended/apply-condition', {
+          body: {
+            targetId: 'player-test',
+            conditionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/apply-condition', {
+          body: {
+            targetId: 'target',
+            conditionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // GET /combat/instances/:id/conditions TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/instances/:id/conditions', () => {
+      it('should return all conditions in combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-get-conds',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([
+            { id: 'player-a', name: 'Player A', type: 'player' },
+            { id: 'player-b', name: 'Player B', type: 'player' },
+          ]),
+          enemy_participants: JSON.stringify([{ id: 'enemy-a', name: 'Enemy A', type: 'enemy' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-buff', code: 'HASTE', name: 'Haste', condition_type: 'BUFF', is_positive: 1, severity: 1, movement_modifier: 1.5 },
+          { id: 'cond-debuff', code: 'SLOW', name: 'Slow', condition_type: 'DEBUFF', is_positive: 0, severity: 2, movement_modifier: 0.5 },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-1', character_id: 'player-a', condition_id: 'cond-buff', current_stacks: 1, duration_remaining_seconds: 30, is_paused: 0, times_ticked: 0, total_damage_dealt: 0, total_healing_done: 0, times_refreshed: 0 },
+          { id: 'cc-2', character_id: 'enemy-a', condition_id: 'cond-debuff', current_stacks: 2, duration_remaining_seconds: 60, is_paused: 0, times_ticked: 0, total_damage_dealt: 0, total_healing_done: 0, times_refreshed: 0 },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/instances/combat-get-conds/conditions');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            conditions: Array<{ code: string; targetId: string }>;
+            byParticipant: Record<string, unknown[]>;
+            summary: { total: number; buffs: number; debuffs: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.conditions.length).toBe(2);
+        expect(data.data?.summary.total).toBe(2);
+        expect(data.data?.summary.buffs).toBe(1);
+        expect(data.data?.summary.debuffs).toBe(1);
+      });
+
+      it('should filter by participant', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-filter-conds',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-filter', name: 'Filter Player', type: 'player' }]),
+          enemy_participants: JSON.stringify([{ id: 'enemy-filter', name: 'Filter Enemy', type: 'enemy' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-f1', code: 'POISON', name: 'Poison', condition_type: 'DEBUFF', is_positive: 0, severity: 1 },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-f1', character_id: 'player-filter', condition_id: 'cond-f1', current_stacks: 1, is_paused: 0, times_ticked: 0, total_damage_dealt: 0, total_healing_done: 0, times_refreshed: 0 },
+          { id: 'cc-f2', character_id: 'enemy-filter', condition_id: 'cond-f1', current_stacks: 3, is_paused: 0, times_ticked: 0, total_damage_dealt: 0, total_healing_done: 0, times_refreshed: 0 },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/instances/combat-filter-conds/conditions?participantId=player-filter');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { conditions: Array<{ targetId: string }> };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.conditions.length).toBe(1);
+        expect(data.data?.conditions[0]?.targetId).toBe('player-filter');
+      });
+
+      it('should return empty for no conditions', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-conds',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-nc', name: 'No Cond Player', type: 'player' }]),
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/instances/combat-no-conds/conditions');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { conditions: unknown[]; summary: { total: number } };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.conditions.length).toBe(0);
+        expect(data.data?.summary.total).toBe(0);
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('GET', '/api/combat/instances/nonexistent/conditions');
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/remove-condition TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/remove-condition', () => {
+      it('should remove a specific condition', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-remove-cond',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-rm', name: 'Remove Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-rm', code: 'STUN', name: 'Stunned' },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-remove', character_id: 'player-rm', condition_id: 'cond-rm', current_stacks: 1 },
+        ]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-remove-cond/remove-condition', {
+          body: {
+            targetId: 'player-rm',
+            conditionInstanceId: 'cc-remove',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { action: string; removedConditions: Array<{ code: string }> };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.action).toBe('removed');
+        expect(data.data?.removedConditions[0]?.code).toBe('STUN');
+      });
+
+      it('should remove condition by code', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-rm-code',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-rmc', name: 'RM Code Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-blind', code: 'BLIND', name: 'Blinded' },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-blind', character_id: 'player-rmc', condition_id: 'cond-blind', current_stacks: 1 },
+        ]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-rm-code/remove-condition', {
+          body: {
+            targetId: 'player-rmc',
+            conditionCode: 'BLIND',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { removedConditions: Array<{ code: string }> };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.removedConditions[0]?.code).toBe('BLIND');
+      });
+
+      it('should reduce stacks instead of removing', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-reduce',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-red', name: 'Reduce Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-stack', code: 'VULN', name: 'Vulnerable' },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-stack', character_id: 'player-red', condition_id: 'cond-stack', current_stacks: 5 },
+        ]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-reduce/remove-condition', {
+          body: {
+            targetId: 'player-red',
+            conditionInstanceId: 'cc-stack',
+            removeStacks: 2,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { action: string; stacksRemoved: number };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.action).toBe('reduced');
+        expect(data.data?.stacksRemoved).toBe(2);
+      });
+
+      it('should remove all conditions', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-rm-all',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-all', name: 'All Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [
+          { id: 'cond-a', code: 'COND_A', name: 'Condition A' },
+          { id: 'cond-b', code: 'COND_B', name: 'Condition B' },
+        ]);
+        freshEnv.DB._seed('character_conditions', [
+          { id: 'cc-a', character_id: 'player-all', condition_id: 'cond-a', current_stacks: 1 },
+          { id: 'cc-b', character_id: 'player-all', condition_id: 'cond-b', current_stacks: 2 },
+        ]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-rm-all/remove-condition', {
+          body: {
+            targetId: 'player-all',
+            removeAll: true,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { action: string; removedCount: number };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.action).toBe('all_removed');
+        expect(data.data?.removedCount).toBe(2);
+      });
+
+      it('should return 404 for non-existent condition', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-rm',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-nrm', name: 'No RM Player', type: 'player' }]),
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-no-rm/remove-condition', {
+          body: {
+            targetId: 'player-nrm',
+            conditionInstanceId: 'nonexistent',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+
+        expect(response.status).toBe(404);
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-ended-rm',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+          player_participants: JSON.stringify([{ id: 'player-end', name: 'End Player', type: 'player' }]),
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-ended-rm/remove-condition', {
+          body: {
+            targetId: 'player-end',
+            conditionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/remove-condition', {
+          body: {
+            targetId: 'target',
+            conditionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/tick-conditions TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/tick-conditions', () => {
+      it('should process damage over time', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-tick-dot',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-dot', name: 'DOT Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-fire',
+          code: 'FIRE_DOT',
+          name: 'Burning',
+          damage_over_time: JSON.stringify({ damagePerSecond: 5 }),
+          healing_over_time: null,
+        }]);
+        freshEnv.DB._seed('character_conditions', [{
+          id: 'cc-fire',
+          character_id: 'player-dot',
+          condition_id: 'cond-fire',
+          current_stacks: 2,
+          duration_remaining_seconds: 30,
+          is_paused: 0,
+          times_ticked: 0,
+          total_damage_dealt: 0,
+          total_healing_done: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-tick-dot/tick-conditions', {
+          body: { tickDuration: 6 },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            processed: Array<{ damageDealt: number; durationRemaining: number }>;
+            totalDamage: number;
+            summary: { conditionsProcessed: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        // 5 dps * 6 seconds * 2 stacks = 60 damage
+        expect(data.data?.totalDamage).toBe(60);
+        expect(data.data?.processed[0]?.durationRemaining).toBe(24);
+        expect(data.data?.summary.conditionsProcessed).toBe(1);
+      });
+
+      it('should process healing over time', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-tick-hot',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-hot', name: 'HOT Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-regen',
+          code: 'REGEN',
+          name: 'Regeneration',
+          damage_over_time: null,
+          healing_over_time: JSON.stringify({ healingPerSecond: 10 }),
+        }]);
+        freshEnv.DB._seed('character_conditions', [{
+          id: 'cc-regen',
+          character_id: 'player-hot',
+          condition_id: 'cond-regen',
+          current_stacks: 1,
+          duration_remaining_seconds: 60,
+          is_paused: 0,
+          times_ticked: 0,
+          total_damage_dealt: 0,
+          total_healing_done: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-tick-hot/tick-conditions', {
+          body: { tickDuration: 6 },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { totalHealing: number; summary: { netHealthChange: number } };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        // 10 hps * 6 seconds * 1 stack = 60 healing
+        expect(data.data?.totalHealing).toBe(60);
+        expect(data.data?.summary.netHealthChange).toBe(60);
+      });
+
+      it('should expire conditions with zero duration', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-tick-expire',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-exp', name: 'Expire Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-expire',
+          code: 'EXPIRING',
+          name: 'Almost Gone',
+        }]);
+        freshEnv.DB._seed('character_conditions', [{
+          id: 'cc-expire',
+          character_id: 'player-exp',
+          condition_id: 'cond-expire',
+          current_stacks: 1,
+          duration_remaining_seconds: 3,
+          is_paused: 0,
+          times_ticked: 0,
+          total_damage_dealt: 0,
+          total_healing_done: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-tick-expire/tick-conditions', {
+          body: { tickDuration: 6 },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            expired: Array<{ code: string }>;
+            summary: { conditionsExpired: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.expired.length).toBe(1);
+        expect(data.data?.expired[0]?.code).toBe('EXPIRING');
+        expect(data.data?.summary.conditionsExpired).toBe(1);
+      });
+
+      it('should skip paused conditions', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-tick-paused',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+          player_participants: JSON.stringify([{ id: 'player-psd', name: 'Paused Player', type: 'player' }]),
+        }]);
+        freshEnv.DB._seed('condition_definitions', [{
+          id: 'cond-paused',
+          code: 'PAUSED_COND',
+          name: 'Paused Condition',
+          damage_over_time: JSON.stringify({ damagePerSecond: 100 }),
+        }]);
+        freshEnv.DB._seed('character_conditions', [{
+          id: 'cc-paused',
+          character_id: 'player-psd',
+          condition_id: 'cond-paused',
+          current_stacks: 1,
+          duration_remaining_seconds: 60,
+          is_paused: 1,
+          times_ticked: 0,
+          total_damage_dealt: 0,
+          total_healing_done: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-tick-paused/tick-conditions', {
+          body: { tickDuration: 6 },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { processed: unknown[]; totalDamage: number };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.processed.length).toBe(0);
+        expect(data.data?.totalDamage).toBe(0);
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-tick-ended',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-tick-ended/tick-conditions', {
+          body: {},
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/tick-conditions', {
+          body: {},
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+  });
 });

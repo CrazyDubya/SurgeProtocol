@@ -114,6 +114,23 @@ interface CombatActionDefinition {
   updated_at: string;
 }
 
+interface CharacterCondition {
+  id: string;
+  character_id: string;
+  condition_id: string;
+  applied_at: string;
+  current_stacks: number;
+  duration_remaining_seconds: number | null;
+  is_paused: number;
+  source_type: string | null;
+  source_id: string | null;
+  source_name: string | null;
+  times_ticked: number;
+  total_damage_dealt: number;
+  total_healing_done: number;
+  times_refreshed: number;
+}
+
 // =============================================================================
 // ROUTER
 // =============================================================================
@@ -2474,6 +2491,711 @@ combatRoutes.post('/instances/:id/resume', async (c) => {
         currentTurnEntity: combat.current_turn_entity_id,
       },
       message: 'Combat resumed',
+    },
+  });
+});
+
+// =============================================================================
+// DAY 5: CONDITIONS & STATUS EFFECTS
+// =============================================================================
+
+/**
+ * POST /combat/instances/:id/apply-condition
+ * Apply a condition to a participant in combat.
+ */
+combatRoutes.post('/instances/:id/apply-condition', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    targetId: string;
+    conditionId?: string;
+    conditionCode?: string;
+    stacks?: number;
+    durationOverride?: number;
+    sourceType?: string;
+    sourceId?: string;
+    sourceName?: string;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { targetId, conditionId, conditionCode, stacks = 1, durationOverride, sourceType, sourceId, sourceName } = body;
+
+  if (!targetId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_TARGET', message: 'targetId is required' }],
+    }, 400);
+  }
+
+  if (!conditionId && !conditionCode) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CONDITION', message: 'Either conditionId or conditionCode is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get condition definition
+  let condition: ConditionDefinition | null = null;
+  if (conditionId) {
+    condition = await db
+      .prepare(`SELECT * FROM condition_definitions WHERE id = ?`)
+      .bind(conditionId)
+      .first<ConditionDefinition>();
+  } else if (conditionCode) {
+    condition = await db
+      .prepare(`SELECT * FROM condition_definitions WHERE code = ?`)
+      .bind(conditionCode)
+      .first<ConditionDefinition>();
+  }
+
+  if (!condition) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CONDITION_NOT_FOUND', message: 'Condition not found' }],
+    }, 404);
+  }
+
+  // Check if target is a valid participant
+  const participants = [
+    ...(combat.player_participants ? JSON.parse(combat.player_participants) : []),
+    ...(combat.enemy_participants ? JSON.parse(combat.enemy_participants) : []),
+    ...(combat.neutral_participants ? JSON.parse(combat.neutral_participants) : []),
+  ];
+
+  const target = participants.find((p: { id: string }) => p.id === targetId);
+  if (!target) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'TARGET_NOT_FOUND', message: 'Target is not a participant in this combat' }],
+    }, 400);
+  }
+
+  // Check if condition already exists on target
+  const existingCondition = await db
+    .prepare(`SELECT * FROM character_conditions WHERE character_id = ? AND condition_id = ?`)
+    .bind(targetId, condition.id)
+    .first<CharacterCondition>();
+
+  const duration = durationOverride ?? condition.default_duration_seconds;
+  const newConditionId = `cond-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  let appliedStacks = stacks;
+  let action: 'applied' | 'stacked' | 'refreshed' = 'applied';
+
+  if (existingCondition) {
+    if (condition.stacks) {
+      // Condition stacks - increase stack count
+      const newStacks = Math.min(existingCondition.current_stacks + stacks, condition.max_stacks);
+      appliedStacks = newStacks;
+      action = 'stacked';
+
+      await db
+        .prepare(`UPDATE character_conditions SET
+          current_stacks = ?,
+          times_refreshed = times_refreshed + 1
+         WHERE id = ?`)
+        .bind(newStacks, existingCondition.id)
+        .run();
+    } else if (condition.can_stack_duration) {
+      // Duration stacking - add to duration
+      const currentDuration = existingCondition.duration_remaining_seconds || 0;
+      action = 'refreshed';
+
+      await db
+        .prepare(`UPDATE character_conditions SET
+          duration_remaining_seconds = ?,
+          times_refreshed = times_refreshed + 1
+         WHERE id = ?`)
+        .bind(currentDuration + duration, existingCondition.id)
+        .run();
+    } else {
+      // Refresh duration only
+      action = 'refreshed';
+
+      await db
+        .prepare(`UPDATE character_conditions SET
+          duration_remaining_seconds = ?,
+          times_refreshed = times_refreshed + 1
+         WHERE id = ?`)
+        .bind(duration, existingCondition.id)
+        .run();
+    }
+  } else {
+    // Apply new condition
+    await db
+      .prepare(`INSERT INTO character_conditions (
+        id, character_id, condition_id, current_stacks,
+        duration_remaining_seconds, source_type, source_id, source_name
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(
+        newConditionId,
+        targetId,
+        condition.id,
+        Math.min(stacks, condition.max_stacks),
+        duration,
+        sourceType || 'combat',
+        sourceId || combatId,
+        sourceName || 'Combat Effect'
+      )
+      .run();
+  }
+
+  // Parse on_apply_effect if exists
+  let onApplyEffects: unknown[] = [];
+  if (condition.on_apply_effect) {
+    try {
+      onApplyEffects = JSON.parse(condition.on_apply_effect);
+    } catch { /* ignore */ }
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      action,
+      condition: {
+        id: existingCondition?.id || newConditionId,
+        definitionId: condition.id,
+        code: condition.code,
+        name: condition.name,
+        currentStacks: appliedStacks,
+        durationRemaining: duration,
+        isPositive: condition.is_positive === 1,
+        severity: condition.severity,
+      },
+      target: {
+        id: targetId,
+        name: target.name,
+      },
+      effects: {
+        onApply: onApplyEffects,
+        statModifiers: condition.stat_modifiers ? JSON.parse(condition.stat_modifiers) : null,
+        movementModifier: condition.movement_modifier,
+        actionRestrictions: condition.action_restrictions ? JSON.parse(condition.action_restrictions) : null,
+      },
+    },
+  });
+});
+
+/**
+ * GET /combat/instances/:id/conditions
+ * Get all active conditions in a combat instance.
+ */
+combatRoutes.get('/instances/:id/conditions', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+  const participantId = c.req.query('participantId');
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  // Get all participants
+  const participants = [
+    ...(combat.player_participants ? JSON.parse(combat.player_participants) : []),
+    ...(combat.enemy_participants ? JSON.parse(combat.enemy_participants) : []),
+    ...(combat.neutral_participants ? JSON.parse(combat.neutral_participants) : []),
+  ];
+
+  // Get participant IDs to query
+  const participantIds = participantId
+    ? [participantId]
+    : participants.map((p: { id: string }) => p.id);
+
+  if (participantIds.length === 0) {
+    return c.json({
+      success: true,
+      data: {
+        conditions: [],
+        byParticipant: {},
+        summary: { total: 0, buffs: 0, debuffs: 0, byType: {} },
+      },
+    });
+  }
+
+  // Query conditions for all participants
+  const placeholders = participantIds.map(() => '?').join(', ');
+  const conditionsResult = await db
+    .prepare(`
+      SELECT cc.*, cd.code, cd.name, cd.description, cd.condition_type,
+             cd.is_positive, cd.severity, cd.damage_over_time, cd.healing_over_time,
+             cd.stat_modifiers, cd.movement_modifier, cd.action_restrictions,
+             cd.icon_asset
+      FROM character_conditions cc
+      JOIN condition_definitions cd ON cc.condition_id = cd.id
+      WHERE cc.character_id IN (${placeholders})
+    `)
+    .bind(...participantIds)
+    .all<CharacterCondition & {
+      code: string;
+      name: string;
+      description: string | null;
+      condition_type: string | null;
+      is_positive: number;
+      severity: number;
+      damage_over_time: string | null;
+      healing_over_time: string | null;
+      stat_modifiers: string | null;
+      movement_modifier: number;
+      action_restrictions: string | null;
+      icon_asset: string | null;
+    }>();
+
+  const conditions = conditionsResult.results;
+
+  // Group by participant
+  const byParticipant: Record<string, unknown[]> = {};
+  for (const participantIdLoop of participantIds) {
+    byParticipant[participantIdLoop] = [];
+  }
+
+  let buffsCount = 0;
+  let debuffsCount = 0;
+  const byType: Record<string, number> = {};
+
+  const formattedConditions = conditions.map(cond => {
+    const formatted = {
+      id: cond.id,
+      conditionId: cond.condition_id,
+      code: cond.code,
+      name: cond.name,
+      description: cond.description,
+      type: cond.condition_type,
+      icon: cond.icon_asset,
+      isPositive: cond.is_positive === 1,
+      severity: cond.severity,
+      currentStacks: cond.current_stacks,
+      durationRemaining: cond.duration_remaining_seconds,
+      isPaused: cond.is_paused === 1,
+      appliedAt: cond.applied_at,
+      source: {
+        type: cond.source_type,
+        id: cond.source_id,
+        name: cond.source_name,
+      },
+      effects: {
+        damageOverTime: cond.damage_over_time ? JSON.parse(cond.damage_over_time) : null,
+        healingOverTime: cond.healing_over_time ? JSON.parse(cond.healing_over_time) : null,
+        statModifiers: cond.stat_modifiers ? JSON.parse(cond.stat_modifiers) : null,
+        movementModifier: cond.movement_modifier,
+        actionRestrictions: cond.action_restrictions ? JSON.parse(cond.action_restrictions) : null,
+      },
+      tracking: {
+        timesTicked: cond.times_ticked,
+        totalDamageDealt: cond.total_damage_dealt,
+        totalHealingDone: cond.total_healing_done,
+        timesRefreshed: cond.times_refreshed,
+      },
+      targetId: cond.character_id,
+    };
+
+    if (!byParticipant[cond.character_id]) {
+      byParticipant[cond.character_id] = [];
+    }
+    byParticipant[cond.character_id].push(formatted);
+
+    if (cond.is_positive === 1) {
+      buffsCount++;
+    } else {
+      debuffsCount++;
+    }
+
+    const condType = cond.condition_type || 'unknown';
+    byType[condType] = (byType[condType] || 0) + 1;
+
+    return formatted;
+  });
+
+  return c.json({
+    success: true,
+    data: {
+      conditions: formattedConditions,
+      byParticipant,
+      summary: {
+        total: conditions.length,
+        buffs: buffsCount,
+        debuffs: debuffsCount,
+        byType,
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/remove-condition
+ * Remove a condition from a participant.
+ */
+combatRoutes.post('/instances/:id/remove-condition', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    targetId: string;
+    conditionInstanceId?: string;
+    conditionCode?: string;
+    removeAll?: boolean;
+    removeStacks?: number;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { targetId, conditionInstanceId, conditionCode, removeAll = false, removeStacks } = body;
+
+  if (!targetId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_TARGET', message: 'targetId is required' }],
+    }, 400);
+  }
+
+  if (!conditionInstanceId && !conditionCode && !removeAll) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CONDITION', message: 'conditionInstanceId, conditionCode, or removeAll is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  let removedConditions: { id: string; code: string; name: string }[] = [];
+  let action: 'removed' | 'reduced' | 'all_removed' = 'removed';
+
+  if (removeAll) {
+    // Remove all conditions from target
+    const conditions = await db
+      .prepare(`
+        SELECT cc.id, cd.code, cd.name
+        FROM character_conditions cc
+        JOIN condition_definitions cd ON cc.condition_id = cd.id
+        WHERE cc.character_id = ?
+      `)
+      .bind(targetId)
+      .all<{ id: string; code: string; name: string }>();
+
+    removedConditions = conditions.results;
+    action = 'all_removed';
+
+    await db
+      .prepare(`DELETE FROM character_conditions WHERE character_id = ?`)
+      .bind(targetId)
+      .run();
+  } else if (conditionInstanceId) {
+    // Remove specific condition instance
+    const condition = await db
+      .prepare(`
+        SELECT cc.*, cd.code, cd.name, cd.on_expire_effect
+        FROM character_conditions cc
+        JOIN condition_definitions cd ON cc.condition_id = cd.id
+        WHERE cc.id = ? AND cc.character_id = ?
+      `)
+      .bind(conditionInstanceId, targetId)
+      .first<CharacterCondition & { code: string; name: string; on_expire_effect: string | null }>();
+
+    if (!condition) {
+      return c.json({
+        success: false,
+        errors: [{ code: 'CONDITION_NOT_FOUND', message: 'Condition not found on target' }],
+      }, 404);
+    }
+
+    if (removeStacks && condition.current_stacks > removeStacks) {
+      // Just reduce stacks
+      await db
+        .prepare(`UPDATE character_conditions SET current_stacks = current_stacks - ? WHERE id = ?`)
+        .bind(removeStacks, conditionInstanceId)
+        .run();
+      action = 'reduced';
+      removedConditions = [{ id: condition.id, code: condition.code, name: condition.name }];
+    } else {
+      // Remove entirely
+      await db
+        .prepare(`DELETE FROM character_conditions WHERE id = ?`)
+        .bind(conditionInstanceId)
+        .run();
+      removedConditions = [{ id: condition.id, code: condition.code, name: condition.name }];
+    }
+  } else if (conditionCode) {
+    // Remove condition by code
+    const condition = await db
+      .prepare(`
+        SELECT cc.*, cd.code, cd.name
+        FROM character_conditions cc
+        JOIN condition_definitions cd ON cc.condition_id = cd.id
+        WHERE cd.code = ? AND cc.character_id = ?
+      `)
+      .bind(conditionCode, targetId)
+      .first<CharacterCondition & { code: string; name: string }>();
+
+    if (!condition) {
+      return c.json({
+        success: false,
+        errors: [{ code: 'CONDITION_NOT_FOUND', message: 'Condition not found on target' }],
+      }, 404);
+    }
+
+    if (removeStacks && condition.current_stacks > removeStacks) {
+      await db
+        .prepare(`UPDATE character_conditions SET current_stacks = current_stacks - ? WHERE id = ?`)
+        .bind(removeStacks, condition.id)
+        .run();
+      action = 'reduced';
+    } else {
+      await db
+        .prepare(`DELETE FROM character_conditions WHERE id = ?`)
+        .bind(condition.id)
+        .run();
+    }
+    removedConditions = [{ id: condition.id, code: condition.code, name: condition.name }];
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      action,
+      removedConditions,
+      target: targetId,
+      removedCount: removedConditions.length,
+      stacksRemoved: removeStacks || null,
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/tick-conditions
+ * Process condition effects (damage over time, healing, duration countdown).
+ */
+combatRoutes.post('/instances/:id/tick-conditions', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    tickDuration?: number;
+    participantId?: string;
+  } = {};
+
+  try {
+    body = await c.req.json();
+  } catch { /* empty body is ok */ }
+
+  const tickDuration = body.tickDuration ?? 6; // Default 6 seconds (1 combat round)
+  const participantId = body.participantId;
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get all participants
+  const participants = [
+    ...(combat.player_participants ? JSON.parse(combat.player_participants) : []),
+    ...(combat.enemy_participants ? JSON.parse(combat.enemy_participants) : []),
+    ...(combat.neutral_participants ? JSON.parse(combat.neutral_participants) : []),
+  ];
+
+  const participantIds = participantId
+    ? [participantId]
+    : participants.map((p: { id: string }) => p.id);
+
+  if (participantIds.length === 0) {
+    return c.json({
+      success: true,
+      data: {
+        processed: [],
+        expired: [],
+        totalDamage: 0,
+        totalHealing: 0,
+      },
+    });
+  }
+
+  // Get active conditions
+  const placeholders = participantIds.map(() => '?').join(', ');
+  const conditionsResult = await db
+    .prepare(`
+      SELECT cc.*, cd.code, cd.name, cd.damage_over_time, cd.healing_over_time,
+             cd.on_tick_effect, cd.on_expire_effect
+      FROM character_conditions cc
+      JOIN condition_definitions cd ON cc.condition_id = cd.id
+      WHERE cc.character_id IN (${placeholders}) AND cc.is_paused = 0
+    `)
+    .bind(...participantIds)
+    .all<CharacterCondition & {
+      code: string;
+      name: string;
+      damage_over_time: string | null;
+      healing_over_time: string | null;
+      on_tick_effect: string | null;
+      on_expire_effect: string | null;
+    }>();
+
+  const conditions = conditionsResult.results;
+  const processed: unknown[] = [];
+  const expired: unknown[] = [];
+  let totalDamage = 0;
+  let totalHealing = 0;
+
+  for (const cond of conditions) {
+    let damageThisTick = 0;
+    let healingThisTick = 0;
+
+    // Process damage over time
+    if (cond.damage_over_time) {
+      try {
+        const dot = JSON.parse(cond.damage_over_time);
+        const damagePerTick = (dot.damagePerSecond || 0) * tickDuration * cond.current_stacks;
+        damageThisTick = Math.floor(damagePerTick);
+        totalDamage += damageThisTick;
+      } catch { /* ignore */ }
+    }
+
+    // Process healing over time
+    if (cond.healing_over_time) {
+      try {
+        const hot = JSON.parse(cond.healing_over_time);
+        const healingPerTick = (hot.healingPerSecond || 0) * tickDuration * cond.current_stacks;
+        healingThisTick = Math.floor(healingPerTick);
+        totalHealing += healingThisTick;
+      } catch { /* ignore */ }
+    }
+
+    // Update duration
+    const newDuration = cond.duration_remaining_seconds !== null
+      ? Math.max(0, cond.duration_remaining_seconds - tickDuration)
+      : null;
+
+    const hasExpired = newDuration !== null && newDuration <= 0;
+
+    if (hasExpired) {
+      // Condition expired - remove it
+      await db
+        .prepare(`DELETE FROM character_conditions WHERE id = ?`)
+        .bind(cond.id)
+        .run();
+
+      expired.push({
+        id: cond.id,
+        code: cond.code,
+        name: cond.name,
+        targetId: cond.character_id,
+        finalDamage: damageThisTick,
+        finalHealing: healingThisTick,
+        totalDamageDealt: cond.total_damage_dealt + damageThisTick,
+        totalHealingDone: cond.total_healing_done + healingThisTick,
+      });
+    } else {
+      // Update condition
+      await db
+        .prepare(`UPDATE character_conditions SET
+          duration_remaining_seconds = ?,
+          times_ticked = times_ticked + 1,
+          total_damage_dealt = total_damage_dealt + ?,
+          total_healing_done = total_healing_done + ?
+         WHERE id = ?`)
+        .bind(newDuration, damageThisTick, healingThisTick, cond.id)
+        .run();
+
+      processed.push({
+        id: cond.id,
+        code: cond.code,
+        name: cond.name,
+        targetId: cond.character_id,
+        damageDealt: damageThisTick,
+        healingDone: healingThisTick,
+        durationRemaining: newDuration,
+        currentStacks: cond.current_stacks,
+      });
+    }
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      tickDuration,
+      processed,
+      expired,
+      totalDamage,
+      totalHealing,
+      summary: {
+        conditionsProcessed: processed.length,
+        conditionsExpired: expired.length,
+        netHealthChange: totalHealing - totalDamage,
+      },
     },
   });
 });
