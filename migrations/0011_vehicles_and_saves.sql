@@ -1,6 +1,20 @@
 -- SURGE PROTOCOL: Database Schema Migration
 -- Part 11: Vehicle System Enhancements & Save System Preparation
--- Adds active_vehicle_id to characters, seeds vehicle definitions
+-- Adds active_vehicle_id to characters, vehicle-mission integration, seeds vehicle definitions
+
+-- ============================================
+-- MISSION DEFINITIONS - VEHICLE INTEGRATION
+-- ============================================
+
+-- Add columns for vehicle requirements and distance tracking
+-- Note: SQLite ALTER TABLE ADD COLUMN doesn't support IF NOT EXISTS,
+-- so these may error on re-run (which is acceptable)
+ALTER TABLE mission_definitions ADD COLUMN required_vehicle_class TEXT DEFAULT NULL;
+ALTER TABLE mission_definitions ADD COLUMN distance_km REAL DEFAULT NULL;
+
+-- Set default distances based on tier (tier * 5 km)
+UPDATE mission_definitions SET distance_km = tier_minimum * 5 WHERE distance_km IS NULL;
+UPDATE mission_definitions SET distance_km = tier_requirement * 5 WHERE distance_km IS NULL AND tier_requirement IS NOT NULL;
 
 -- ============================================
 -- CHARACTER TABLE ENHANCEMENT

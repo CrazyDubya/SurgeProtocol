@@ -177,6 +177,9 @@ export interface MissionDefinition {
   base_xp: number;
   time_limit_minutes: number | null;
   cargo_type: CargoType;
+  cargo_weight_kg: number | null;
+  required_vehicle_class: VehicleClass | null;
+  distance_km: number | null;
   is_repeatable: number;
   cooldown_hours: number | null;
   created_at: string;

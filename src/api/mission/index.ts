@@ -50,6 +50,119 @@ type Bindings = {
 };
 
 // =============================================================================
+// VEHICLE INTEGRATION TYPES
+// =============================================================================
+
+interface ActiveVehicleInfo {
+  id: string;
+  custom_name: string | null;
+  vehicle_class: string;
+  cargo_capacity_kg: number;
+  top_speed_kmh: number;
+  handling_rating: number;
+  current_fuel: number;
+  fuel_capacity: number;
+  current_hull_points: number;
+  is_damaged: number;
+  odometer_km: number;
+  total_deliveries: number;
+}
+
+/**
+ * Get character's active vehicle with definition details.
+ * Returns null if no active vehicle or vehicle is unavailable.
+ */
+async function getActiveVehicle(
+  db: D1Database,
+  characterId: string
+): Promise<ActiveVehicleInfo | null> {
+  return db
+    .prepare(`
+      SELECT cv.id, cv.custom_name, cv.current_fuel, cv.current_hull_points,
+             cv.is_damaged, cv.odometer_km, cv.total_deliveries,
+             vd.vehicle_class, vd.cargo_capacity_kg, vd.top_speed_kmh,
+             vd.handling_rating, vd.fuel_capacity
+      FROM characters c
+      JOIN character_vehicles cv ON c.active_vehicle_id = cv.id
+      JOIN vehicle_definitions vd ON cv.vehicle_definition_id = vd.id
+      WHERE c.id = ? AND cv.character_id = ?
+    `)
+    .bind(characterId, characterId)
+    .first<ActiveVehicleInfo>();
+}
+
+/**
+ * Check if vehicle can handle the mission requirements.
+ * Returns validation result with errors if any.
+ */
+function validateVehicleForMission(
+  vehicle: ActiveVehicleInfo,
+  mission: {
+    cargo_weight_kg: number | null;
+    required_vehicle_class: string | null;
+    mission_type: string;
+  }
+): { valid: boolean; errors: Array<{ code: string; message: string }> } {
+  const errors: Array<{ code: string; message: string }> = [];
+
+  // Check if vehicle is damaged
+  if (vehicle.is_damaged) {
+    errors.push({
+      code: 'VEHICLE_DAMAGED',
+      message: 'Your active vehicle is damaged. Repair it before accepting missions.',
+    });
+  }
+
+  // Check fuel level (at least 10% required)
+  const fuelPercent = (vehicle.current_fuel / vehicle.fuel_capacity) * 100;
+  if (fuelPercent < 10) {
+    errors.push({
+      code: 'VEHICLE_LOW_FUEL',
+      message: 'Your vehicle needs at least 10% fuel to start a mission.',
+    });
+  }
+
+  // Check cargo capacity
+  if (mission.cargo_weight_kg && mission.cargo_weight_kg > vehicle.cargo_capacity_kg) {
+    errors.push({
+      code: 'CARGO_TOO_HEAVY',
+      message: `Mission cargo (${mission.cargo_weight_kg}kg) exceeds vehicle capacity (${vehicle.cargo_capacity_kg}kg).`,
+    });
+  }
+
+  // Check vehicle class requirement
+  if (mission.required_vehicle_class && mission.required_vehicle_class !== vehicle.vehicle_class) {
+    errors.push({
+      code: 'WRONG_VEHICLE_CLASS',
+      message: `This mission requires a ${mission.required_vehicle_class}, but you have a ${vehicle.vehicle_class}.`,
+    });
+  }
+
+  // Special checks for mission types
+  if (mission.mission_type === 'HAZMAT' && !['VAN', 'TRUCK'].includes(vehicle.vehicle_class)) {
+    errors.push({
+      code: 'HAZMAT_VEHICLE_REQUIRED',
+      message: 'HAZMAT missions require a VAN or TRUCK with proper containment.',
+    });
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Calculate time bonus based on vehicle speed.
+ * Faster vehicles get more time buffer.
+ */
+function calculateVehicleTimeBonus(vehicleSpeed: number): number {
+  // Base reference speed is 100 km/h
+  // Faster vehicles get a time bonus (up to 20%)
+  // Slower vehicles get a time penalty (up to -20%)
+  const speedRatio = vehicleSpeed / 100;
+  const timeMultiplier = Math.min(Math.max(speedRatio, 0.8), 1.2);
+  return timeMultiplier;
+}
+
+// =============================================================================
 // VALIDATION SCHEMAS
 // =============================================================================
 
@@ -365,6 +478,36 @@ missionRoutes.post('/:id/accept', async (c) => {
     }, 403);
   }
 
+  // Check vehicle requirements
+  const activeVehicle = await getActiveVehicle(c.env.DB, characterId);
+  if (!activeVehicle) {
+    return c.json({
+      success: false,
+      errors: [{
+        code: 'NO_VEHICLE',
+        message: 'You need an active vehicle to accept delivery missions. Purchase one from the vehicle dealer.',
+      }],
+    }, 422);
+  }
+
+  // Validate vehicle can handle this mission
+  const vehicleValidation = validateVehicleForMission(activeVehicle, {
+    cargo_weight_kg: mission.cargo_weight_kg,
+    required_vehicle_class: mission.required_vehicle_class,
+    mission_type: mission.mission_type,
+  });
+
+  if (!vehicleValidation.valid) {
+    return c.json({
+      success: false,
+      errors: vehicleValidation.errors,
+    }, 422);
+  }
+
+  // Calculate effective time limit with vehicle speed bonus
+  const vehicleTimeBonus = calculateVehicleTimeBonus(activeVehicle.top_speed_kmh);
+  const effectiveTimeLimit = Math.round((mission.time_limit_minutes ?? 60) * vehicleTimeBonus);
+
   // Check mission requirements (skills, items, reputation, etc.)
   const requirements = await c.env.DB
     .prepare('SELECT * FROM mission_requirements WHERE mission_id = ?')
@@ -416,12 +559,22 @@ missionRoutes.post('/:id/accept', async (c) => {
     }
   }
 
-  // Create mission instance
+  // Create mission instance with vehicle-adjusted time limit
   const instanceId = await createMissionInstance(c.env.DB, {
     missionId,
     characterId,
-    timeLimit: mission.time_limit_minutes ?? 60, // Default 60 minutes if not specified
+    timeLimit: effectiveTimeLimit,
   });
+
+  // Store vehicle used for this mission (for tracking and rewards)
+  await c.env.DB
+    .prepare(
+      `UPDATE mission_instances
+       SET current_state = json_set(COALESCE(current_state, '{}'), '$.vehicleId', ?)
+       WHERE id = ?`
+    )
+    .bind(activeVehicle.id, instanceId)
+    .run();
 
   // Initialize mission checkpoints
   const checkpointDefs = await c.env.DB
@@ -462,7 +615,16 @@ missionRoutes.post('/:id/accept', async (c) => {
     data: {
       instance,
       mission,
-      message: 'Mission accepted. Good luck, courier.',
+      vehicle: {
+        id: activeVehicle.id,
+        name: activeVehicle.custom_name || activeVehicle.vehicle_class,
+        class: activeVehicle.vehicle_class,
+        cargoCapacity: activeVehicle.cargo_capacity_kg,
+        speed: activeVehicle.top_speed_kmh,
+        timeBonus: Math.round((vehicleTimeBonus - 1) * 100), // As percentage
+      },
+      effectiveTimeLimit,
+      message: `Mission accepted. Your ${activeVehicle.vehicle_class} is ready. Good luck, courier.`,
     },
   }, 201);
 });
@@ -611,7 +773,7 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   // Verify mission ownership and status
   const instance = await c.env.DB
     .prepare(
-      `SELECT mi.*, md.base_credits, md.base_xp, md.tier_minimum
+      `SELECT mi.*, md.base_credits, md.base_xp, md.tier_minimum, md.distance_km
        FROM mission_instances mi
        JOIN mission_definitions md ON mi.mission_id = md.id
        WHERE mi.id = ? AND mi.character_id = ? AND mi.status = 'IN_PROGRESS'`
@@ -626,6 +788,8 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
       base_credits: number;
       base_xp: number;
       tier_minimum: number;
+      current_state: string | null;
+      distance_km: number | null;
     }>();
 
   if (!instance) {
@@ -742,6 +906,60 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
     )
     .bind(ratingChange, completion.outcome === 'SUCCESS' ? 1 : 0, characterId)
     .run();
+
+  // Update vehicle stats if mission was completed
+  // Get vehicle ID from mission state
+  const missionState = instance.current_state ? JSON.parse(instance.current_state as string) : {};
+  const vehicleId = missionState.vehicleId;
+
+  if (vehicleId) {
+    // Get mission distance (default to tier * 5 km if not set)
+    const missionDistance = instance.distance_km || (instance.tier_minimum * 5);
+
+    // Update vehicle odometer and delivery count
+    await c.env.DB
+      .prepare(
+        `UPDATE character_vehicles
+         SET odometer_km = odometer_km + ?,
+             total_deliveries = total_deliveries + ?,
+             total_distance_km = total_distance_km + ?,
+             updated_at = datetime('now')
+         WHERE id = ? AND character_id = ?`
+      )
+      .bind(
+        missionDistance,
+        completion.outcome === 'SUCCESS' ? 1 : 0,
+        missionDistance,
+        vehicleId,
+        characterId
+      )
+      .run();
+
+    // Apply minor wear on failure (1% damage chance)
+    if (completion.outcome === 'FAILURE' && Math.random() < 0.3) {
+      await c.env.DB
+        .prepare(
+          `UPDATE character_vehicles
+           SET current_hull_points = MAX(1, current_hull_points - 5),
+               is_damaged = CASE WHEN current_hull_points - 5 < 20 THEN 1 ELSE is_damaged END,
+               accidents = accidents + 1
+           WHERE id = ? AND character_id = ?`
+        )
+        .bind(vehicleId, characterId)
+        .run();
+    }
+
+    // Consume fuel based on distance
+    const fuelConsumed = Math.round(missionDistance * 0.1); // ~10L per 100km average
+    await c.env.DB
+      .prepare(
+        `UPDATE character_vehicles
+         SET current_fuel = MAX(0, current_fuel - ?)
+         WHERE id = ? AND character_id = ?`
+      )
+      .bind(fuelConsumed, vehicleId, characterId)
+      .run();
+  }
 
   // Log completion
   await c.env.DB

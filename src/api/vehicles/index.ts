@@ -23,7 +23,7 @@ import {
   requireCharacterMiddleware,
   type AuthVariables,
 } from '../../middleware/auth';
-import type { VehicleDefinition, CharacterVehicle } from '../../db/types';
+import type { VehicleDefinition } from '../../db/types';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -72,16 +72,9 @@ function generateVIN(): string {
 function generateLicensePlate(): string {
   const letters = 'ABCDEFGHJKLMNPRSTUVWXYZ';
   const numbers = '0123456789';
-  return (
-    letters[Math.floor(Math.random() * letters.length)] +
-    letters[Math.floor(Math.random() * letters.length)] +
-    letters[Math.floor(Math.random() * letters.length)] +
-    '-' +
-    numbers[Math.floor(Math.random() * numbers.length)] +
-    numbers[Math.floor(Math.random() * numbers.length)] +
-    numbers[Math.floor(Math.random() * numbers.length)] +
-    numbers[Math.floor(Math.random() * numbers.length)]
-  );
+  const randomLetter = () => letters.charAt(Math.floor(Math.random() * letters.length));
+  const randomDigit = () => numbers.charAt(Math.floor(Math.random() * numbers.length));
+  return `${randomLetter()}${randomLetter()}${randomLetter()}-${randomDigit()}${randomDigit()}${randomDigit()}${randomDigit()}`;
 }
 
 // =============================================================================
