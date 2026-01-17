@@ -434,7 +434,7 @@ export class MockD1Database {
           return matched;
         }
 
-        // Handle column.field = ? (with table aliases)
+        // Handle column.field = ? (with table aliases) - placeholder comparison
         const aliasMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s*(=|<=|>=|<|>|!=|<>)\s*\?/);
         if (aliasMatch) {
           const col = aliasMatch[2]!;
@@ -461,6 +461,37 @@ export class MockD1Database {
               return (rowValue as number) <= (value as number);
             case '>=':
               return (rowValue as number) >= (value as number);
+            default:
+              return true;
+          }
+        }
+
+        // Handle column = literal_value (e.g., is_positive = 1, is_active = 0)
+        const literalMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s*(=|<=|>=|<|>|!=|<>)\s*(\d+)/);
+        if (literalMatch) {
+          const col = literalMatch[2]!;
+          const operator = literalMatch[3]!;
+          const value = parseInt(literalMatch[4]!, 10);
+          const rowValue = row[col];
+
+          if (rowValue === undefined || rowValue === null) {
+            return false;
+          }
+
+          switch (operator) {
+            case '=':
+              return rowValue === value;
+            case '!=':
+            case '<>':
+              return rowValue !== value;
+            case '<':
+              return (rowValue as number) < value;
+            case '>':
+              return (rowValue as number) > value;
+            case '<=':
+              return (rowValue as number) <= value;
+            case '>=':
+              return (rowValue as number) >= value;
             default:
               return true;
           }
