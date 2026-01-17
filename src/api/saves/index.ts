@@ -38,6 +38,7 @@ type Bindings = {
 const MAX_MANUAL_SAVES = 10;
 const MAX_AUTO_SAVES = 3;
 const QUICKSAVE_SLOT = -1; // Special slot for quicksave
+const MAX_CHECKPOINTS_PER_SAVE = 10; // Maximum non-persistent checkpoints per save
 
 // =============================================================================
 // VALIDATION SCHEMAS
@@ -888,6 +889,44 @@ saveRoutes.post(
     }
 
     const loader = createSaveLoader(c.env.DB);
+
+    // Clean up expired checkpoints first
+    await loader.cleanupExpiredCheckpoints();
+
+    // Check current checkpoint count (non-persistent only)
+    const checkpointCount = await c.env.DB
+      .prepare(`
+        SELECT COUNT(*) as count FROM checkpoints
+        WHERE save_id = ? AND is_persistent = 0
+      `)
+      .bind(saveId)
+      .first<{ count: number }>();
+
+    // If at limit and not creating a persistent checkpoint, delete oldest
+    if (checkpointCount && checkpointCount.count >= MAX_CHECKPOINTS_PER_SAVE && !body.isPersistent) {
+      const oldest = await c.env.DB
+        .prepare(`
+          SELECT id FROM checkpoints
+          WHERE save_id = ? AND is_persistent = 0
+          ORDER BY created_at ASC LIMIT 1
+        `)
+        .bind(saveId)
+        .first<{ id: string }>();
+
+      if (oldest) {
+        // Delete checkpoint chunks
+        await c.env.DB
+          .prepare('DELETE FROM save_data_chunks WHERE chunk_type LIKE ?')
+          .bind(`CHECKPOINT_${oldest.id}_%`)
+          .run();
+        // Delete checkpoint
+        await c.env.DB
+          .prepare('DELETE FROM checkpoints WHERE id = ?')
+          .bind(oldest.id)
+          .run();
+      }
+    }
+
     const checkpoint = await loader.createCheckpoint({
       saveId,
       characterId,
@@ -992,6 +1031,95 @@ saveRoutes.post('/:id/checkpoints/:checkpointId/restore', requireCharacterMiddle
       restored: true,
       checkpointId,
       message: result.message,
+    },
+  });
+});
+
+/**
+ * DELETE /saves/:id/checkpoints/:checkpointId
+ * Delete a specific checkpoint.
+ */
+saveRoutes.delete('/:id/checkpoints/:checkpointId', async (c) => {
+  const userId = c.get('userId')!;
+  const saveId = c.req.param('id');
+  const checkpointId = c.req.param('checkpointId');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  // Verify checkpoint exists and belongs to this save
+  const checkpoint = await c.env.DB
+    .prepare('SELECT id, is_persistent FROM checkpoints WHERE id = ? AND save_id = ?')
+    .bind(checkpointId, saveId)
+    .first<{ id: string; is_persistent: number }>();
+
+  if (!checkpoint) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'CHECKPOINT_NOT_FOUND', message: 'Checkpoint not found' }],
+    }, 404);
+  }
+
+  // Delete checkpoint chunks
+  await c.env.DB
+    .prepare('DELETE FROM save_data_chunks WHERE chunk_type LIKE ?')
+    .bind(`CHECKPOINT_${checkpointId}_%`)
+    .run();
+
+  // Delete checkpoint
+  await c.env.DB
+    .prepare('DELETE FROM checkpoints WHERE id = ?')
+    .bind(checkpointId)
+    .run();
+
+  return c.json({
+    success: true,
+    data: {
+      deleted: true,
+      checkpointId,
+      message: 'Checkpoint deleted.',
+    },
+  });
+});
+
+/**
+ * POST /saves/cleanup
+ * Clean up expired checkpoints across all saves for the user.
+ * This can be called by a cron job or manually.
+ */
+saveRoutes.post('/cleanup', async (c) => {
+  const userId = c.get('userId')!;
+
+  // Get all saves for this user
+  const saves = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE player_id = ?')
+    .bind(userId)
+    .all<{ id: string }>();
+
+  let totalCleaned = 0;
+  const loader = createSaveLoader(c.env.DB);
+
+  // Run cleanup
+  totalCleaned = await loader.cleanupExpiredCheckpoints();
+
+  return c.json({
+    success: true,
+    data: {
+      expiredCheckpointsRemoved: totalCleaned,
+      savesChecked: saves.results.length,
+      message: totalCleaned > 0
+        ? `Cleaned up ${totalCleaned} expired checkpoint(s).`
+        : 'No expired checkpoints to clean up.',
     },
   });
 });

@@ -384,6 +384,22 @@ export class MockD1Database {
           return values.includes(rowValue);
         }
 
+        // Handle IS NOT NULL
+        const isNotNullMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NOT\s+NULL/i);
+        if (isNotNullMatch) {
+          const col = isNotNullMatch[2]!;
+          const rowValue = row[col];
+          return rowValue !== null && rowValue !== undefined;
+        }
+
+        // Handle IS NULL
+        const isNullMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NULL/i);
+        if (isNullMatch) {
+          const col = isNullMatch[2]!;
+          const rowValue = row[col];
+          return rowValue === null || rowValue === undefined;
+        }
+
         return true;
       });
     });
