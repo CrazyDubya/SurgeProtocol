@@ -66,13 +66,14 @@ describe('Auth Flow Integration', () => {
     });
 
     it('should reject duplicate email registration', async () => {
-      // Seed existing user
-      env.DB._seed('players', [{
+      // Seed existing user in the users table (auth endpoint queries 'users', not 'players')
+      env.DB._seed('users', [{
         id: 'existing-user',
         email: 'test@example.com',
-        username: 'existinguser',
+        display_name: 'existinguser',
         password_hash: 'hashed',
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }]);
 
       const request = createTestRequest('POST', '/api/auth/register', {

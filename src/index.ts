@@ -6,6 +6,7 @@
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { tokenRoutes } from './api/tokens';
 import { authRoutes } from './api/auth';
 import { characterRoutes } from './api/character';
@@ -153,10 +154,22 @@ app.notFound((c) => {
 
 // Error handler
 app.onError((err, c) => {
-  // Use structured logger if available, fallback to console
   const logger = c.get('logger');
   const requestId = c.get('requestId');
 
+  // Handle HTTPException (auth failures, validation errors, etc.) with correct status
+  if (err instanceof HTTPException) {
+    return c.json(
+      {
+        success: false,
+        errors: [{ code: 'HTTP_ERROR', message: err.message }],
+        ...(requestId && { requestId }),
+      },
+      err.status
+    );
+  }
+
+  // Log unexpected errors
   if (logger) {
     logger.error('Unhandled error', err instanceof Error ? err : new Error(String(err)));
   } else {
