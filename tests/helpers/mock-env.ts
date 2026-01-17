@@ -345,6 +345,45 @@ export class MockD1Database {
           }
         }
 
+        // Handle LIKE patterns
+        const likeMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s+LIKE\s+\?/i);
+        if (likeMatch) {
+          const col = likeMatch[2]!;
+          const pattern = params[paramIndex++] as string;
+          const rowValue = row[col];
+
+          if (rowValue === undefined || rowValue === null) {
+            return false;
+          }
+
+          // Convert SQL LIKE pattern to regex
+          // % = any characters, _ = single character
+          const regex = new RegExp(
+            '^' +
+              pattern
+                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars
+                .replace(/%/g, '.*')
+                .replace(/_/g, '.') +
+              '$'
+          );
+          return regex.test(String(rowValue));
+        }
+
+        // Handle IN conditions
+        const inMatch = trimmedCond.match(/(?:(\w+)\.)?(\w+)\s+IN\s*\(\s*(.+)\s*\)/i);
+        if (inMatch) {
+          const col = inMatch[2]!;
+          const valuesStr = inMatch[3]!;
+          const rowValue = row[col];
+
+          // Count placeholders in the IN clause
+          const placeholderCount = (valuesStr.match(/\?/g) || []).length;
+          const values = params.slice(paramIndex, paramIndex + placeholderCount);
+          paramIndex += placeholderCount;
+
+          return values.includes(rowValue);
+        }
+
         return true;
       });
     });
@@ -359,8 +398,8 @@ export class MockD1Database {
     const tableName = tableMatch[1]!;
     const rows = this.tables.get(tableName) || [];
 
-    // Simple SET parsing
-    const setMatch = sql.match(/SET\s+(.+?)\s+WHERE/i);
+    // Simple SET parsing (use [\s\S] to match newlines in multi-line SQL)
+    const setMatch = sql.match(/SET\s+([\s\S]+?)\s+WHERE/i);
     if (!setMatch) {
       return { results: [], success: false, meta: { changes: 0, last_row_id: 0 } };
     }

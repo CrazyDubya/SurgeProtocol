@@ -22,6 +22,7 @@ import {
 } from '../../middleware/auth';
 import type { SaveGame, SaveDataChunk, DifficultyLevel } from '../../db/types';
 import { createSaveSerializer } from '../../game/saves/serializer';
+import { createSaveLoader } from '../../game/saves/loader';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -731,6 +732,266 @@ saveRoutes.get('/:id/chunks', async (c) => {
       chunks: chunkSummary,
       totalChunks: chunks.length,
       allValid: chunks.every(c => c.is_valid === 1),
+    },
+  });
+});
+
+/**
+ * POST /saves/:id/load
+ * Load a save and restore game state.
+ */
+saveRoutes.post('/:id/load', requireCharacterMiddleware(), async (c) => {
+  const userId = c.get('userId')!;
+  const characterId = c.get('characterId')!;
+  const saveId = c.req.param('id');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT * FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first<SaveGame>();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  // Load the save
+  const loader = createSaveLoader(c.env.DB);
+
+  // Validate first
+  const validation = await loader.validateSave(saveId);
+  if (!validation.isValid) {
+    return c.json({
+      success: false,
+      errors: validation.errors.map(e => ({ code: 'INVALID_SAVE', message: e })),
+      warnings: validation.warnings,
+    }, 422);
+  }
+
+  // Load the save data
+  const loadResult = await loader.loadSave(saveId);
+
+  if (!loadResult.success) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'LOAD_FAILED', message: 'Failed to load save data' }],
+      warnings: loadResult.warnings,
+    }, 500);
+  }
+
+  // Restore character state
+  const { restored, changes } = await loader.restoreCharacterState(characterId, loadResult);
+
+  if (!restored) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'RESTORE_FAILED', message: 'Failed to restore character state' }],
+    }, 500);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      loaded: true,
+      saveId,
+      characterId,
+      loadedChunks: loadResult.loadedChunks,
+      failedChunks: loadResult.failedChunks,
+      restoredSections: changes,
+      warnings: loadResult.warnings,
+      message: 'Save loaded successfully.',
+    },
+  });
+});
+
+/**
+ * POST /saves/:id/validate
+ * Validate a save without loading it.
+ */
+saveRoutes.post('/:id/validate', async (c) => {
+  const userId = c.get('userId')!;
+  const saveId = c.req.param('id');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  const loader = createSaveLoader(c.env.DB);
+  const validation = await loader.validateSave(saveId);
+
+  return c.json({
+    success: true,
+    data: {
+      saveId,
+      isValid: validation.isValid,
+      errors: validation.errors,
+      warnings: validation.warnings,
+    },
+  });
+});
+
+// =============================================================================
+// CHECKPOINT ENDPOINTS
+// =============================================================================
+
+const checkpointSchema = z.object({
+  checkpointType: z.enum(['MISSION_START', 'KEY_MOMENT', 'AUTO', 'MANUAL']),
+  triggerSource: z.string().min(1).max(100),
+  description: z.string().max(200).optional(),
+  locationId: z.string().optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
+  criticalState: z.record(z.unknown()).optional(),
+  expiresInMinutes: z.number().int().min(1).max(10080).optional(), // max 1 week
+  isPersistent: z.boolean().optional(),
+});
+
+/**
+ * POST /saves/:id/checkpoints
+ * Create a checkpoint for a save.
+ */
+saveRoutes.post(
+  '/:id/checkpoints',
+  requireCharacterMiddleware(),
+  zValidator('json', checkpointSchema),
+  async (c) => {
+    const userId = c.get('userId')!;
+    const characterId = c.get('characterId')!;
+    const saveId = c.req.param('id');
+    const body = c.req.valid('json');
+
+    // Verify save exists and belongs to user
+    const save = await c.env.DB
+      .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+      .bind(saveId, userId)
+      .first();
+
+    if (!save) {
+      return c.json({
+        success: false,
+        errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+      }, 404);
+    }
+
+    const loader = createSaveLoader(c.env.DB);
+    const checkpoint = await loader.createCheckpoint({
+      saveId,
+      characterId,
+      checkpointType: body.checkpointType,
+      triggerSource: body.triggerSource,
+      description: body.description,
+      locationId: body.locationId,
+      coordinates: body.coordinates,
+      criticalState: body.criticalState,
+      expiresAt: body.expiresInMinutes
+        ? new Date(Date.now() + body.expiresInMinutes * 60 * 1000)
+        : undefined,
+      isPersistent: body.isPersistent,
+    });
+
+    return c.json({
+      success: true,
+      data: {
+        checkpoint: {
+          id: checkpoint.id,
+          checkpointType: checkpoint.checkpoint_type,
+          triggerSource: checkpoint.trigger_source,
+          description: checkpoint.description,
+          createdAt: checkpoint.created_at,
+        },
+        message: 'Checkpoint created.',
+      },
+    }, 201);
+  }
+);
+
+/**
+ * GET /saves/:id/checkpoints
+ * List checkpoints for a save.
+ */
+saveRoutes.get('/:id/checkpoints', async (c) => {
+  const userId = c.get('userId')!;
+  const saveId = c.req.param('id');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  const loader = createSaveLoader(c.env.DB);
+  const checkpoints = await loader.listCheckpoints(saveId);
+
+  return c.json({
+    success: true,
+    data: {
+      saveId,
+      checkpoints,
+      count: checkpoints.length,
+    },
+  });
+});
+
+/**
+ * POST /saves/:id/checkpoints/:checkpointId/restore
+ * Restore from a checkpoint.
+ */
+saveRoutes.post('/:id/checkpoints/:checkpointId/restore', requireCharacterMiddleware(), async (c) => {
+  const userId = c.get('userId')!;
+  const characterId = c.get('characterId')!;
+  const saveId = c.req.param('id');
+  const checkpointId = c.req.param('checkpointId');
+
+  // Verify save exists and belongs to user
+  const save = await c.env.DB
+    .prepare('SELECT id FROM save_games WHERE id = ? AND player_id = ?')
+    .bind(saveId, userId)
+    .first();
+
+  if (!save) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Save not found' }],
+    }, 404);
+  }
+
+  const loader = createSaveLoader(c.env.DB);
+  const result = await loader.restoreFromCheckpoint(checkpointId, characterId);
+
+  if (!result.success) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'RESTORE_FAILED', message: result.message }],
+    }, 422);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      restored: true,
+      checkpointId,
+      message: result.message,
     },
   });
 });
