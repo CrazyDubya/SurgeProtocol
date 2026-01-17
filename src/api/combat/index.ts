@@ -131,6 +131,59 @@ interface CharacterCondition {
   times_refreshed: number;
 }
 
+interface AddictionType {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  substance_id: string | null;
+  stages: string | null;
+  tolerance_rate: number;
+  dependence_rate: number;
+  decay_rate_per_day: number;
+  withdrawal_onset_hours: number;
+  withdrawal_peak_hours: number;
+  withdrawal_duration_hours: number;
+  withdrawal_effects: string | null;
+  withdrawal_lethality: number;
+  treatment_methods: string | null;
+  treatment_cost: number;
+  treatment_duration_days: number;
+  relapse_risk: number;
+  craving_triggers: string | null;
+  craving_strength_base: number;
+  craving_response_options: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CharacterAddiction {
+  id: string;
+  character_id: string;
+  addiction_type_id: string;
+  started_at: string;
+  current_stage: number;
+  tolerance_level: number;
+  dependence_level: number;
+  last_use: string | null;
+  times_used_total: number;
+  in_withdrawal: number;
+  withdrawal_stage: number;
+  withdrawal_started: string | null;
+  in_treatment: number;
+  treatment_progress: number;
+  treatment_start: string | null;
+  treatment_method: string | null;
+  recovery_attempts: number;
+  relapses: number;
+  clean_streaks: string | null;
+  longest_clean_streak_hours: number;
+  current_craving_strength: number;
+  last_craving: string | null;
+  cravings_resisted: number;
+  cravings_succumbed: number;
+}
+
 // =============================================================================
 // ROUTER
 // =============================================================================
@@ -3195,6 +3248,582 @@ combatRoutes.post('/instances/:id/tick-conditions', async (c) => {
         conditionsProcessed: processed.length,
         conditionsExpired: expired.length,
         netHealthChange: totalHealing - totalDamage,
+      },
+    },
+  });
+});
+
+// =============================================================================
+// DAY 6: ADDICTION SYSTEM
+// =============================================================================
+
+/**
+ * GET /combat/addictions
+ * List all addiction type definitions.
+ */
+combatRoutes.get('/addictions', async (c) => {
+  const db = c.env.DB;
+  const substanceId = c.req.query('substanceId');
+  const minWithdrawalLethality = c.req.query('minLethality');
+
+  let sql = `SELECT * FROM addiction_types WHERE 1=1`;
+  const params: unknown[] = [];
+
+  if (substanceId) {
+    sql += ` AND substance_id = ?`;
+    params.push(substanceId);
+  }
+
+  if (minWithdrawalLethality) {
+    sql += ` AND withdrawal_lethality >= ?`;
+    params.push(parseFloat(minWithdrawalLethality));
+  }
+
+  const result = await db
+    .prepare(sql)
+    .bind(...params)
+    .all<AddictionType>();
+
+  const addictions = result.results.map(addiction => ({
+    id: addiction.id,
+    code: addiction.code,
+    name: addiction.name,
+    description: addiction.description,
+    substanceId: addiction.substance_id,
+    progression: {
+      toleranceRate: addiction.tolerance_rate,
+      dependenceRate: addiction.dependence_rate,
+      decayRatePerDay: addiction.decay_rate_per_day,
+      stages: addiction.stages ? JSON.parse(addiction.stages) : [],
+    },
+    withdrawal: {
+      onsetHours: addiction.withdrawal_onset_hours,
+      peakHours: addiction.withdrawal_peak_hours,
+      durationHours: addiction.withdrawal_duration_hours,
+      lethality: addiction.withdrawal_lethality,
+    },
+    treatment: {
+      cost: addiction.treatment_cost,
+      durationDays: addiction.treatment_duration_days,
+      relapseRisk: addiction.relapse_risk,
+    },
+    cravingStrengthBase: addiction.craving_strength_base,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      addictions,
+      count: addictions.length,
+    },
+  });
+});
+
+/**
+ * GET /combat/addictions/:id
+ * Get detailed addiction type information.
+ */
+combatRoutes.get('/addictions/:id', async (c) => {
+  const db = c.env.DB;
+  const addictionId = c.req.param('id');
+
+  // Try by ID first, then by code
+  let addiction = await db
+    .prepare(`SELECT * FROM addiction_types WHERE id = ?`)
+    .bind(addictionId)
+    .first<AddictionType>();
+
+  if (!addiction) {
+    addiction = await db
+      .prepare(`SELECT * FROM addiction_types WHERE code = ?`)
+      .bind(addictionId)
+      .first<AddictionType>();
+  }
+
+  if (!addiction) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Addiction type not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      id: addiction.id,
+      code: addiction.code,
+      name: addiction.name,
+      description: addiction.description,
+      substanceId: addiction.substance_id,
+      progression: {
+        toleranceRate: addiction.tolerance_rate,
+        dependenceRate: addiction.dependence_rate,
+        decayRatePerDay: addiction.decay_rate_per_day,
+        stages: addiction.stages ? JSON.parse(addiction.stages) : [],
+      },
+      withdrawal: {
+        onsetHours: addiction.withdrawal_onset_hours,
+        peakHours: addiction.withdrawal_peak_hours,
+        durationHours: addiction.withdrawal_duration_hours,
+        effects: addiction.withdrawal_effects ? JSON.parse(addiction.withdrawal_effects) : [],
+        lethality: addiction.withdrawal_lethality,
+      },
+      treatment: {
+        methods: addiction.treatment_methods ? JSON.parse(addiction.treatment_methods) : [],
+        cost: addiction.treatment_cost,
+        durationDays: addiction.treatment_duration_days,
+        relapseRisk: addiction.relapse_risk,
+      },
+      cravings: {
+        strengthBase: addiction.craving_strength_base,
+        triggers: addiction.craving_triggers ? JSON.parse(addiction.craving_triggers) : [],
+        responseOptions: addiction.craving_response_options ? JSON.parse(addiction.craving_response_options) : [],
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/apply-addiction
+ * Apply or progress an addiction for a character during combat (e.g., using a stim).
+ */
+combatRoutes.post('/instances/:id/apply-addiction', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    characterId: string;
+    addictionId?: string;
+    addictionCode?: string;
+    dosage?: number;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { characterId, addictionId, addictionCode, dosage = 1 } = body;
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CHARACTER', message: 'characterId is required' }],
+    }, 400);
+  }
+
+  if (!addictionId && !addictionCode) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_ADDICTION', message: 'Either addictionId or addictionCode is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get addiction type
+  let addictionType: AddictionType | null = null;
+  if (addictionId) {
+    addictionType = await db
+      .prepare(`SELECT * FROM addiction_types WHERE id = ?`)
+      .bind(addictionId)
+      .first<AddictionType>();
+  } else if (addictionCode) {
+    addictionType = await db
+      .prepare(`SELECT * FROM addiction_types WHERE code = ?`)
+      .bind(addictionCode)
+      .first<AddictionType>();
+  }
+
+  if (!addictionType) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'ADDICTION_NOT_FOUND', message: 'Addiction type not found' }],
+    }, 404);
+  }
+
+  // Check if character already has this addiction
+  const existingAddiction = await db
+    .prepare(`SELECT * FROM character_addictions WHERE character_id = ? AND addiction_type_id = ?`)
+    .bind(characterId, addictionType.id)
+    .first<CharacterAddiction>();
+
+  const now = new Date().toISOString();
+  let action: 'created' | 'progressed' = 'created';
+  let newTolerance = addictionType.tolerance_rate * dosage;
+  let newDependence = addictionType.dependence_rate * dosage;
+  let newStage = 1;
+  let totalUses = dosage;
+  let withdrawalCleared = false;
+
+  if (existingAddiction) {
+    action = 'progressed';
+    newTolerance = Math.min(1.0, existingAddiction.tolerance_level + (addictionType.tolerance_rate * dosage));
+    newDependence = Math.min(1.0, existingAddiction.dependence_level + (addictionType.dependence_rate * dosage));
+    totalUses = existingAddiction.times_used_total + dosage;
+
+    // Calculate stage based on dependence
+    const stages = addictionType.stages ? JSON.parse(addictionType.stages) : [];
+    newStage = 1;
+    for (let i = stages.length - 1; i >= 0; i--) {
+      if (newDependence >= (stages[i]?.threshold || 0)) {
+        newStage = i + 1;
+        break;
+      }
+    }
+
+    // Clear withdrawal if using
+    withdrawalCleared = existingAddiction.in_withdrawal === 1;
+
+    await db
+      .prepare(`UPDATE character_addictions SET
+        tolerance_level = ?,
+        dependence_level = ?,
+        current_stage = ?,
+        times_used_total = ?,
+        last_use = ?,
+        in_withdrawal = 0,
+        withdrawal_stage = 0,
+        withdrawal_started = NULL,
+        current_craving_strength = 0
+       WHERE id = ?`)
+      .bind(newTolerance, newDependence, newStage, totalUses, now, existingAddiction.id)
+      .run();
+  } else {
+    // Create new addiction
+    const newAddictionId = `add-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    await db
+      .prepare(`INSERT INTO character_addictions (
+        id, character_id, addiction_type_id, tolerance_level, dependence_level,
+        current_stage, times_used_total, last_use
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(
+        newAddictionId,
+        characterId,
+        addictionType.id,
+        newTolerance,
+        newDependence,
+        newStage,
+        totalUses,
+        now
+      )
+      .run();
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      action,
+      addiction: {
+        typeId: addictionType.id,
+        code: addictionType.code,
+        name: addictionType.name,
+      },
+      state: {
+        stage: newStage,
+        toleranceLevel: newTolerance,
+        dependenceLevel: newDependence,
+        totalUses,
+      },
+      effects: {
+        withdrawalCleared,
+        toleranceGain: addictionType.tolerance_rate * dosage,
+        dependenceGain: addictionType.dependence_rate * dosage,
+      },
+      character: characterId,
+    },
+  });
+});
+
+/**
+ * GET /combat/characters/:characterId/addictions
+ * Get all addictions for a character.
+ */
+combatRoutes.get('/characters/:characterId/addictions', async (c) => {
+  const db = c.env.DB;
+  const characterId = c.req.param('characterId');
+  const activeOnly = c.req.query('activeOnly') === 'true';
+
+  let sql = `
+    SELECT ca.*, at.code, at.name, at.description, at.stages,
+           at.withdrawal_onset_hours, at.withdrawal_peak_hours, at.withdrawal_effects
+    FROM character_addictions ca
+    JOIN addiction_types at ON ca.addiction_type_id = at.id
+    WHERE ca.character_id = ?
+  `;
+
+  if (activeOnly) {
+    sql += ` AND ca.dependence_level > 0`;
+  }
+
+  const result = await db
+    .prepare(sql)
+    .bind(characterId)
+    .all<CharacterAddiction & {
+      code: string;
+      name: string;
+      description: string | null;
+      stages: string | null;
+      withdrawal_onset_hours: number;
+      withdrawal_peak_hours: number;
+      withdrawal_effects: string | null;
+    }>();
+
+  const addictions = result.results.map(addiction => {
+    // Calculate hours since last use
+    const hoursSinceUse = addiction.last_use
+      ? (Date.now() - new Date(addiction.last_use).getTime()) / (1000 * 60 * 60)
+      : null;
+
+    // Determine withdrawal status
+    const shouldBeInWithdrawal = hoursSinceUse !== null &&
+      hoursSinceUse >= addiction.withdrawal_onset_hours &&
+      addiction.dependence_level > 0.2;
+
+    return {
+      id: addiction.id,
+      typeId: addiction.addiction_type_id,
+      code: addiction.code,
+      name: addiction.name,
+      description: addiction.description,
+      state: {
+        stage: addiction.current_stage,
+        toleranceLevel: addiction.tolerance_level,
+        dependenceLevel: addiction.dependence_level,
+        totalUses: addiction.times_used_total,
+        lastUse: addiction.last_use,
+        hoursSinceUse,
+      },
+      withdrawal: {
+        inWithdrawal: addiction.in_withdrawal === 1,
+        shouldBeInWithdrawal,
+        stage: addiction.withdrawal_stage,
+        started: addiction.withdrawal_started,
+        effects: addiction.withdrawal_effects ? JSON.parse(addiction.withdrawal_effects) : [],
+      },
+      treatment: {
+        inTreatment: addiction.in_treatment === 1,
+        progress: addiction.treatment_progress,
+        method: addiction.treatment_method,
+      },
+      history: {
+        recoveryAttempts: addiction.recovery_attempts,
+        relapses: addiction.relapses,
+        longestCleanStreakHours: addiction.longest_clean_streak_hours,
+      },
+      cravings: {
+        currentStrength: addiction.current_craving_strength,
+        resisted: addiction.cravings_resisted,
+        succumbed: addiction.cravings_succumbed,
+      },
+    };
+  });
+
+  // Calculate summary
+  const inWithdrawalCount = addictions.filter(a => a.withdrawal.inWithdrawal).length;
+  const inTreatmentCount = addictions.filter(a => a.treatment.inTreatment).length;
+  const highDependenceCount = addictions.filter(a => a.state.dependenceLevel >= 0.7).length;
+
+  return c.json({
+    success: true,
+    data: {
+      addictions,
+      count: addictions.length,
+      summary: {
+        inWithdrawal: inWithdrawalCount,
+        inTreatment: inTreatmentCount,
+        highDependence: highDependenceCount,
+        totalDependence: addictions.reduce((sum, a) => sum + a.state.dependenceLevel, 0),
+      },
+    },
+  });
+});
+
+/**
+ * POST /combat/instances/:id/withdrawal-check
+ * Check and apply withdrawal effects for a character in combat.
+ */
+combatRoutes.post('/instances/:id/withdrawal-check', async (c) => {
+  const db = c.env.DB;
+  const combatId = c.req.param('id');
+
+  let body: {
+    characterId: string;
+  };
+
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({
+      success: false,
+      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
+    }, 400);
+  }
+
+  const { characterId } = body;
+
+  if (!characterId) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'MISSING_CHARACTER', message: 'characterId is required' }],
+    }, 400);
+  }
+
+  // Get combat instance
+  const combat = await db
+    .prepare(`SELECT * FROM combat_instances WHERE id = ?`)
+    .bind(combatId)
+    .first<CombatInstance>();
+
+  if (!combat) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Combat instance not found' }],
+    }, 404);
+  }
+
+  if (combat.status !== 'ACTIVE') {
+    return c.json({
+      success: false,
+      errors: [{ code: 'COMBAT_NOT_ACTIVE', message: 'Combat is not active' }],
+    }, 400);
+  }
+
+  // Get character's addictions with type info
+  const addictionsResult = await db
+    .prepare(`
+      SELECT ca.*, at.code, at.name, at.withdrawal_onset_hours, at.withdrawal_peak_hours,
+             at.withdrawal_duration_hours, at.withdrawal_effects, at.withdrawal_lethality
+      FROM character_addictions ca
+      JOIN addiction_types at ON ca.addiction_type_id = at.id
+      WHERE ca.character_id = ? AND ca.dependence_level > 0.1
+    `)
+    .bind(characterId)
+    .all<CharacterAddiction & {
+      code: string;
+      name: string;
+      withdrawal_onset_hours: number;
+      withdrawal_peak_hours: number;
+      withdrawal_duration_hours: number;
+      withdrawal_effects: string | null;
+      withdrawal_lethality: number;
+    }>();
+
+  const now = Date.now();
+  const withdrawalEffects: Array<{
+    addictionCode: string;
+    addictionName: string;
+    stage: string;
+    effects: unknown[];
+    lethalityRisk: number;
+  }> = [];
+  const triggeredWithdrawals: string[] = [];
+  const conditionsToApply: Array<{ code: string; name: string }> = [];
+
+  for (const addiction of addictionsResult.results) {
+    if (!addiction.last_use) continue;
+
+    const hoursSinceUse = (now - new Date(addiction.last_use).getTime()) / (1000 * 60 * 60);
+
+    if (hoursSinceUse >= addiction.withdrawal_onset_hours) {
+      let withdrawalStage = 'early';
+      let stageMultiplier = 0.5;
+
+      if (hoursSinceUse >= addiction.withdrawal_peak_hours) {
+        withdrawalStage = 'peak';
+        stageMultiplier = 1.0;
+      } else if (hoursSinceUse >= addiction.withdrawal_onset_hours + (addiction.withdrawal_peak_hours - addiction.withdrawal_onset_hours) / 2) {
+        withdrawalStage = 'mid';
+        stageMultiplier = 0.75;
+      }
+
+      // Recovery phase
+      if (hoursSinceUse >= addiction.withdrawal_duration_hours) {
+        withdrawalStage = 'recovery';
+        stageMultiplier = 0.25;
+      }
+
+      const effects = addiction.withdrawal_effects ? JSON.parse(addiction.withdrawal_effects) : [];
+      const scaledEffects = effects.map((e: { type: string; value: number; condition?: string }) => ({
+        ...e,
+        value: Math.floor(e.value * stageMultiplier * addiction.dependence_level),
+        condition: e.condition,
+      }));
+
+      withdrawalEffects.push({
+        addictionCode: addiction.code,
+        addictionName: addiction.name,
+        stage: withdrawalStage,
+        effects: scaledEffects,
+        lethalityRisk: addiction.withdrawal_lethality * stageMultiplier * addiction.dependence_level,
+      });
+
+      // Track which conditions to apply
+      for (const effect of scaledEffects) {
+        if (effect.condition) {
+          conditionsToApply.push({ code: effect.condition, name: effect.type });
+        }
+      }
+
+      // Update addiction withdrawal status if not already
+      if (addiction.in_withdrawal === 0) {
+        triggeredWithdrawals.push(addiction.code);
+        await db
+          .prepare(`UPDATE character_addictions SET
+            in_withdrawal = 1,
+            withdrawal_stage = ?,
+            withdrawal_started = ?
+           WHERE id = ?`)
+          .bind(withdrawalStage === 'early' ? 1 : withdrawalStage === 'mid' ? 2 : withdrawalStage === 'peak' ? 3 : 4, new Date().toISOString(), addiction.id)
+          .run();
+      }
+    }
+  }
+
+  // Calculate total effects
+  const totalPenalty = withdrawalEffects.reduce((sum, w) => {
+    const effectPenalties = w.effects.reduce((eSum: number, e: { value?: number }) => eSum + (e.value || 0), 0);
+    return sum + effectPenalties;
+  }, 0);
+
+  const maxLethalityRisk = Math.max(0, ...withdrawalEffects.map(w => w.lethalityRisk));
+
+  return c.json({
+    success: true,
+    data: {
+      character: characterId,
+      withdrawalEffects,
+      triggeredWithdrawals,
+      conditionsToApply,
+      summary: {
+        addictionsChecked: addictionsResult.results.length,
+        inWithdrawal: withdrawalEffects.length,
+        newWithdrawals: triggeredWithdrawals.length,
+        totalPenalty,
+        maxLethalityRisk,
       },
     },
   });

@@ -3559,4 +3559,572 @@ describe('Combat System Day 4 - Actions & Turn Management', () => {
       });
     });
   });
+
+  // ===========================================================================
+  // DAY 6: ADDICTION SYSTEM
+  // ===========================================================================
+
+  describe('Combat System Day 6 - Addiction System', () => {
+
+    // =========================================================================
+    // GET /combat/addictions TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/addictions', () => {
+      it('should return all addiction types', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [
+          {
+            id: 'add-synth',
+            code: 'SYNTH',
+            name: 'Synthcoke',
+            description: 'A powerful synthetic stimulant',
+            tolerance_rate: 0.1,
+            dependence_rate: 0.15,
+            decay_rate_per_day: 0.05,
+            withdrawal_onset_hours: 12,
+            withdrawal_peak_hours: 48,
+            withdrawal_duration_hours: 72,
+            withdrawal_lethality: 0.02,
+            treatment_cost: 5000,
+            treatment_duration_days: 14,
+            relapse_risk: 0.3,
+            craving_strength_base: 70,
+            stages: JSON.stringify([{ name: 'Early', threshold: 0.1 }, { name: 'Mid', threshold: 0.4 }]),
+          },
+          {
+            id: 'add-boost',
+            code: 'BOOST',
+            name: 'Combat Boost',
+            description: 'Military-grade performance enhancer',
+            tolerance_rate: 0.08,
+            dependence_rate: 0.12,
+            withdrawal_lethality: 0.01,
+          },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/addictions');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            addictions: Array<{ code: string; name: string; withdrawal: { lethality: number } }>;
+            count: number;
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.addictions.length).toBe(2);
+        expect(data.data?.count).toBe(2);
+      });
+
+      it('should filter by lethality', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [
+          { id: 'add-low', code: 'LOW', name: 'Low Risk', withdrawal_lethality: 0.01 },
+          { id: 'add-high', code: 'HIGH', name: 'High Risk', withdrawal_lethality: 0.15 },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/addictions?minLethality=0.1');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { addictions: Array<{ code: string }> };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.addictions.length).toBe(1);
+        expect(data.data?.addictions[0]?.code).toBe('HIGH');
+      });
+    });
+
+    // =========================================================================
+    // GET /combat/addictions/:id TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/addictions/:id', () => {
+      it('should return addiction details by ID', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-detail',
+          code: 'DETAIL',
+          name: 'Detail Drug',
+          description: 'For testing details',
+          tolerance_rate: 0.1,
+          dependence_rate: 0.2,
+          withdrawal_effects: JSON.stringify([{ type: 'nausea', value: 10 }]),
+          treatment_methods: JSON.stringify(['detox', 'therapy']),
+          craving_triggers: JSON.stringify(['stress', 'combat']),
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/addictions/add-detail');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            code: string;
+            withdrawal: { effects: unknown[] };
+            treatment: { methods: string[] };
+            cravings: { triggers: string[] };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.code).toBe('DETAIL');
+        expect(data.data?.withdrawal.effects).toHaveLength(1);
+        expect(data.data?.treatment.methods).toContain('detox');
+        expect(data.data?.cravings.triggers).toContain('stress');
+      });
+
+      it('should return addiction by code', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-by-code',
+          code: 'BYCODE',
+          name: 'By Code Drug',
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/addictions/BYCODE');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { code: string };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.code).toBe('BYCODE');
+      });
+
+      it('should return 404 for non-existent addiction', async () => {
+        const request = createTestRequest('GET', '/api/combat/addictions/nonexistent');
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/apply-addiction TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/apply-addiction', () => {
+      it('should create new addiction for character', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-add-new',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-new',
+          code: 'NEWDRUG',
+          name: 'New Drug',
+          tolerance_rate: 0.1,
+          dependence_rate: 0.15,
+          stages: JSON.stringify([{ name: 'Early', threshold: 0 }]),
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-add-new/apply-addiction', {
+          body: {
+            characterId: 'char-test',
+            addictionCode: 'NEWDRUG',
+            dosage: 1,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            action: string;
+            addiction: { code: string };
+            state: { toleranceLevel: number; dependenceLevel: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(data.data?.action).toBe('created');
+        expect(data.data?.addiction.code).toBe('NEWDRUG');
+        expect(data.data?.state.toleranceLevel).toBe(0.1);
+        expect(data.data?.state.dependenceLevel).toBe(0.15);
+      });
+
+      it('should progress existing addiction', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-add-prog',
+          character_id: 'char-prog',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-prog',
+          code: 'PROGDRUG',
+          name: 'Progress Drug',
+          tolerance_rate: 0.1,
+          dependence_rate: 0.1,
+          stages: JSON.stringify([{ name: 'Early', threshold: 0 }, { name: 'Mid', threshold: 0.3 }]),
+        }]);
+        freshEnv.DB._seed('character_addictions', [{
+          id: 'ca-existing',
+          character_id: 'char-prog',
+          addiction_type_id: 'add-prog',
+          tolerance_level: 0.2,
+          dependence_level: 0.2,
+          current_stage: 1,
+          times_used_total: 2,
+          in_withdrawal: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-add-prog/apply-addiction', {
+          body: {
+            characterId: 'char-prog',
+            addictionCode: 'PROGDRUG',
+            dosage: 2,
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            action: string;
+            state: { toleranceLevel: number; dependenceLevel: number; totalUses: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.action).toBe('progressed');
+        expect(data.data?.state.toleranceLevel).toBe(0.4); // 0.2 + 0.1*2
+        expect(data.data?.state.dependenceLevel).toBe(0.4);
+        expect(data.data?.state.totalUses).toBe(4);
+      });
+
+      it('should clear withdrawal when using', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-add-wd',
+          character_id: 'char-wd',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-wd',
+          code: 'WDDRUG',
+          name: 'WD Drug',
+          tolerance_rate: 0.1,
+          dependence_rate: 0.1,
+        }]);
+        freshEnv.DB._seed('character_addictions', [{
+          id: 'ca-wd',
+          character_id: 'char-wd',
+          addiction_type_id: 'add-wd',
+          tolerance_level: 0.5,
+          dependence_level: 0.5,
+          in_withdrawal: 1,
+          withdrawal_stage: 2,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-add-wd/apply-addiction', {
+          body: {
+            characterId: 'char-wd',
+            addictionCode: 'WDDRUG',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { effects: { withdrawalCleared: boolean } };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.effects.withdrawalCleared).toBe(true);
+      });
+
+      it('should return 404 for non-existent addiction type', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-add',
+          character_id: 'char-test',
+          status: 'ACTIVE',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-no-add/apply-addiction', {
+          body: {
+            characterId: 'char-test',
+            addictionCode: 'NONEXISTENT',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(404);
+        expect(data.errors?.[0]?.code).toBe('ADDICTION_NOT_FOUND');
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-ended-add',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-ended-add/apply-addiction', {
+          body: {
+            characterId: 'char-test',
+            addictionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/apply-addiction', {
+          body: {
+            characterId: 'char-test',
+            addictionCode: 'TEST',
+          },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+
+    // =========================================================================
+    // GET /combat/characters/:characterId/addictions TESTS
+    // =========================================================================
+
+    describe('GET /api/combat/characters/:characterId/addictions', () => {
+      it('should return character addictions with details', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-char',
+          code: 'CHARDRUG',
+          name: 'Character Drug',
+          withdrawal_onset_hours: 12,
+          withdrawal_peak_hours: 48,
+          withdrawal_effects: JSON.stringify([{ type: 'tremors', value: 5 }]),
+        }]);
+        freshEnv.DB._seed('character_addictions', [{
+          id: 'ca-char',
+          character_id: 'char-addictions',
+          addiction_type_id: 'add-char',
+          current_stage: 2,
+          tolerance_level: 0.5,
+          dependence_level: 0.6,
+          times_used_total: 10,
+          in_withdrawal: 0,
+          in_treatment: 0,
+          recovery_attempts: 1,
+          relapses: 0,
+          current_craving_strength: 30,
+          cravings_resisted: 5,
+          cravings_succumbed: 2,
+        }]);
+
+        const request = createTestRequest('GET', '/api/combat/characters/char-addictions/addictions');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            addictions: Array<{
+              code: string;
+              state: { stage: number; dependenceLevel: number };
+              cravings: { resisted: number };
+            }>;
+            count: number;
+            summary: { highDependence: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.addictions.length).toBe(1);
+        expect(data.data?.addictions[0]?.code).toBe('CHARDRUG');
+        expect(data.data?.addictions[0]?.state.stage).toBe(2);
+        expect(data.data?.addictions[0]?.cravings.resisted).toBe(5);
+      });
+
+      it('should return summary statistics', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('addiction_types', [
+          { id: 'add-1', code: 'DRUG1', name: 'Drug 1', withdrawal_onset_hours: 12 },
+          { id: 'add-2', code: 'DRUG2', name: 'Drug 2', withdrawal_onset_hours: 12 },
+        ]);
+        freshEnv.DB._seed('character_addictions', [
+          { id: 'ca-1', character_id: 'char-summary', addiction_type_id: 'add-1', dependence_level: 0.8, in_withdrawal: 1, in_treatment: 0 },
+          { id: 'ca-2', character_id: 'char-summary', addiction_type_id: 'add-2', dependence_level: 0.3, in_withdrawal: 0, in_treatment: 1 },
+        ]);
+
+        const request = createTestRequest('GET', '/api/combat/characters/char-summary/addictions');
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            summary: { inWithdrawal: number; inTreatment: number; highDependence: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.summary.inWithdrawal).toBe(1);
+        expect(data.data?.summary.inTreatment).toBe(1);
+        expect(data.data?.summary.highDependence).toBe(1);
+      });
+
+      it('should return empty for character with no addictions', async () => {
+        const request = createTestRequest('GET', '/api/combat/characters/char-no-addictions/addictions');
+
+        const response = await app.fetch(request, env);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { addictions: unknown[]; count: number };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.addictions.length).toBe(0);
+        expect(data.data?.count).toBe(0);
+      });
+    });
+
+    // =========================================================================
+    // POST /combat/instances/:id/withdrawal-check TESTS
+    // =========================================================================
+
+    describe('POST /api/combat/instances/:id/withdrawal-check', () => {
+      it('should detect withdrawal for overdue addictions', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-wd-check',
+          character_id: 'char-wd-check',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-wd-type',
+          code: 'WDTYPE',
+          name: 'WD Type Drug',
+          withdrawal_onset_hours: 12,
+          withdrawal_peak_hours: 48,
+          withdrawal_duration_hours: 72,
+          withdrawal_effects: JSON.stringify([{ type: 'tremors', value: 10 }, { type: 'nausea', value: 5 }]),
+          withdrawal_lethality: 0.05,
+        }]);
+        // Last use was 24 hours ago (past onset but before peak)
+        const lastUse = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        freshEnv.DB._seed('character_addictions', [{
+          id: 'ca-wd-check',
+          character_id: 'char-wd-check',
+          addiction_type_id: 'add-wd-type',
+          dependence_level: 0.6,
+          last_use: lastUse,
+          in_withdrawal: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-wd-check/withdrawal-check', {
+          body: { characterId: 'char-wd-check' },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: {
+            withdrawalEffects: Array<{ addictionCode: string; stage: string; effects: unknown[] }>;
+            triggeredWithdrawals: string[];
+            summary: { inWithdrawal: number; newWithdrawals: number };
+          };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.withdrawalEffects.length).toBe(1);
+        expect(data.data?.withdrawalEffects[0]?.addictionCode).toBe('WDTYPE');
+        // 24h since use, onset=12, mid threshold=30 (12+(48-12)/2), so still 'early'
+        expect(data.data?.withdrawalEffects[0]?.stage).toBe('early');
+        expect(data.data?.triggeredWithdrawals).toContain('WDTYPE');
+        expect(data.data?.summary.inWithdrawal).toBe(1);
+      });
+
+      it('should return no withdrawal for recent use', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-no-wd',
+          character_id: 'char-no-wd',
+          status: 'ACTIVE',
+        }]);
+        freshEnv.DB._seed('addiction_types', [{
+          id: 'add-no-wd',
+          code: 'NOWD',
+          name: 'No WD Drug',
+          withdrawal_onset_hours: 24,
+        }]);
+        // Last use was 1 hour ago
+        const lastUse = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
+        freshEnv.DB._seed('character_addictions', [{
+          id: 'ca-no-wd',
+          character_id: 'char-no-wd',
+          addiction_type_id: 'add-no-wd',
+          dependence_level: 0.5,
+          last_use: lastUse,
+          in_withdrawal: 0,
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-no-wd/withdrawal-check', {
+          body: { characterId: 'char-no-wd' },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{
+          success: boolean;
+          data?: { withdrawalEffects: unknown[]; summary: { inWithdrawal: number } };
+        }>(response);
+
+        expect(response.status).toBe(200);
+        expect(data.data?.withdrawalEffects.length).toBe(0);
+        expect(data.data?.summary.inWithdrawal).toBe(0);
+      });
+
+      it('should return 400 for non-active combat', async () => {
+        const freshEnv = createMockEnv();
+        freshEnv.DB._seed('combat_instances', [{
+          id: 'combat-wd-ended',
+          character_id: 'char-test',
+          status: 'COMPLETED',
+        }]);
+
+        const request = createTestRequest('POST', '/api/combat/instances/combat-wd-ended/withdrawal-check', {
+          body: { characterId: 'char-test' },
+        });
+
+        const response = await app.fetch(request, freshEnv);
+        const data = await parseJsonResponse<{ success: boolean; errors?: Array<{ code: string }> }>(response);
+
+        expect(response.status).toBe(400);
+        expect(data.errors?.[0]?.code).toBe('COMBAT_NOT_ACTIVE');
+      });
+
+      it('should return 404 for non-existent combat', async () => {
+        const request = createTestRequest('POST', '/api/combat/instances/nonexistent/withdrawal-check', {
+          body: { characterId: 'char-test' },
+        });
+
+        const response = await app.fetch(request, env);
+
+        expect(response.status).toBe(404);
+      });
+    });
+  });
 });
