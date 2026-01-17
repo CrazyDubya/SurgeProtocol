@@ -134,7 +134,7 @@ export function CombatPanel({
               variant="danger"
               size="sm"
               onClick={() => attack(turnOrder.value.find((c) => !c.isPlayer && !c.isAlly)?.id ?? '')}
-              disabled={pendingAction.value || playerCombatant.value.actionsRemaining <= 0}
+              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
             >
               Attack
             </Button>
@@ -142,7 +142,7 @@ export function CombatPanel({
               variant="secondary"
               size="sm"
               onClick={() => defend()}
-              disabled={pendingAction.value || playerCombatant.value.actionsRemaining <= 0}
+              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
             >
               Defend
             </Button>
@@ -150,7 +150,7 @@ export function CombatPanel({
               variant="secondary"
               size="sm"
               onClick={() => overwatch()}
-              disabled={pendingAction.value || playerCombatant.value.actionsRemaining <= 0}
+              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
             >
               Overwatch
             </Button>
@@ -173,8 +173,8 @@ export function CombatPanel({
           </div>
 
           <div class={styles.playerResources}>
-            <span>Actions: {playerCombatant.value.actionsRemaining}</span>
-            <span>Movement: {playerCombatant.value.movementRemaining}</span>
+            <span>Actions: {playerCombatant.value.actionsRemaining ?? 1}</span>
+            <span>Movement: {playerCombatant.value.movementRemaining ?? 1}</span>
           </div>
         </div>
       )}
@@ -204,23 +204,24 @@ function CombatantCard({
 }: {
   combatant: Combatant;
   isActive: boolean;
-  isPlayer: boolean;
+  isPlayer?: boolean;
 }) {
-  const hpPercent = (combatant.currentHp / combatant.maxHp) * 100;
+  const hpPercent = combatant.hpMax > 0 ? (combatant.hp / combatant.hpMax) * 100 : 0;
+  const status = combatant.hp <= 0 ? 'defeated' : hpPercent <= 25 ? 'critical' : hpPercent <= 50 ? 'wounded' : 'active';
 
   return (
     <div
       class={`${styles.combatantCard} ${isActive ? styles.active : ''} ${
         isPlayer ? styles.player : combatant.isAlly ? styles.ally : styles.enemy
-      } ${combatant.status === 'defeated' ? styles.defeated : ''}`}
+      } ${status === 'defeated' ? styles.defeated : ''}`}
     >
       <div class={styles.combatantInfo}>
         <span class={styles.combatantName}>{combatant.name}</span>
-        <span class={styles.combatantInitiative}>{combatant.initiative}</span>
+        <span class={styles.combatantInitiative}>{combatant.initiative ?? 0}</span>
       </div>
       <Progress
-        value={combatant.currentHp}
-        max={combatant.maxHp}
+        value={combatant.hp}
+        max={combatant.hpMax}
         variant="health"
         size="xs"
         glow={hpPercent <= 25}

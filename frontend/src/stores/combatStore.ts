@@ -39,19 +39,36 @@ export type CombatActionType =
   | 'OVERWATCH'
   | 'END_TURN';
 
+/** Combatant from backend - matches game/mechanics/combat.ts */
 export interface Combatant {
   id: string;
   name: string;
-  isPlayer: boolean;
-  isAlly: boolean;
-  currentHp: number;
-  maxHp: number;
-  initiative: number;
-  position: { x: number; y: number };
-  status: 'active' | 'wounded' | 'critical' | 'defeated';
+  hp: number;
+  hpMax: number;
   conditions: string[];
-  actionsRemaining: number;
-  movementRemaining: number;
+  // Fields added/computed on frontend for display
+  isPlayer?: boolean;
+  isAlly?: boolean;
+  initiative?: number;
+  position?: { x: number; y: number };
+  status?: 'active' | 'wounded' | 'critical' | 'defeated';
+  actionsRemaining?: number;
+  movementRemaining?: number;
+}
+
+/** Helper to normalize combatant for UI display */
+function normalizeCombatant(c: Combatant, playerId?: string): Combatant {
+  const hpPercent = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
+  return {
+    ...c,
+    isPlayer: c.id === playerId,
+    isAlly: c.isAlly ?? false,
+    initiative: c.initiative ?? 0,
+    position: c.position ?? { x: 0, y: 0 },
+    status: c.hp <= 0 ? 'defeated' : hpPercent <= 25 ? 'critical' : hpPercent <= 50 ? 'wounded' : 'active',
+    actionsRemaining: c.actionsRemaining ?? 1,
+    movementRemaining: c.movementRemaining ?? 1,
+  };
 }
 
 export interface ActionLogEntry {
