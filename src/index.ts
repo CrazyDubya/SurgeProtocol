@@ -40,6 +40,7 @@ import { settingsRoutes } from './api/settings';
 import { worldstateRoutes } from './api/worldstate';
 import { proceduralRoutes } from './api/procedural';
 import { analyticsRoutes } from './api/analytics';
+import { enumRoutes } from './api/enums';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -157,6 +158,9 @@ app.route('/api/procedural', proceduralRoutes);
 
 // Analytics routes (events, sessions)
 app.route('/api/analytics', analyticsRoutes);
+
+// Enum reference data routes
+app.route('/api/enums', enumRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
