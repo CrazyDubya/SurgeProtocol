@@ -23,6 +23,9 @@ import { vehicleRoutes } from './api/vehicles';
 import { saveRoutes } from './api/saves';
 import { combatRoutes } from './api/combat';
 import { npcRoutes } from './api/npc';
+import { dialogueRoutes } from './api/dialogue';
+import { achievementRoutes } from './api/achievements';
+import { blackmarketRoutes } from './api/blackmarket';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -90,6 +93,14 @@ app.route('/api/vehicles', vehicleRoutes);
 app.route('/api/saves', saveRoutes);
 app.route('/api/combat', combatRoutes);
 app.route('/api/npcs', npcRoutes);
+app.route('/api/dialogue', dialogueRoutes);
+app.route('/api/achievements', achievementRoutes);
+
+// Black market routes with stricter rate limiting for transactions
+app.use('/api/blackmarket/buy', expensiveRateLimit());
+app.use('/api/blackmarket/sell', expensiveRateLimit());
+app.use('/api/blackmarket/service', expensiveRateLimit());
+app.route('/api/blackmarket', blackmarketRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
