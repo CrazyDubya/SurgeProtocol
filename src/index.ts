@@ -26,6 +26,8 @@ import { npcRoutes } from './api/npc';
 import { dialogueRoutes } from './api/dialogue';
 import { achievementRoutes } from './api/achievements';
 import { blackmarketRoutes } from './api/blackmarket';
+import { storyRoutes } from './api/story';
+import { abilityRoutes } from './api/abilities';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -101,6 +103,12 @@ app.use('/api/blackmarket/buy', expensiveRateLimit());
 app.use('/api/blackmarket/sell', expensiveRateLimit());
 app.use('/api/blackmarket/service', expensiveRateLimit());
 app.route('/api/blackmarket', blackmarketRoutes);
+
+// Story and narrative routes
+app.route('/api/story', storyRoutes);
+
+// Abilities and skills routes
+app.route('/api/abilities', abilityRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
