@@ -1,0 +1,220 @@
+{
+  "encounter_id": "u5_the_glimpse",
+  "category": "neutral",
+  "subcategory": "strange_moment",
+  "title": "The Glimpse",
+  "tier_range": {
+    "min": 3,
+    "max": 7
+  },
+  "trigger": {
+    "type": "area_transition",
+    "location_types": ["interstitial_edge", "liminal_space", "between_districts"],
+    "base_frequency": 0.02
+  },
+  "frequency_modifiers": [
+    {
+      "condition": "time_period",
+      "value": "fog",
+      "modifier": 2.0
+    },
+    {
+      "condition": "time_period",
+      "value": "late_night",
+      "modifier": 1.5
+    },
+    {
+      "condition": "flag",
+      "flag": "INTERSTITIAL_AWARENESS",
+      "modifier": 1.5
+    },
+    {
+      "condition": "humanity",
+      "threshold_below": 60,
+      "modifier": 1.3
+    }
+  ],
+  "setup": {
+    "description": "For a moment, something shifts. The air feels different. The walls seem... thinner. Then it passes.",
+    "atmosphere": "liminal_uncanny"
+  },
+  "experience": {
+    "core_text": "The Interstitial, touching the edge of normal space. Not a crossing-just a brush. A reminder that reality has layers.",
+    "manifestation_pool": [
+      {
+        "id": "figure",
+        "description": "A figure that doesn't quite exist",
+        "visual": "translucent, wrong angles, watching"
+      },
+      {
+        "id": "architecture",
+        "description": "Architecture that wasn't there before",
+        "visual": "doorway in solid wall, stairs to nowhere"
+      },
+      {
+        "id": "sound",
+        "description": "Sound from no source",
+        "audio": "voice calling your name, music from empty room"
+      },
+      {
+        "id": "memory",
+        "description": "A memory that isn't yours",
+        "effect": "brief flash of unfamiliar life"
+      },
+      {
+        "id": "nothing",
+        "description": "Nothing visible-but the certainty something was there",
+        "effect": "primal awareness, watched feeling"
+      }
+    ],
+    "selection": "weighted_random"
+  },
+  "player_options": [
+    {
+      "id": "investigate",
+      "text": "Follow the sensation",
+      "type": "action",
+      "risk_level": "medium",
+      "outcome": "investigate_outcome",
+      "tooltip": "May lead somewhere... or nowhere"
+    },
+    {
+      "id": "document",
+      "text": "Note location for future exploration",
+      "type": "action",
+      "outcome": "document_outcome"
+    },
+    {
+      "id": "ignore",
+      "text": "Continue normally",
+      "type": "action",
+      "outcome": "ignore_outcome"
+    },
+    {
+      "id": "tell_someone",
+      "text": "Tell someone about this later",
+      "type": "action",
+      "outcome": "tell_outcome"
+    }
+  ],
+  "outcomes": {
+    "investigate_outcome": {
+      "description": "You follow the feeling...",
+      "branches": [
+        {
+          "weight": 0.5,
+          "result": "nothing",
+          "text": "The sensation fades. Whatever was there is gone. But you know this spot now.",
+          "effects": [
+            {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true},
+            {"type": "learn_location", "location_type": "interstitial_thin_spot"}
+          ]
+        },
+        {
+          "weight": 0.3,
+          "result": "minor_discovery",
+          "text": "The distortion lingers long enough to show you something-a fragment of the hidden layer.",
+          "effects": [
+            {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true},
+            {"type": "set_flag", "flag": "INTERSTITIAL_FRAGMENT_SEEN", "value": true},
+            {"type": "unlock_dialogue", "npc": "echo", "topic": "glimpse_discussion"}
+          ]
+        },
+        {
+          "weight": 0.15,
+          "result": "significant_discovery",
+          "text": "You step into the fold for just a moment. What you see changes everything.",
+          "effects": [
+            {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true},
+            {"type": "set_flag", "flag": "INTERSTITIAL_TOUCHED", "value": true},
+            {"type": "humanity_mod", "value": -5},
+            {"type": "unlock_quest", "quest": "interstitial_curiosity"}
+          ],
+          "tier_min": 5
+        },
+        {
+          "weight": 0.05,
+          "result": "dangerous",
+          "text": "You push too far. Something pushes back.",
+          "effects": [
+            {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true},
+            {"type": "health_damage", "amount": {"min": 5, "max": 15}},
+            {"type": "sanity_effect", "type": "minor_disturbance"}
+          ]
+        }
+      ]
+    },
+    "document_outcome": {
+      "description": "You mark this location mentally. The walls are thin here. Worth remembering.",
+      "effects": [
+        {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true},
+        {"type": "learn_location", "location_type": "interstitial_thin_spot"},
+        {"type": "journal_entry", "entry": "Potential Interstitial access point"}
+      ],
+      "future_benefit": "Can return to this spot for Tier 5+ Interstitial access"
+    },
+    "ignore_outcome": {
+      "description": "You shake it off and continue. Just the city playing tricks. Probably.",
+      "effects": [
+        {"type": "set_flag", "flag": "GLIMPSE_EXPERIENCED", "value": true}
+      ],
+      "note": "The Interstitial remembers who notices it."
+    },
+    "tell_outcome": {
+      "description": "Most won't believe you. Some will.",
+      "npc_reactions": {
+        "chen_wei": {
+          "condition": "relationship_min_40",
+          "text": "The Interstitial? Old couriers used to talk about thin spots. Be careful with that.",
+          "effect": {"type": "unlock_dialogue", "topic": "interstitial_lore"}
+        },
+        "echo": {
+          "condition": "met_echo",
+          "text": "You saw it. Good. The space between knows you now. That's the first step.",
+          "effect": {"type": "relationship_mod", "npc": "echo", "value": 5}
+        },
+        "random_npc": {
+          "weight": 0.7,
+          "text": "Sounds like you need more sleep, courier.",
+          "effect": null
+        }
+      }
+    }
+  },
+  "lore_integration": {
+    "connects_to": ["interstitial_system", "tier_5_mechanics", "echo_storyline"],
+    "foreshadows": ["eighth_revelation", "reality_layers"],
+    "world_building": "Establishes Interstitial as tangible early, before full access"
+  },
+  "voice_requirements": {
+    "lines_needed": 4,
+    "npc_reactions": true,
+    "tone": "unsettling_wonder",
+    "processing": "light_reverb_on_glimpse_text"
+  },
+  "chain_hooks": {
+    "potential_chains": [
+      {
+        "condition": "significant_discovery",
+        "quest_hook": "interstitial_exploration",
+        "probability": 0.8
+      },
+      {
+        "condition": "tell_echo",
+        "quest_hook": "echo_mentorship",
+        "probability": 0.6
+      }
+    ]
+  },
+  "atmosphere_notes": {
+    "audio": "Reality-distortion sound, subtle wrongness",
+    "visual": "Brief visual glitch, color shift, double-exposure effect",
+    "mood": "Unsettling but intriguing, not horror"
+  },
+  "metadata": {
+    "source_file": "/11_PROCEDURAL/encounters/neutral_encounters.md",
+    "phase": 7,
+    "day": 13,
+    "thematic_importance": "high"
+  }
+}
