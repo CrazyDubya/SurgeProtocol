@@ -35,6 +35,7 @@ import { craftingRoutes } from './api/crafting';
 import { socialRoutes } from './api/social';
 import { leaderboardRoutes } from './api/leaderboards';
 import { messagingRoutes } from './api/messaging';
+import { statusRoutes } from './api/status';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -137,6 +138,9 @@ app.route('/api/leaderboards', leaderboardRoutes);
 
 // Messaging and notifications routes
 app.route('/api/messaging', messagingRoutes);
+
+// Status effects, conditions, addictions, and humanity routes
+app.route('/api/status', statusRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
