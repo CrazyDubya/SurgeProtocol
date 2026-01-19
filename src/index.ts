@@ -30,6 +30,7 @@ import { storyRoutes } from './api/story';
 import { abilityRoutes } from './api/abilities';
 import { progressionRoutes } from './api/progression';
 import { droneRoutes } from './api/drones';
+import { contractRoutes } from './api/contracts';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -117,6 +118,9 @@ app.route('/api/progression', progressionRoutes);
 
 // Drone system routes
 app.route('/api/drones', droneRoutes);
+
+// Contract and debt system routes
+app.route('/api/contracts', contractRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
