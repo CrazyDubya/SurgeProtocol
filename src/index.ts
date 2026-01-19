@@ -28,6 +28,7 @@ import { achievementRoutes } from './api/achievements';
 import { blackmarketRoutes } from './api/blackmarket';
 import { storyRoutes } from './api/story';
 import { abilityRoutes } from './api/abilities';
+import { progressionRoutes } from './api/progression';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -109,6 +110,9 @@ app.route('/api/story', storyRoutes);
 
 // Abilities and skills routes
 app.route('/api/abilities', abilityRoutes);
+
+// Character progression routes (tracks, specializations, tiers, XP)
+app.route('/api/progression', progressionRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
