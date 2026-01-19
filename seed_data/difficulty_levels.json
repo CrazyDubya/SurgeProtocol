@@ -1,0 +1,182 @@
+{
+  "$schema": "./schemas/difficulty_levels.schema.json",
+  "version": "1.0.0",
+  "description": "Difficulty levels and target numbers for Surge Protocol",
+  "target_numbers": [
+    {
+      "code": "TRIVIAL",
+      "name": "Trivial",
+      "target_number": 4,
+      "description": "Anyone can do this",
+      "example": "Remember your own address"
+    },
+    {
+      "code": "EASY",
+      "name": "Easy",
+      "target_number": 6,
+      "description": "Basic competence required",
+      "example": "Navigate familiar route"
+    },
+    {
+      "code": "ROUTINE",
+      "name": "Routine",
+      "target_number": 8,
+      "description": "Standard professional task",
+      "example": "Standard delivery in good conditions"
+    },
+    {
+      "code": "MODERATE",
+      "name": "Moderate",
+      "target_number": 10,
+      "description": "Requires skill and focus",
+      "example": "Delivery with minor complication"
+    },
+    {
+      "code": "CHALLENGING",
+      "name": "Challenging",
+      "target_number": 12,
+      "description": "Professional difficulty",
+      "example": "Express delivery in traffic"
+    },
+    {
+      "code": "HARD",
+      "name": "Hard",
+      "target_number": 14,
+      "description": "Expert level task",
+      "example": "Hazmat in hostile territory"
+    },
+    {
+      "code": "VERY_HARD",
+      "name": "Very Hard",
+      "target_number": 16,
+      "description": "Only the best succeed",
+      "example": "Black ops extraction"
+    },
+    {
+      "code": "EXTREME",
+      "name": "Extreme",
+      "target_number": 18,
+      "description": "Near impossible",
+      "example": "Tier 10 mission requirements"
+    },
+    {
+      "code": "LEGENDARY",
+      "name": "Legendary",
+      "target_number": 20,
+      "description": "Should be impossible",
+      "example": "Feats that define legends"
+    }
+  ],
+  "game_difficulty_modes": [
+    {
+      "code": "EASY",
+      "name": "Lenient Algorithm",
+      "description": "For those who want to experience the story",
+      "modifiers": {
+        "enemy_damage": 0.75,
+        "player_healing": 1.25,
+        "rating_loss": 0.5,
+        "xp_gain": 1.0,
+        "credit_gain": 1.0,
+        "humanity_loss": 0.75
+      },
+      "algorithm_flavor": "THE ALGORITHM IS FEELING GENEROUS TODAY"
+    },
+    {
+      "code": "NORMAL",
+      "name": "Standard Protocol",
+      "description": "The intended experience",
+      "modifiers": {
+        "enemy_damage": 1.0,
+        "player_healing": 1.0,
+        "rating_loss": 1.0,
+        "xp_gain": 1.0,
+        "credit_gain": 1.0,
+        "humanity_loss": 1.0
+      },
+      "algorithm_flavor": "STANDARD OPERATING PARAMETERS"
+    },
+    {
+      "code": "HARD",
+      "name": "Optimized Efficiency",
+      "description": "For experienced couriers",
+      "modifiers": {
+        "enemy_damage": 1.25,
+        "player_healing": 0.85,
+        "rating_loss": 1.5,
+        "xp_gain": 1.25,
+        "credit_gain": 1.15,
+        "humanity_loss": 1.25
+      },
+      "algorithm_flavor": "EFFICIENCY EXPECTATIONS ELEVATED"
+    },
+    {
+      "code": "NIGHTMARE",
+      "name": "Algorithm's Chosen",
+      "description": "The Algorithm demands perfection",
+      "modifiers": {
+        "enemy_damage": 1.5,
+        "player_healing": 0.75,
+        "rating_loss": 2.0,
+        "xp_gain": 1.5,
+        "credit_gain": 1.25,
+        "humanity_loss": 1.5
+      },
+      "algorithm_flavor": "PERFECTION IS THE ONLY ACCEPTABLE OUTCOME"
+    },
+    {
+      "code": "IRONMAN",
+      "name": "Permanent Record",
+      "description": "Death is permanent. No save scumming.",
+      "modifiers": {
+        "enemy_damage": 1.25,
+        "player_healing": 0.9,
+        "rating_loss": 1.25,
+        "xp_gain": 1.5,
+        "credit_gain": 1.25,
+        "humanity_loss": 1.25
+      },
+      "special_rules": ["permadeath", "autosave_only", "no_reload"],
+      "algorithm_flavor": "YOUR CHOICES ARE PERMANENT. THE ALGORITHM REMEMBERS EVERYTHING."
+    }
+  ],
+  "result_classification": {
+    "CATASTROPHE": {
+      "margin": "-5 or worse",
+      "description": "Critical failure with complications",
+      "effects": ["task_fails", "complication_triggered", "resource_loss"]
+    },
+    "MISS": {
+      "margin": "-4 to -1",
+      "description": "Standard failure",
+      "effects": ["task_fails"]
+    },
+    "GRAZE": {
+      "margin": "exactly 0",
+      "description": "Partial success",
+      "effects": ["partial_success", "reduced_reward", "minor_complication"]
+    },
+    "HIT": {
+      "margin": "+1 to +4",
+      "description": "Standard success",
+      "effects": ["task_succeeds", "standard_reward"]
+    },
+    "PERFECT": {
+      "margin": "+5 or better",
+      "description": "Critical success with bonus",
+      "effects": ["task_succeeds", "bonus_reward", "possible_discovery"]
+    }
+  },
+  "natural_rolls": {
+    "snake_eyes": {
+      "roll": 2,
+      "effect": "auto_fail",
+      "description": "Automatic failure plus complication, regardless of modifiers"
+    },
+    "boxcars": {
+      "roll": 12,
+      "effect": "auto_success",
+      "description": "Automatic success plus bonus, regardless of modifiers"
+    }
+  }
+}

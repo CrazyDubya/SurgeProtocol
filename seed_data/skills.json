@@ -1,0 +1,200 @@
+{
+  "$schema": "./schemas/skills.schema.json",
+  "version": "1.0.0",
+  "description": "Character skills for Surge Protocol",
+  "skill_levels": {
+    "0": { "name": "Untrained", "typical_tier": null },
+    "1-2": { "name": "Novice", "typical_tier": "1-2" },
+    "3-4": { "name": "Competent", "typical_tier": "3-4" },
+    "5-6": { "name": "Professional", "typical_tier": "5-6" },
+    "7-8": { "name": "Expert", "typical_tier": "7-8" },
+    "9-10": { "name": "Master", "typical_tier": "9-10" }
+  },
+  "skills": [
+    {
+      "code": "FIREARMS",
+      "name": "Firearms",
+      "category": "COMBAT",
+      "governing_attribute": "PRC",
+      "description": "Proficiency with ranged weapons including pistols, rifles, and SMGs",
+      "example_uses": ["Shooting targets", "Quick draw", "Weapon maintenance"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "MELEE",
+      "name": "Melee Combat",
+      "category": "COMBAT",
+      "governing_attribute": "STR",
+      "description": "Hand-to-hand combat and close-quarters weapon proficiency",
+      "example_uses": ["Knife fighting", "Brawling", "Blocking attacks"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "EVASION",
+      "name": "Evasion",
+      "category": "COMBAT",
+      "governing_attribute": "AGI",
+      "description": "Dodging attacks and escaping dangerous situations",
+      "example_uses": ["Dodging gunfire", "Breaking grapples", "Escape routes"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "HEAVY_WEAPONS",
+      "name": "Heavy Weapons",
+      "category": "COMBAT",
+      "governing_attribute": "STR",
+      "description": "Operation of mounted weapons, explosives, and military hardware",
+      "example_uses": ["Vehicle weapons", "Explosives handling", "Suppressive fire"],
+      "untrained_penalty": -4
+    },
+    {
+      "code": "HACKING",
+      "name": "Hacking",
+      "category": "TECHNICAL",
+      "governing_attribute": "INT",
+      "description": "Bypassing security systems and manipulating digital infrastructure",
+      "example_uses": ["Breaking ICE", "Data extraction", "System takeover"],
+      "untrained_penalty": -4
+    },
+    {
+      "code": "ELECTRONICS",
+      "name": "Electronics",
+      "category": "TECHNICAL",
+      "governing_attribute": "INT",
+      "description": "Repair and modification of electronic devices",
+      "example_uses": ["Device repair", "Bug sweeping", "Surveillance setup"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "MECHANICS",
+      "name": "Mechanics",
+      "category": "TECHNICAL",
+      "governing_attribute": "INT",
+      "description": "Vehicle and machinery repair and modification",
+      "example_uses": ["Vehicle repair", "Lock picking", "Trap disarming"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "CYBERTECH",
+      "name": "Cybertech",
+      "category": "TECHNICAL",
+      "governing_attribute": "INT",
+      "description": "Installation, repair, and modification of cybernetic augmentations",
+      "example_uses": ["Aug installation", "Diagnostics", "Emergency repairs"],
+      "untrained_penalty": -4
+    },
+    {
+      "code": "MEDICINE",
+      "name": "Medicine",
+      "category": "TECHNICAL",
+      "governing_attribute": "INT",
+      "description": "Medical treatment and pharmaceutical knowledge",
+      "example_uses": ["First aid", "Surgery", "Drug identification"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "ATHLETICS",
+      "name": "Athletics",
+      "category": "PHYSICAL",
+      "governing_attribute": "AGI",
+      "description": "General physical fitness and athletic performance",
+      "example_uses": ["Climbing", "Swimming", "Jumping"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "STEALTH",
+      "name": "Stealth",
+      "category": "PHYSICAL",
+      "governing_attribute": "AGI",
+      "description": "Moving unseen and unheard",
+      "example_uses": ["Sneaking past guards", "Tailing targets", "Hiding"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "DRIVING",
+      "name": "Driving",
+      "category": "PHYSICAL",
+      "governing_attribute": "VEL",
+      "description": "Vehicle operation and combat driving",
+      "example_uses": ["High-speed pursuits", "Evasive maneuvers", "Stunts"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "PARKOUR",
+      "name": "Parkour",
+      "category": "PHYSICAL",
+      "governing_attribute": "AGI",
+      "description": "Urban movement and acrobatics",
+      "example_uses": ["Rooftop running", "Wall climbing", "Gap jumping"],
+      "untrained_penalty": -4
+    },
+    {
+      "code": "NAVIGATION",
+      "name": "Navigation",
+      "category": "PHYSICAL",
+      "governing_attribute": "PRC",
+      "description": "Finding optimal routes and avoiding obstacles",
+      "example_uses": ["Route planning", "Shortcut discovery", "Traffic avoidance"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "NEGOTIATION",
+      "name": "Negotiation",
+      "category": "SOCIAL",
+      "governing_attribute": "CHA",
+      "description": "Bargaining, deal-making, and conflict resolution",
+      "example_uses": ["Price haggling", "Contract terms", "Hostage situations"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "INTIMIDATION",
+      "name": "Intimidation",
+      "category": "SOCIAL",
+      "governing_attribute": "CHA",
+      "description": "Threatening and coercing others",
+      "example_uses": ["Extracting information", "Deterrence", "Gang confrontations"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "STREETWISE",
+      "name": "Streetwise",
+      "category": "SOCIAL",
+      "governing_attribute": "CHA",
+      "description": "Knowledge of street culture, contacts, and underworld operations",
+      "example_uses": ["Finding black market", "Gang protocols", "Reading situations"],
+      "untrained_penalty": -2
+    },
+    {
+      "code": "DECEPTION",
+      "name": "Deception",
+      "category": "SOCIAL",
+      "governing_attribute": "CHA",
+      "description": "Lying, disguise, and misdirection",
+      "example_uses": ["Bluffing past security", "False identities", "Distraction"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "EMPATHY",
+      "name": "Empathy",
+      "category": "SOCIAL",
+      "governing_attribute": "WIL",
+      "description": "Reading emotions and understanding others' motivations",
+      "example_uses": ["Detecting lies", "Understanding NPCs", "Emotional support"],
+      "untrained_penalty": 0
+    },
+    {
+      "code": "PERFORMANCE",
+      "name": "Performance",
+      "category": "SOCIAL",
+      "governing_attribute": "CHA",
+      "description": "Acting, entertainment, and public presence",
+      "example_uses": ["Creating distractions", "Cover stories", "Crowd manipulation"],
+      "untrained_penalty": 0
+    }
+  ],
+  "xp_costs": {
+    "new_skill": 20,
+    "level_up_formula": "new_level * 20"
+  },
+  "max_skill_formula": "5 + floor(tier / 2)"
+}

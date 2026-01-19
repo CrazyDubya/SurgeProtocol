@@ -1,0 +1,116 @@
+{
+  "$schema": "./schemas/attributes.schema.json",
+  "version": "1.0.0",
+  "description": "Core character attributes for Surge Protocol",
+  "attributes": [
+    {
+      "code": "STR",
+      "name": "Strength",
+      "description": "Physical power, melee damage, and carrying capacity",
+      "category": "PHYSICAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["melee_damage", "carry_weight", "grappling"],
+      "algorithm_flavor": "MUSCULATURE EFFICIENCY INDEX"
+    },
+    {
+      "code": "AGI",
+      "name": "Agility",
+      "description": "Reflexes, evasion, and fine motor control",
+      "category": "PHYSICAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["defense", "stealth", "acrobatics"],
+      "algorithm_flavor": "KINETIC RESPONSE COEFFICIENT"
+    },
+    {
+      "code": "VIT",
+      "name": "Vitality",
+      "description": "Health, endurance, and resistance to damage",
+      "category": "PHYSICAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["hit_points", "stamina", "recovery"],
+      "algorithm_flavor": "BIOLOGICAL INTEGRITY SCORE"
+    },
+    {
+      "code": "VEL",
+      "name": "Velocity",
+      "description": "Movement speed, initiative, and ranged accuracy",
+      "category": "PHYSICAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["initiative", "movement_speed", "ranged_attacks"],
+      "algorithm_flavor": "TEMPORAL DISPLACEMENT RATE"
+    },
+    {
+      "code": "INT",
+      "name": "Intelligence",
+      "description": "Technical skill, hacking, and problem-solving",
+      "category": "MENTAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["hacking", "electronics", "cybertech"],
+      "algorithm_flavor": "COGNITIVE PROCESSING INDEX"
+    },
+    {
+      "code": "PRC",
+      "name": "Perception",
+      "description": "Awareness, accuracy, and attention to detail",
+      "category": "MENTAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["accuracy", "detection", "navigation"],
+      "algorithm_flavor": "ENVIRONMENTAL AWARENESS QUOTIENT"
+    },
+    {
+      "code": "WIL",
+      "name": "Willpower",
+      "description": "Mental fortitude, humanity retention, and resistance to cyberpsychosis",
+      "category": "MENTAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["humanity", "mental_resistance", "focus"],
+      "algorithm_flavor": "PSYCHOLOGICAL STABILITY METRIC"
+    },
+    {
+      "code": "CHA",
+      "name": "Charisma",
+      "description": "Social influence, negotiation, and reputation building",
+      "category": "SOCIAL",
+      "base_value": 10,
+      "min_value": 1,
+      "max_value": 20,
+      "modifier_formula": "(value - 10) / 2",
+      "affects": ["negotiation", "reputation_gain", "npc_relations"],
+      "algorithm_flavor": "SOCIAL INFLUENCE COEFFICIENT"
+    }
+  ],
+  "modifier_table": {
+    "1": -5,
+    "2-3": -4,
+    "4-5": -3,
+    "6-7": -2,
+    "8-9": -1,
+    "10-11": 0,
+    "12-13": 1,
+    "14-15": 2,
+    "16-17": 3,
+    "18-19": 4,
+    "20": 5
+  }
+}
