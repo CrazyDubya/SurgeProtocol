@@ -36,6 +36,7 @@ import { socialRoutes } from './api/social';
 import { leaderboardRoutes } from './api/leaderboards';
 import { messagingRoutes } from './api/messaging';
 import { statusRoutes } from './api/status';
+import { settingsRoutes } from './api/settings';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -141,6 +142,9 @@ app.route('/api/messaging', messagingRoutes);
 
 // Status effects, conditions, addictions, and humanity routes
 app.route('/api/status', statusRoutes);
+
+// Player settings, game config, difficulty, and localization routes
+app.route('/api/settings', settingsRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
