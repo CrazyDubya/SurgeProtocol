@@ -37,6 +37,9 @@ import { leaderboardRoutes } from './api/leaderboards';
 import { messagingRoutes } from './api/messaging';
 import { statusRoutes } from './api/status';
 import { settingsRoutes } from './api/settings';
+import { worldstateRoutes } from './api/worldstate';
+import { proceduralRoutes } from './api/procedural';
+import { analyticsRoutes } from './api/analytics';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -145,6 +148,15 @@ app.route('/api/status', statusRoutes);
 
 // Player settings, game config, difficulty, and localization routes
 app.route('/api/settings', settingsRoutes);
+
+// World state routes (weather, time)
+app.route('/api/worldstate', worldstateRoutes);
+
+// Procedural generation routes (templates, loot tables)
+app.route('/api/procedural', proceduralRoutes);
+
+// Analytics routes (events, sessions)
+app.route('/api/analytics', analyticsRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
