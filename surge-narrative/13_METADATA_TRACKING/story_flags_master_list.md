@@ -440,7 +440,7 @@ When writing new content:
 
 ## Maintenance
 
-**Last Updated**: 2026-01-16 (Phase 2 Session 6)
+**Last Updated**: 2026-01-17 (Phase 5 Session 1)
 
 **Update Protocol**:
 1. When adding new quest, check for new flags
@@ -450,8 +450,145 @@ When writing new content:
 
 ---
 
+## Phase 4 Additions (2026-01-17)
+
+### New Relationship Flags
+
+#### Jin "Quicksilver" Park
+- `JIN_ALLY_STATUS` (boolean) - Jin is player's ally
+- `JIN_ENEMY_STATUS` (boolean) - Jin is player's enemy
+- `JIN_BACKSTORY_KNOWN` (boolean) - Player learned Jin's history
+- `JIN_TIER_10_COMPANION` (boolean) - Jin joins for ending
+- `RACE_OUTCOME` (string: "player_won" / "jin_won" / "tie")
+- `RESCUE_COMPLETED` (boolean) - Saved Jin in "Quicksilver Down"
+- `COOPERATION_COUNT` (integer) - Times player cooperated with Jin
+
+#### Maria Lopez
+- `LOPEZ_ALLY_STATUS` (boolean) - Lopez trusts player
+- `MUTUAL_AID_ACCESS` (boolean) - Can use union safehouses
+- `STRIKE_OUTCOME` (string: "victory" / "negotiated" / "broken")
+- `UNION_LEADERSHIP_OFFERED` (boolean) - Lopez offered succession
+- `STRIKE_SUPPORT_LEVEL` (integer: 0-100)
+- `PLAYER_LABOR_ACTIONS` (integer) - Count of union support actions
+
+#### Director Yamada
+- `YAMADA_ALLY_STATUS` (boolean) - Yamada works with player
+- `YAMADA_ENEMY_STATUS` (boolean) - Yamada opposes player
+- `YAMADA_TRUTH_REVEALED` (boolean) - Player showed Nakamura origins
+- `YAMADA_DAUGHTER_REUNITED` (boolean) - Facilitated family reunion
+- `YAMADA_KILLED` (boolean) - Player killed Yamada
+- `YAMADA_DAUGHTER_MENTIONED` (boolean) - Yamada revealed daughter
+
+#### Chen Expansion
+- `CHEN_STORY_TOLD` (boolean) - Chen revealed daughter's fate
+- `MET_SHADOW_MEI` (boolean) - Encountered Mei-Lin's Shadow
+- `PRIME_MEI_CONTACT` (boolean) - Found original Mei-Lin fragment
+- `MEI_RESOLUTION` (string: "peace" / "conflict" / "gone")
+- `ASKED_ABOUT_DAUGHTER` (boolean) - Player inquired about family
+
+#### Tanaka Expansion
+- `TANAKA_RESEARCH_KNOWN` (boolean) - Player knows humane chrome research
+- `PROMETHEUS_DATA_COMPLETE` (boolean) - Full Prometheus data acquired
+- `PROMETHEUS_RESEARCH_ONLY` (boolean) - Partial data only
+- `HUMANE_CHROME_PROTOTYPE` (boolean) - First prototype created
+- `TANAKA_ALLY_TIER_10` (boolean) - Tanaka supports in ending
+
+#### Okonkwo Expansion
+- `OKONKWO_STUDENT` (boolean) - Player is Third Path student
+- `TEST_1_PASSED` (boolean) - Passed first philosophical test
+- `TEST_2_PASSED` (boolean) - Passed second test
+- `TEST_3_PASSED` (boolean) - Passed third test
+- `TEST_1_APPROACH` (string) - How player approached test 1
+- `TEST_2_APPROACH` (string) - How player approached test 2
+- `TEST_3_APPROACH` (string) - How player approached test 3
+- `EIGHTH_CANDIDATE` (boolean) - Qualified for Eighth status
+- `OKONKWO_BLESSING` (boolean) - Received Okonkwo's blessing
+- `THIRD_PATH_HINTS` (integer) - Number of Third Path clues found
+
+### Rosa Miguel Rescue Quest
+- `MIGUEL_RESCUED` (boolean) - Miguel saved successfully
+- `MIGUEL_DIED` (boolean) - Miguel killed
+- `MIGUEL_INJURED` (boolean) - Miguel survived with injuries
+- `ROSA_GAMBIT` (boolean) - Rosa intervened in rescue
+- `ROSA_REFUSED` (boolean) - Player declined to help
+- `ROSA_DEAD` (boolean) - Rosa died during rescue
+- `MIGUEL_CLINIC_REVEAL` (boolean) - Miguel's chrome addiction revealed
+- `CHIP_DELIVERED` (boolean) - Medical chip delivered successfully
+- `CHIP_SOLD` (boolean) - Chip sold instead
+- `CHIP_GIVEN` (boolean) - Chip given freely
+- `CHIP_DESTROYED` (boolean) - Chip destroyed
+
+### Hidden Content Flags
+
+#### Voronov Legacy
+- `VORONOV_GRAFFITI_COUNT` (integer: 0-3) - Hidden messages found
+- `VORONOV_QUEST_STARTED` (boolean) - Quest initiated
+- `VORONOV_QUEST_COMPLETE` (boolean) - Quest finished
+- `VORONOV_CODE_TAKEN` (boolean) - Player kept source code
+- `VORONOV_CODE_DESTROYED` (boolean) - Player destroyed code
+- `VORONOV_CODE_TO_TANAKA` (boolean) - Gave code to Tanaka
+- `VORONOV_CODE_TO_GHOST` (boolean) - Gave code to Ghost Network
+- `ALGORITHM_OVERRIDE_UNLOCKED` (boolean) - Override ability gained
+
+#### The Eighth Tier Quest
+- `EIGHTH_QUEST_STARTED` (boolean) - Quest initiated
+- `EIGHTH_TRIAL_FLESH` (boolean) - Completed flesh trial
+- `EIGHTH_TRIAL_CHROME` (boolean) - Completed chrome trial
+- `EIGHTH_TRIAL_MIND` (boolean) - Completed mind trial
+- `EIGHTH_ATTAINED` (boolean) - Achieved full Eighth status
+- `BALANCED_BEING_STATUS` (boolean) - Permanent balance achieved
+
+#### Mei-Lin's Message
+- `MEI_LIN_RECORDING_FOUND` (boolean) - Found hidden recording
+- `MEI_LIN_RECORDING_DELIVERED` (boolean) - Gave recording to Chen
+
+#### The First Courier
+- `SARAH_VANCE_FOUND` (boolean) - Located Sarah Vance
+- `FIRST_COURIER_QUEST_COMPLETE` (boolean) - Quest finished
+- `SARAH_BUNKER_ACCESS` (boolean) - Can use bunker as safehouse
+
+#### Prometheus Thread
+- `PROMETHEUS_THREAD_1` (boolean) - Tanaka mention found
+- `PROMETHEUS_THREAD_2` (boolean) - Environmental text found
+- `PROMETHEUS_THREAD_3` (boolean) - Voronov confirmation found
+- `PROMETHEUS_FULL_HISTORY` (boolean) - Complete history known
+
+### Combat/Environment Flags
+- `ROSA_ALLY_COMBAT` (boolean) - Rosa joins combat
+- `JIN_ALLY_COMBAT` (boolean) - Jin joins combat
+- `LOPEZ_ALLY_COMBAT` (boolean) - Lopez allies join combat
+- `HAZARD_ELECTRICAL` (boolean) - Electrical hazard present
+- `HAZARD_CHEMICAL` (boolean) - Chemical hazard present
+- `HAZARD_STRUCTURAL` (boolean) - Structural hazard present
+- `HAZARD_FIRE` (boolean) - Fire hazard present
+- `HAZARD_HEIGHT` (boolean) - Height hazard present
+
+---
+
+## Updated Flag Count
+
+**Total Flags**: ~250
+
+**Categories (Updated)**:
+- Main Story: ~25 flags
+- Player Choices: ~60 flags (+10)
+- Relationships: ~45 flags (+30)
+- Factions: ~25 flags (+5)
+- Humanity: ~15 flags
+- Augmentation: ~20 flags
+- Algorithm: ~20 flags
+- Reputation: ~25 flags
+- World State: ~25 flags (+5)
+- Hidden Content: ~25 flags (+25)
+- Combat/Environment: ~10 flags (+10)
+- Miscellaneous: ~30 flags
+
+---
+
 ## Related Content
 - Quests: `/03_QUESTS/main_story/`
 - Characters: `/01_CHARACTERS/`
 - Complications: `/04_COMPLICATIONS/complications_library.md`
 - Content Status: `/13_METADATA_TRACKING/content_status/`
+- Flag Updates: `/13_METADATA_TRACKING/technical/flag_updates_phase_4.md`
+- Cross-Reference: `/13_METADATA_TRACKING/technical/flag_cross_reference_matrix.md`

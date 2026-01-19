@@ -1,0 +1,260 @@
+{
+  "encounter_id": "n1_territorial_gang",
+  "category": "negative",
+  "subcategory": "direct_threat",
+  "title": "Territorial Gang",
+  "tier_range": {
+    "min": 1,
+    "max": 5
+  },
+  "trigger": {
+    "type": "location_entry",
+    "location_types": ["gang_territory"],
+    "base_frequency": 0.08
+  },
+  "frequency_modifiers": [
+    {
+      "condition": "time_period",
+      "value": "night",
+      "modifier": 1.5
+    },
+    {
+      "condition": "time_period",
+      "value": "late_night",
+      "modifier": 2.0
+    },
+    {
+      "condition": "flag",
+      "flag": "GANG_TERRITORY_PAID",
+      "modifier": 0.3
+    }
+  ],
+  "setup": {
+    "description": "Movement in the shadows. Then they step out. Three, maybe four. They've been waiting.",
+    "atmosphere": "threatening_ambush"
+  },
+  "gang_variants": [
+    {
+      "id": "chrome_saints",
+      "name": "Chrome Saints",
+      "visual": "chrome-heavy, religious undertone",
+      "district_weight": {"hollows": 1.5, "harbor": 0.5}
+    },
+    {
+      "id": "street_rats",
+      "name": "Street Rats",
+      "visual": "desperate, disorganized",
+      "district_weight": {"hollows": 1.2, "harbor": 1.0}
+    },
+    {
+      "id": "corporate_rejects",
+      "name": "Corporate Rejects",
+      "visual": "ex-security, disciplined",
+      "district_weight": {"uptown_border": 1.5, "harbor": 0.8}
+    },
+    {
+      "id": "unknown_crew",
+      "name": "Unknown Crew",
+      "visual": "new, proving themselves",
+      "district_weight": {"any": 1.0}
+    }
+  ],
+  "npc_dialogue": {
+    "initial_confrontation": {
+      "pool_id": "gang_confrontation",
+      "lines": [
+        {
+          "id": "gang_confront_01",
+          "text": "Wrong turn, courier. This is {GANG_NAME} territory. Tax time.",
+          "variables": ["GANG_NAME"],
+          "voice_type": "gang_leader",
+          "emotion": "casual_threat"
+        },
+        {
+          "id": "gang_confront_02",
+          "text": "Nice package. Hand it over, courier. Nothing personal. Just business.",
+          "voice_type": "gang_leader",
+          "emotion": "routine_robbery"
+        }
+      ]
+    }
+  },
+  "demands": [
+    {
+      "type": "credits",
+      "range": {"min": 50, "max": 150},
+      "tier_scaling": 1.2
+    },
+    {
+      "type": "package_contents",
+      "condition": "carrying_package"
+    },
+    {
+      "type": "chrome_component",
+      "condition": "has_chrome",
+      "tier_min": 3
+    },
+    {
+      "type": "future_favor",
+      "description": "Job under duress later"
+    }
+  ],
+  "player_options": [
+    {
+      "id": "pay_tribute",
+      "text": "Pay the tribute",
+      "type": "compliance",
+      "cost": "demanded_item",
+      "outcome": "pay_outcome",
+      "tooltip": "Lose demanded item, gain safe passage"
+    },
+    {
+      "id": "negotiate",
+      "text": "Try to negotiate",
+      "type": "skill_check",
+      "skill": "persuasion",
+      "difficulty": 7,
+      "tier_scaling": true,
+      "success_outcome": "negotiate_success",
+      "failure_outcome": "negotiate_failure"
+    },
+    {
+      "id": "fight",
+      "text": "Fight them",
+      "type": "combat",
+      "enemy_count": {"min": 3, "max": 4},
+      "enemy_type": "gang_member",
+      "victory_outcome": "fight_victory",
+      "defeat_outcome": "fight_defeat"
+    },
+    {
+      "id": "run",
+      "text": "Try to run",
+      "type": "skill_check",
+      "skill": "speed",
+      "difficulty": 8,
+      "success_outcome": "run_success",
+      "failure_outcome": "run_failure"
+    },
+    {
+      "id": "bluff",
+      "text": "Bluff faction affiliation",
+      "type": "skill_check",
+      "skill": "deception",
+      "difficulty": 9,
+      "success_outcome": "bluff_success",
+      "failure_outcome": "bluff_failure",
+      "tooltip": "Claim you're with a bigger faction"
+    }
+  ],
+  "outcomes": {
+    "pay_outcome": {
+      "description": "They take what they want and let you pass.",
+      "effects": [
+        {"type": "lose_demanded_item"},
+        {"type": "set_flag", "flag": "GANG_TERRITORY_{GANG_ID}_PAID", "value": true},
+        {"type": "reputation_mod", "faction": "gang_{GANG_ID}", "value": -5}
+      ],
+      "future_modifier": {
+        "description": "Marked as 'easy target'",
+        "effect": "future_gang_encounters_harder"
+      }
+    },
+    "negotiate_success": {
+      "description": "You talk them down to a smaller tribute or future payment.",
+      "effects": [
+        {"type": "lose_credits", "amount": {"min": 20, "max": 50}},
+        {"type": "reputation_mod", "faction": "gang_{GANG_ID}", "value": 5}
+      ],
+      "dialogue": "Respect. Maybe you're not just another mark. We'll be watching."
+    },
+    "negotiate_failure": {
+      "description": "They're not impressed. Demands increase.",
+      "effects": [
+        {"type": "demand_increase", "multiplier": 1.5}
+      ],
+      "returns_to": "player_options"
+    },
+    "fight_victory": {
+      "description": "You defeat the gang members. They won't bother you again soon.",
+      "effects": [
+        {"type": "reputation_mod", "general": 10},
+        {"type": "reputation_mod", "faction": "gang_{GANG_ID}", "value": -20},
+        {"type": "set_flag", "flag": "GANG_TERRITORY_{GANG_ID}_FOUGHT", "value": true},
+        {"type": "loot_chance", "loot_table": "gang_member"}
+      ],
+      "future_modifier": {
+        "description": "This gang avoids you",
+        "effect": "reduced_encounters_gang_{GANG_ID}"
+      }
+    },
+    "fight_defeat": {
+      "description": "They beat you down and take everything.",
+      "effects": [
+        {"type": "lose_all_credits"},
+        {"type": "lose_package", "condition": "carrying"},
+        {"type": "health_damage", "amount": {"min": 20, "max": 40}},
+        {"type": "reputation_mod", "general": -5}
+      ]
+    },
+    "run_success": {
+      "description": "You escape into the city. But they remember your face.",
+      "effects": [
+        {"type": "set_flag", "flag": "GANG_{GANG_ID}_HOSTILE", "value": true}
+      ],
+      "future_modifier": {
+        "description": "This gang actively hostile",
+        "effect": "increased_encounters_gang_{GANG_ID}"
+      }
+    },
+    "run_failure": {
+      "description": "They catch you. Now they're angry.",
+      "effects": [
+        {"type": "demand_increase", "multiplier": 2.0}
+      ],
+      "removes_option": "run",
+      "returns_to": "player_options"
+    },
+    "bluff_success": {
+      "description": "They back off, not wanting trouble with whoever you claimed.",
+      "effects": [
+        {"type": "reputation_mod", "faction": "gang_{GANG_ID}", "value": 0}
+      ],
+      "dialogue": "Didn't know you were connected. Our mistake. Move along."
+    },
+    "bluff_failure": {
+      "description": "They see through your lie. Now it's personal.",
+      "effects": [
+        {"type": "demand_increase", "multiplier": 1.5},
+        {"type": "reputation_mod", "faction": "gang_{GANG_ID}", "value": -10}
+      ],
+      "removes_option": "bluff",
+      "returns_to": "player_options"
+    }
+  },
+  "voice_requirements": {
+    "npc_types": ["gang_leader", "gang_member"],
+    "line_count": 8,
+    "tone": "threatening_business",
+    "variants_needed": 3
+  },
+  "chain_hooks": {
+    "potential_chains": [
+      {
+        "condition": "fight_victory",
+        "quest_hook": "gang_revenge_arc",
+        "probability": 0.3
+      },
+      {
+        "condition": "negotiate_success",
+        "quest_hook": "gang_alliance_offer",
+        "probability": 0.2
+      }
+    ]
+  },
+  "metadata": {
+    "source_file": "/11_PROCEDURAL/encounters/negative_encounters.md",
+    "phase": 7,
+    "day": 12
+  }
+}

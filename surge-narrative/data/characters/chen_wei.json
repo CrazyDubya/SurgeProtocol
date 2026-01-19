@@ -1,0 +1,168 @@
+{
+  "id": "chen_wei",
+  "type": "main_cast",
+  "display_name": "Chen Wei",
+  "full_name": "Chen Wei-Ming",
+  "alias": "Dispatch",
+  "demographics": {
+    "age": 47,
+    "gender": "male",
+    "pronouns": "he/him"
+  },
+  "tier_range": {
+    "min": 0,
+    "max": 10
+  },
+  "role": "dispatcher_mentor",
+  "faction_affiliation": "neutral_guild",
+  "location": {
+    "primary": "hollows_station",
+    "district": "hollows"
+  },
+  "appearance": {
+    "physical": "Tired eyes, graying hair in a tight bun, calloused hands. Slight stoop from years hunched over dispatch terminals.",
+    "clothing": "Faded Guild jacket with patched elbows. Working-class professional, clean but worn.",
+    "augmentations": [
+      {
+        "type": "ocular_implant",
+        "location": "left_eye",
+        "visual": "glowing amber"
+      },
+      {
+        "type": "comm_interface",
+        "location": "behind_ear",
+        "visual": "occasionally sparks"
+      }
+    ]
+  },
+  "voice": {
+    "description": "Gravelly, patient but firm. Speaks in clipped sentences. Mandarin accent softened by years in the city.",
+    "type": "baritone_aged",
+    "accent": "mandarin_urban_american",
+    "speech_patterns": [
+      "Calls everyone 'kid' or 'rookie'",
+      "Uses courier slang naturally",
+      "Clean run",
+      "Hot package",
+      "Ghost route"
+    ],
+    "line_count_estimate": 250,
+    "priority": 1
+  },
+  "personality": {
+    "core_traits": ["pragmatic", "protective", "cynical_not_broken"],
+    "motivations": ["keeps_station_running", "helps_rookies_survive"],
+    "fears": ["losing_another_rookie", "algorithm_seduction"],
+    "values": ["honest_work", "guild_loyalty", "harm_reduction"]
+  },
+  "background": {
+    "origin": "Former Tier 7 courier who ran premium routes for corpo clients. Took dispatcher role after knee injury during extraction gone wrong.",
+    "current": "Runs dispatch at Hollows Station. Sees dozens of rookies come and go. Knows which ones will make it.",
+    "secrets": [
+      {
+        "id": "daughter_ming",
+        "content": "Lost daughter Ming to botched Tier 8 run. She pushed for cortical stack, diverged from Shadow, lost herself.",
+        "unlock_conditions": {
+          "relationship_min": 60,
+          "tier_min": 5
+        }
+      }
+    ]
+  },
+  "relationships": {
+    "allied": [
+      {"id": "guild_leadership", "type": "neutral_respect"},
+      {"id": "rosa_delgado", "type": "old_friends"},
+      {"id": "street_docs_hollows", "type": "referral_network"}
+    ],
+    "opposed": [
+      "predatory_contracts",
+      "corpo_express_ascension",
+      "chrome_pushers"
+    ],
+    "connections": [
+      {"id": "solomon_okonkwo", "type": "tier_7_contemporary"},
+      {"id": "dr_yuki_tanaka", "type": "referral_relationship"}
+    ]
+  },
+  "dialogue_pools": {
+    "greeting": {
+      "stranger": ["chen_greeting_stranger_01", "chen_greeting_stranger_02"],
+      "acquaintance": ["chen_greeting_acquaint_01", "chen_greeting_acquaint_02"],
+      "familiar": ["chen_greeting_familiar_01", "chen_greeting_familiar_02"],
+      "trusted": ["chen_greeting_trusted_01", "chen_greeting_trusted_02"],
+      "bonded": ["chen_greeting_bonded_01", "chen_greeting_bonded_02"]
+    },
+    "humanity_reactions": {
+      "high": ["chen_humanity_high_01", "chen_humanity_high_02"],
+      "mid": ["chen_humanity_mid_01", "chen_humanity_mid_02"],
+      "low": ["chen_humanity_low_01", "chen_humanity_low_02"],
+      "critical": ["chen_humanity_critical_01", "chen_humanity_critical_02"]
+    },
+    "tier_reactions": {
+      "early": ["chen_tier_early_01"],
+      "mid": ["chen_tier_mid_01"],
+      "high": ["chen_tier_high_01"],
+      "endgame": ["chen_tier_endgame_01"]
+    }
+  },
+  "conversations": [
+    "chen_first_meeting",
+    "chen_cortical_stack_warning",
+    "chen_daughter_reveal"
+  ],
+  "story_beats": [
+    {
+      "tier": 0,
+      "description": "Gives first missions, explains basics, sizes player up"
+    },
+    {
+      "tier": 2,
+      "description": "Approves of progress, shares first personal detail"
+    },
+    {
+      "tier": 3,
+      "description": "Concerned about cochlear implant, warns subtly"
+    },
+    {
+      "tier": 5,
+      "description": "Opens up about daughter if relationship high enough",
+      "conditions": {"relationship_min": 60}
+    },
+    {
+      "tier": 6,
+      "description": "Directly warns against cortical stack"
+    },
+    {
+      "tier": 9,
+      "description": "Reaction to player's final path choice"
+    }
+  ],
+  "relationship_stages": {
+    "stranger": {"min": 0, "max": 20, "description": "Professional distance, transactional"},
+    "acquaintance": {"min": 21, "max": 50, "description": "Warming up, protective, small talk"},
+    "trusted": {"min": 51, "max": 80, "description": "Mentor, shares personal stories"},
+    "father_figure": {"min": 81, "max": 100, "description": "Deeply invested in survival"}
+  },
+  "flags_set_on_meet": ["MET_CHEN"],
+  "flags_tracked": [
+    "CHEN_RELATIONSHIP",
+    "KNOWS_CHEN_DAUGHTER_FATE",
+    "CHEN_HEARD_CONFIDENCE",
+    "CHEN_DISAPPOINTED"
+  ],
+  "quest_giver": {
+    "tutorial": true,
+    "tier_range": [0, 2],
+    "side_quests": [
+      "favor_for_old_friend",
+      "memory_run",
+      "station_under_siege"
+    ]
+  },
+  "survives": true,
+  "voice_actor_notes": {
+    "emotion_range": ["tired_patience", "genuine_concern", "grief", "protective_warmth"],
+    "key_scenes": ["daughter_reveal", "cortical_stack_warning", "epilogue_reactions"]
+  }
+}

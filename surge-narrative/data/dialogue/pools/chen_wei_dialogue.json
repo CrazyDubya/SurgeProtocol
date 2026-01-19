@@ -1,0 +1,327 @@
+{
+  "character_id": "chen_wei",
+  "dialogue_pools": {
+    "greeting_stranger": {
+      "pool_id": "chen_greeting_stranger",
+      "conditions": {
+        "relationship_stage": "stranger",
+        "relationship_range": [0, 2]
+      },
+      "lines": [
+        {
+          "id": "chen_greeting_stranger_01",
+          "text": "Job's on the board. Standard rates. Questions?",
+          "voice_file": "chen_greeting_stranger_01.wav",
+          "emotion": "professional_distance",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_greeting_stranger_02",
+          "text": "New courier. Prove yourself. Everyone starts somewhere.",
+          "voice_file": "chen_greeting_stranger_02.wav",
+          "emotion": "sizing_up",
+          "weight": 1.0
+        }
+      ]
+    },
+    "greeting_acquaintance": {
+      "pool_id": "chen_greeting_acquaintance",
+      "conditions": {
+        "relationship_stage": "acquaintance",
+        "relationship_range": [3, 5]
+      },
+      "lines": [
+        {
+          "id": "chen_greeting_acquaint_01",
+          "text": "Back again. Good. Consistent couriers are valuable.",
+          "voice_file": "chen_greeting_acquaint_01.wav",
+          "emotion": "approving",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_greeting_acquaint_02",
+          "text": "Heard you completed that run. Competent. We need competent.",
+          "voice_file": "chen_greeting_acquaint_02.wav",
+          "emotion": "recognition",
+          "weight": 1.0
+        }
+      ]
+    },
+    "greeting_familiar": {
+      "pool_id": "chen_greeting_familiar",
+      "conditions": {
+        "relationship_stage": "familiar",
+        "relationship_range": [6, 8]
+      },
+      "lines": [
+        {
+          "id": "chen_greeting_familiar_01",
+          "text": "Morning. Coffee's fresh. Help yourself-you've earned it.",
+          "voice_file": "chen_greeting_familiar_01.wav",
+          "emotion": "warmth",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_greeting_familiar_02",
+          "text": "Got a job that needs your particular... approach. Interested?",
+          "voice_file": "chen_greeting_familiar_02.wav",
+          "emotion": "trust",
+          "weight": 1.0
+        }
+      ]
+    },
+    "greeting_trusted": {
+      "pool_id": "chen_greeting_trusted",
+      "conditions": {
+        "relationship_stage": "trusted",
+        "relationship_range": [9, 12]
+      },
+      "lines": [
+        {
+          "id": "chen_greeting_trusted_01",
+          "text": "Close the door. This one's off the books. You understand?",
+          "voice_file": "chen_greeting_trusted_01.wav",
+          "emotion": "conspiratorial_trust",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_greeting_trusted_02",
+          "text": "I've been doing this long enough to spot talent. You have it. Don't waste it.",
+          "voice_file": "chen_greeting_trusted_02.wav",
+          "emotion": "pride",
+          "weight": 1.0
+        }
+      ]
+    },
+    "greeting_bonded": {
+      "pool_id": "chen_greeting_bonded",
+      "conditions": {
+        "relationship_stage": "bonded",
+        "relationship_range": [13, 100]
+      },
+      "lines": [
+        {
+          "id": "chen_greeting_bonded_01",
+          "text": "Whatever happens today-you're one of mine. That means something.",
+          "voice_file": "chen_greeting_bonded_01.wav",
+          "emotion": "protective_paternal",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_greeting_bonded_02",
+          "text": "I've trained hundreds of couriers. You're in the top ten. Maybe five.",
+          "voice_file": "chen_greeting_bonded_02.wav",
+          "emotion": "proud_mentor",
+          "weight": 1.0
+        }
+      ]
+    },
+    "humanity_high": {
+      "pool_id": "chen_humanity_high",
+      "conditions": {
+        "humanity_range": [80, 100]
+      },
+      "lines": [
+        {
+          "id": "chen_humanity_high_01",
+          "text": "You're doing it right, kid. Keeping yourself whole.",
+          "voice_file": "chen_humanity_high_01.wav",
+          "emotion": "approving",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_humanity_high_02",
+          "text": "Maybe you'll be different. Maybe you'll make it out.",
+          "voice_file": "chen_humanity_high_02.wav",
+          "emotion": "hopeful",
+          "weight": 1.0
+        }
+      ]
+    },
+    "humanity_mid": {
+      "pool_id": "chen_humanity_mid",
+      "conditions": {
+        "humanity_range": [60, 79]
+      },
+      "lines": [
+        {
+          "id": "chen_humanity_mid_01",
+          "text": "How much chrome you running now? Don't answer. Just... pace yourself.",
+          "voice_file": "chen_humanity_mid_01.wav",
+          "emotion": "concerned",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_humanity_mid_02",
+          "text": "Every upgrade, you lose a little. Make sure it's worth it.",
+          "voice_file": "chen_humanity_mid_02.wav",
+          "emotion": "warning",
+          "weight": 1.0
+        }
+      ]
+    },
+    "humanity_low": {
+      "pool_id": "chen_humanity_low",
+      "conditions": {
+        "humanity_range": [40, 59]
+      },
+      "lines": [
+        {
+          "id": "chen_humanity_low_01",
+          "text": "You're losing yourself, kid. I've seen this before.",
+          "voice_file": "chen_humanity_low_01.wav",
+          "emotion": "direct_concern",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_humanity_low_02",
+          "text": "You remind me of her. Before the end.",
+          "voice_file": "chen_humanity_low_02.wav",
+          "emotion": "grief_surfacing",
+          "weight": 1.0,
+          "conditions": {
+            "flag_required": "KNOWS_CHEN_DAUGHTER_FATE"
+          }
+        }
+      ]
+    },
+    "humanity_critical": {
+      "pool_id": "chen_humanity_critical",
+      "conditions": {
+        "humanity_range": [0, 39]
+      },
+      "lines": [
+        {
+          "id": "chen_humanity_critical_01",
+          "text": "It's too late, isn't it? You're already more Algorithm than person.",
+          "voice_file": "chen_humanity_critical_01.wav",
+          "emotion": "resignation",
+          "weight": 1.0
+        },
+        {
+          "id": "chen_humanity_critical_02",
+          "text": "I couldn't save her. I can't save you either.",
+          "voice_file": "chen_humanity_critical_02.wav",
+          "emotion": "grief",
+          "weight": 1.0
+        }
+      ]
+    },
+    "tier_early": {
+      "pool_id": "chen_tier_early",
+      "conditions": {
+        "tier_range": [0, 2]
+      },
+      "lines": [
+        {
+          "id": "chen_tier_early_01",
+          "text": "First hundred runs are the hardest. After that, it's routine until it kills you.",
+          "voice_file": "chen_tier_early_01.wav",
+          "emotion": "pragmatic_encouragement",
+          "weight": 1.0
+        }
+      ]
+    },
+    "tier_mid": {
+      "pool_id": "chen_tier_mid",
+      "conditions": {
+        "tier_range": [3, 5]
+      },
+      "lines": [
+        {
+          "id": "chen_tier_mid_01",
+          "text": "You're making a name for yourself.",
+          "voice_file": "chen_tier_mid_01.wav",
+          "emotion": "respect_growing",
+          "weight": 1.0
+        }
+      ]
+    },
+    "tier_high": {
+      "pool_id": "chen_tier_high",
+      "conditions": {
+        "tier_range": [6, 8]
+      },
+      "lines": [
+        {
+          "id": "chen_tier_high_01",
+          "text": "I was Tier 7. Thought I was invincible.",
+          "voice_file": "chen_tier_high_01.wav",
+          "emotion": "awe_mixed_worry",
+          "weight": 1.0
+        }
+      ]
+    },
+    "tier_endgame": {
+      "pool_id": "chen_tier_endgame",
+      "conditions": {
+        "tier_range": [9, 10]
+      },
+      "lines": [
+        {
+          "id": "chen_tier_endgame_01",
+          "text": "You made it. Few do. Hope it was worth the price.",
+          "voice_file": "chen_tier_endgame_01.wav",
+          "emotion": "pride_and_grief",
+          "weight": 1.0
+        }
+      ]
+    },
+    "flag_reactions": {
+      "pool_id": "chen_flag_reactions",
+      "lines": [
+        {
+          "id": "chen_flag_killed_first",
+          "text": "Heard about what happened. It changes you, taking a life. Don't let it make you cold.",
+          "voice_file": "chen_flag_killed_first.wav",
+          "emotion": "understanding",
+          "weight": 1.0,
+          "conditions": {
+            "flag_required": "KILLED_FIRST_PERSON"
+          }
+        },
+        {
+          "id": "chen_flag_cortical_stack",
+          "text": "A cortical stack. That's the big one. You ever wonder who wakes up after that surgery?",
+          "voice_file": "chen_flag_cortical_stack.wav",
+          "emotion": "serious_warning",
+          "weight": 1.0,
+          "conditions": {
+            "flag_required": "TIER_6_SPEC_CHOSEN"
+          }
+        },
+        {
+          "id": "chen_flag_ghost_network",
+          "text": "The Ghost Network contacted you? Good. They're one of the few fighting back.",
+          "voice_file": "chen_flag_ghost_network.wav",
+          "emotion": "subtle_approval",
+          "weight": 1.0,
+          "conditions": {
+            "flags_required": ["MET_ROGUE_NETWORK"],
+            "relationship_min": 60
+          }
+        },
+        {
+          "id": "chen_flag_spared_rival",
+          "text": "You had a chance to eliminate competition, didn't take it. That's humanity, kid.",
+          "voice_file": "chen_flag_spared_rival.wav",
+          "emotion": "approving",
+          "weight": 1.0,
+          "conditions": {
+            "flag_required": "SPARED_RIVAL"
+          }
+        },
+        {
+          "id": "chen_flag_rosa_romance",
+          "text": "Rosa's good people. You two are good for each other.",
+          "voice_file": "chen_flag_rosa_romance.wav",
+          "emotion": "warm_approval",
+          "weight": 1.0,
+          "conditions": {
+            "flag_required": "ROMANCE_ACTIVE"
+          }
+        }
+      ]
+    }
+  }
+}

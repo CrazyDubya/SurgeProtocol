@@ -1,0 +1,170 @@
+{
+  "conversation_id": "chen_first_meeting",
+  "title": "First Meeting with Chen Wei",
+  "trigger_conditions": {
+    "tier_required": 0,
+    "first_time_only": true,
+    "location": "hollows_station"
+  },
+  "participants": ["chen_wei", "player"],
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "You got the look. Desperate, hungry, like you'd run through fire for a hundred credits. Good. You'll need that out there.",
+      "voice_file": "chen_first_meeting_01.wav",
+      "emotion": "sizing_up",
+      "next": "node_2"
+    },
+    {
+      "id": "node_2",
+      "type": "player_response_hub",
+      "responses": [
+        {
+          "id": "response_neutral",
+          "text": "I just need work.",
+          "tone": "neutral",
+          "effects": {
+            "relationship_mod": {"chen_wei": 2}
+          },
+          "next": "node_3"
+        },
+        {
+          "id": "response_defensive",
+          "text": "I'm not desperate.",
+          "tone": "defensive",
+          "effects": {
+            "relationship_mod": {"chen_wei": 0}
+          },
+          "next": "node_4"
+        },
+        {
+          "id": "response_professional",
+          "text": "Tell me about the job.",
+          "tone": "professional",
+          "effects": {
+            "relationship_mod": {"chen_wei": 3}
+          },
+          "next": "node_5"
+        }
+      ]
+    },
+    {
+      "id": "node_3",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Don't we all.",
+      "voice_file": "chen_first_meeting_02.wav",
+      "emotion": "understanding",
+      "next": "node_3b"
+    },
+    {
+      "id": "node_3b",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Got a starter run. Medical supplies to the Night Market. Simple. Try not to die.",
+      "voice_file": "chen_first_meeting_03.wav",
+      "emotion": "professional",
+      "action": {
+        "type": "offer_quest",
+        "quest_id": "tutorial_medical_run"
+      },
+      "next": "end_tutorial_accept"
+    },
+    {
+      "id": "node_4",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Sure you're not.",
+      "voice_file": "chen_first_meeting_04.wav",
+      "emotion": "knowing",
+      "next": "node_4b"
+    },
+    {
+      "id": "node_4b",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Everyone in this line is desperate. That's why we're here. Now, you want work or not?",
+      "voice_file": "chen_first_meeting_05.wav",
+      "emotion": "pragmatic",
+      "next": "node_2"
+    },
+    {
+      "id": "node_5",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Smart. Ask questions, learn the game. Courier work is simple: package A to location B, get paid, don't get killed. The Algorithm handles routing. You just run.",
+      "voice_file": "chen_first_meeting_06.wav",
+      "emotion": "teaching",
+      "next": "node_6"
+    },
+    {
+      "id": "node_6",
+      "type": "player_response_hub",
+      "responses": [
+        {
+          "id": "response_algorithm",
+          "text": "What's the Algorithm?",
+          "tone": "curious",
+          "next": "node_7"
+        },
+        {
+          "id": "response_ready",
+          "text": "I'm ready. Give me the first job.",
+          "tone": "eager",
+          "effects": {
+            "relationship_mod": {"chen_wei": 1}
+          },
+          "next": "node_3b"
+        },
+        {
+          "id": "response_danger",
+          "text": "Don't get killed? How dangerous is this?",
+          "tone": "concerned",
+          "next": "node_8"
+        }
+      ]
+    },
+    {
+      "id": "node_7",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "City's nervous system. Traffic, routes, timing-all optimized. Some folks... integrate with it. Get closer. Chrome in the brain. Better couriers. Less human. Your choice, eventually.",
+      "voice_file": "chen_first_meeting_07.wav",
+      "emotion": "neutral_with_edge",
+      "sets_flag": "HEARD_ALGORITHM_INTRO",
+      "next": "node_6"
+    },
+    {
+      "id": "node_8",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "Dangerous enough. Gangs want your packages. Corpos want your data. Streets want your blood. But you survive, you get good, you rise. Tier 0 to Tier 10. I've seen it done.",
+      "voice_file": "chen_first_meeting_08.wav",
+      "emotion": "honest_warning",
+      "next": "node_8b"
+    },
+    {
+      "id": "node_8b",
+      "type": "npc_line",
+      "speaker": "chen_wei",
+      "text": "I was Tier 7 once. Before the knee.",
+      "voice_file": "chen_first_meeting_09.wav",
+      "emotion": "wistful",
+      "sets_flag": "KNOWS_CHEN_WAS_COURIER",
+      "next": "node_6"
+    },
+    {
+      "id": "end_tutorial_accept",
+      "type": "end_conversation",
+      "sets_flags": ["CHEN_INTRO_COMPLETE", "TUTORIAL_STARTED"],
+      "triggers_quest": "tutorial_medical_run"
+    }
+  ],
+  "metadata": {
+    "word_count": 285,
+    "estimated_duration_seconds": 90,
+    "source_file": "/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md"
+  }
+}
