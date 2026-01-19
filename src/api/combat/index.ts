@@ -6,7 +6,83 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { type AuthVariables } from '../../middleware/auth';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const startCombatSchema = z.object({
+  characterId: z.string().min(1, 'Character ID is required'),
+  encounterId: z.string().min(1, 'Encounter ID is required'),
+  participants: z.array(z.object({
+    id: z.string(),
+    type: z.enum(['player', 'ally']),
+  })).optional().default([]),
+});
+
+const combatActionSchema = z.object({
+  actionId: z.string().min(1, 'Action ID is required'),
+  targetId: z.string().optional(),
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+  }).optional(),
+});
+
+const applyConditionSchema = z.object({
+  targetId: z.string().min(1, 'Target ID is required'),
+  conditionId: z.string().optional(),
+  conditionCode: z.string().optional(),
+  stacks: z.number().int().min(1).max(99).optional().default(1),
+  durationOverride: z.number().int().min(0).optional(),
+  sourceType: z.string().optional(),
+  sourceId: z.string().optional(),
+  sourceName: z.string().optional(),
+}).refine(
+  (data) => data.conditionId || data.conditionCode,
+  { message: 'Either conditionId or conditionCode is required' }
+);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _removeConditionSchema = z.object({
+  targetEntityId: z.string().min(1, 'Target entity ID is required'),
+  conditionId: z.string().min(1, 'Condition ID is required'),
+  removeAllStacks: z.boolean().optional().default(false),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _applyAddictionSchema = z.object({
+  addictionTypeId: z.string().min(1, 'Addiction type ID is required'),
+  initialStage: z.number().int().min(1).max(5).optional().default(1),
+  initialTolerance: z.number().min(0).max(1).optional().default(0),
+  initialDependence: z.number().min(0).max(1).optional().default(0),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _humanityCheckSchema = z.object({
+  checkType: z.enum(['AUGMENT', 'VIOLENCE', 'TRAUMA', 'CHROME', 'LOSS']).optional().default('VIOLENCE'),
+  severity: z.number().int().min(1).max(10).optional().default(1),
+  sourceDescription: z.string().max(500).optional(),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _cyberpsychosisTriggerSchema = z.object({
+  triggerType: z.enum(['HUMANITY_THRESHOLD', 'COMBAT_STRESS', 'TRAUMA', 'AUGMENT_OVERLOAD', 'FORCED']),
+  severity: z.number().int().min(1).max(10).optional().default(5),
+  durationMinutes: z.number().int().min(1).max(60).optional().default(10),
+});
+
+const endCombatSchema = z.object({
+  outcome: z.enum(['VICTORY', 'DEFEAT', 'RETREAT', 'DRAW']),
+  objectivesCompleted: z.array(z.string()).optional().default([]),
+  loot: z.array(z.object({
+    itemId: z.string(),
+    quantity: z.number().int().min(1),
+  })).optional().default([]),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -1523,15 +1599,9 @@ interface CombatInstance {
  * POST /combat/start
  * Initialize a new combat instance from an encounter.
  */
-combatRoutes.post('/start', async (c) => {
+combatRoutes.post('/start', zValidator('json', startCombatSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    encounterId: string;
-    participants?: { id: string; type: 'player' | 'ally' }[];
-  }>();
-
-  const { characterId, encounterId, participants = [] } = body;
+  const { characterId, encounterId, participants } = c.req.valid('json');
 
   // Validate character exists
   const character = await db
@@ -1822,25 +1892,10 @@ combatRoutes.get('/instances/:id', async (c) => {
  * POST /combat/instances/:id/end
  * End a combat instance with a specific outcome.
  */
-combatRoutes.post('/instances/:id/end', async (c) => {
+combatRoutes.post('/instances/:id/end', zValidator('json', endCombatSchema), async (c) => {
   const db = c.env.DB;
   const combatId = c.req.param('id');
-  const body = await c.req.json<{
-    outcome: 'VICTORY' | 'DEFEAT' | 'RETREAT' | 'DRAW';
-    objectivesCompleted?: string[];
-    loot?: { itemId: string; quantity: number }[];
-  }>();
-
-  const { outcome, objectivesCompleted = [], loot = [] } = body;
-
-  // Validate outcome
-  const validOutcomes = ['VICTORY', 'DEFEAT', 'RETREAT', 'DRAW'];
-  if (!validOutcomes.includes(outcome)) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'INVALID_OUTCOME', message: 'Invalid combat outcome' }],
-    }, 400);
-  }
+  const { outcome, objectivesCompleted, loot } = c.req.valid('json');
 
   // Get combat instance (without JOIN for better mock DB compatibility)
   const combat = await db
@@ -2178,16 +2233,10 @@ combatRoutes.get('/instances/:id/available-actions', async (c) => {
  * POST /combat/instances/:id/action
  * Execute a combat action.
  */
-combatRoutes.post('/instances/:id/action', async (c) => {
+combatRoutes.post('/instances/:id/action', zValidator('json', combatActionSchema), async (c) => {
   const db = c.env.DB;
   const combatId = c.req.param('id');
-  const body = await c.req.json<{
-    actionId: string;
-    targetId?: string;
-    position?: { x: number; y: number };
-  }>();
-
-  const { actionId, targetId, position } = body;
+  const { actionId, targetId, position: _position } = c.req.valid('json');
 
   // Get combat instance
   const combat = await db
@@ -2618,45 +2667,10 @@ combatRoutes.post('/instances/:id/resume', async (c) => {
  * POST /combat/instances/:id/apply-condition
  * Apply a condition to a participant in combat.
  */
-combatRoutes.post('/instances/:id/apply-condition', async (c) => {
+combatRoutes.post('/instances/:id/apply-condition', zValidator('json', applyConditionSchema), async (c) => {
   const db = c.env.DB;
   const combatId = c.req.param('id');
-
-  let body: {
-    targetId: string;
-    conditionId?: string;
-    conditionCode?: string;
-    stacks?: number;
-    durationOverride?: number;
-    sourceType?: string;
-    sourceId?: string;
-    sourceName?: string;
-  };
-
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({
-      success: false,
-      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
-    }, 400);
-  }
-
-  const { targetId, conditionId, conditionCode, stacks = 1, durationOverride, sourceType, sourceId, sourceName } = body;
-
-  if (!targetId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_TARGET', message: 'targetId is required' }],
-    }, 400);
-  }
-
-  if (!conditionId && !conditionCode) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_CONDITION', message: 'Either conditionId or conditionCode is required' }],
-    }, 400);
-  }
+  const { targetId, conditionId, conditionCode, stacks, durationOverride, sourceType, sourceId, sourceName } = c.req.valid('json');
 
   // Get combat instance
   const combat = await db

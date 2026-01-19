@@ -79,3 +79,32 @@ export type {
   HumanityChangeSource,
   AugmentHumanityCost,
 } from './character';
+
+// Mission Services
+export {
+  MissionLifecycleService,
+  MissionGeneratorService,
+} from './mission';
+
+export type {
+  MissionStatus,
+  MissionType,
+  MissionDefinition,
+  MissionObjective,
+  ActiveMission,
+  MissionAcceptResult,
+  MissionProgressUpdate,
+  MissionProgressResult,
+  MissionCompletionResult,
+  MissionAbandonResult,
+  MissionDifficulty,
+  MissionTemplate,
+  DifficultyModifiers,
+  ObjectiveTemplate,
+  VariableSlot,
+  RewardFormula,
+  GeneratedMission,
+  GeneratedObjective,
+  GenerationOptions,
+  GenerationResult,
+} from './mission';
