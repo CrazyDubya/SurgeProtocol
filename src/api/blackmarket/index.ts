@@ -1264,3 +1264,38 @@ blackmarketRoutes.post('/heat/reduce', async (c) => {
     }
   });
 });
+
+// =============================================================================
+// PAYMENT TYPES
+// =============================================================================
+
+/**
+ * GET /blackmarket/payment-types
+ * List all black market payment types.
+ */
+blackmarketRoutes.get('/payment-types', async (c) => {
+  const db = c.env.DB;
+
+  const result = await db
+    .prepare('SELECT * FROM black_market_payment_types ORDER BY name ASC')
+    .all();
+
+  const paymentTypes = result.results.map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    isCurrency: row.is_currency === 1,
+    isService: row.is_service === 1,
+    isPermanentLoss: row.is_permanent_loss === 1,
+    humanityImpact: row.humanity_impact,
+    credEquivalentBase: row.cred_equivalent_base,
+    conversionVariable: row.conversion_variable === 1,
+    marketDemandModifier: row.market_demand_modifier,
+  }));
+
+  return c.json({
+    success: true,
+    data: { paymentTypes, total: paymentTypes.length },
+  });
+});

@@ -1176,4 +1176,219 @@ augmentationRoutes.get('/humanity/thresholds', async (c) => {
   });
 });
 
+// =============================================================================
+// AUGMENT SETS
+// =============================================================================
+
+/**
+ * GET /augmentations/sets
+ * List all augment sets and their bonuses.
+ */
+augmentationRoutes.get('/sets', async (c) => {
+  const db = c.env.DB;
+  const manufacturer = c.req.query('manufacturer');
+
+  let query = 'SELECT * FROM augment_sets';
+  const params: string[] = [];
+
+  if (manufacturer) {
+    query += ' WHERE manufacturer = ?';
+    params.push(manufacturer);
+  }
+
+  query += ' ORDER BY name ASC';
+
+  const result = await db.prepare(query).bind(...params).all();
+
+  const sets = result.results.map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    manufacturer: row.manufacturer,
+    requiredAugments: row.required_augments ? JSON.parse(row.required_augments as string) : null,
+    optionalAugments: row.optional_augments ? JSON.parse(row.optional_augments as string) : null,
+    minAugmentsForBonus: row.min_augments_for_bonus,
+    partialBonusEffects: row.partial_bonus_effects ? JSON.parse(row.partial_bonus_effects as string) : null,
+    fullSetBonusEffects: row.full_set_bonus_effects ? JSON.parse(row.full_set_bonus_effects as string) : null,
+    grantsAbilityId: row.grants_ability_id,
+    grantsPassiveId: row.grants_passive_id,
+    requiredTier: row.required_tier,
+    requiredTrackId: row.required_track_id,
+    requiredSpecializationId: row.required_specialization_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+
+  return c.json({
+    success: true,
+    data: { sets, total: sets.length },
+  });
+});
+
+/**
+ * GET /augmentations/sets/:code
+ * Get specific augment set with full details.
+ */
+augmentationRoutes.get('/sets/:code', async (c) => {
+  const db = c.env.DB;
+  const code = c.req.param('code');
+
+  const result = await db
+    .prepare('SELECT * FROM augment_sets WHERE code = ? OR id = ?')
+    .bind(code, code)
+    .first();
+
+  if (!result) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Augment set not found' }],
+    }, 404);
+  }
+
+  // Get the augments that belong to this set
+  const requiredAugments = result.required_augments ? JSON.parse(result.required_augments as string) : [];
+  const optionalAugments = result.optional_augments ? JSON.parse(result.optional_augments as string) : [];
+  const allAugmentIds = [...requiredAugments, ...optionalAugments];
+
+  let augmentDetails: Record<string, unknown>[] = [];
+  if (allAugmentIds.length > 0) {
+    const placeholders = allAugmentIds.map(() => '?').join(',');
+    const augmentsResult = await db
+      .prepare(
+        `SELECT ad.id, ad.code, ad.name, ad.body_location_id, ad.tier
+         FROM augment_definitions ad
+         WHERE ad.id IN (${placeholders})`
+      )
+      .bind(...allAugmentIds)
+      .all();
+    augmentDetails = augmentsResult.results;
+  }
+
+  // Get granted ability/passive details
+  let grantedAbility = null;
+  let grantedPassive = null;
+
+  if (result.grants_ability_id) {
+    const ability = await db
+      .prepare('SELECT id, code, name, description FROM ability_definitions WHERE id = ?')
+      .bind(result.grants_ability_id)
+      .first();
+    grantedAbility = ability;
+  }
+
+  if (result.grants_passive_id) {
+    const passive = await db
+      .prepare('SELECT id, code, name, description FROM passive_definitions WHERE id = ?')
+      .bind(result.grants_passive_id)
+      .first();
+    grantedPassive = passive;
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      set: {
+        id: result.id,
+        code: result.code,
+        name: result.name,
+        description: result.description,
+        manufacturer: result.manufacturer,
+        requiredAugments,
+        optionalAugments,
+        minAugmentsForBonus: result.min_augments_for_bonus,
+        partialBonusEffects: result.partial_bonus_effects ? JSON.parse(result.partial_bonus_effects as string) : null,
+        fullSetBonusEffects: result.full_set_bonus_effects ? JSON.parse(result.full_set_bonus_effects as string) : null,
+        grantsAbilityId: result.grants_ability_id,
+        grantsPassiveId: result.grants_passive_id,
+        requiredTier: result.required_tier,
+        requiredTrackId: result.required_track_id,
+        requiredSpecializationId: result.required_specialization_id,
+      },
+      augmentDetails,
+      grantedAbility,
+      grantedPassive,
+    },
+  });
+});
+
+/**
+ * GET /augmentations/sets/character/active
+ * Get character's active set bonuses based on installed augments.
+ */
+augmentationRoutes.get('/sets/character/active', requireCharacterMiddleware(), async (c) => {
+  const characterId = c.get('characterId')!;
+  const db = c.env.DB;
+
+  // Get character's installed augments
+  const installedAugments = await db
+    .prepare(
+      `SELECT ca.augment_definition_id
+       FROM character_augments ca
+       WHERE ca.character_id = ? AND ca.is_active = 1`
+    )
+    .bind(characterId)
+    .all();
+
+  const installedIds = installedAugments.results.map((a) => a.augment_definition_id as string);
+
+  if (installedIds.length === 0) {
+    return c.json({
+      success: true,
+      data: { activeSets: [], partialSets: [] },
+    });
+  }
+
+  // Get all augment sets
+  const allSets = await db.prepare('SELECT * FROM augment_sets').all();
+
+  const activeSets: Array<{ setCode: string; setName: string; matchedCount: number; totalRequired: number; bonusType: string; effects: unknown }> = [];
+  const partialSets: Array<{ setCode: string; setName: string; matchedCount: number; totalRequired: number; minForBonus: number }> = [];
+
+  for (const set of allSets.results) {
+    const requiredAugments = set.required_augments ? JSON.parse(set.required_augments as string) : [];
+    const optionalAugments = set.optional_augments ? JSON.parse(set.optional_augments as string) : [];
+    const allSetAugments = [...requiredAugments, ...optionalAugments];
+    const minForBonus = set.min_augments_for_bonus as number;
+
+    const matchedCount = allSetAugments.filter((augId: string) => installedIds.includes(augId)).length;
+
+    if (matchedCount >= allSetAugments.length && allSetAugments.length > 0) {
+      // Full set bonus
+      activeSets.push({
+        setCode: set.code as string,
+        setName: set.name as string,
+        matchedCount,
+        totalRequired: allSetAugments.length,
+        bonusType: 'FULL',
+        effects: set.full_set_bonus_effects ? JSON.parse(set.full_set_bonus_effects as string) : null,
+      });
+    } else if (matchedCount >= minForBonus && minForBonus > 0) {
+      // Partial bonus
+      activeSets.push({
+        setCode: set.code as string,
+        setName: set.name as string,
+        matchedCount,
+        totalRequired: allSetAugments.length,
+        bonusType: 'PARTIAL',
+        effects: set.partial_bonus_effects ? JSON.parse(set.partial_bonus_effects as string) : null,
+      });
+    } else if (matchedCount > 0) {
+      // Some progress but no bonus yet
+      partialSets.push({
+        setCode: set.code as string,
+        setName: set.name as string,
+        matchedCount,
+        totalRequired: allSetAugments.length,
+        minForBonus,
+      });
+    }
+  }
+
+  return c.json({
+    success: true,
+    data: { activeSets, partialSets },
+  });
+});
+
 export { augmentationRoutes };

@@ -2625,6 +2625,250 @@ async function processWaitAction(
 }
 
 // =============================================================================
+// COMPLICATION DEFINITIONS
+// =============================================================================
+
+/**
+ * GET /missions/complications
+ * List all complication definitions.
+ */
+missionRoutes.get('/complications', async (c) => {
+  const db = c.env.DB;
+  const complicationType = c.req.query('type');
+  const isCombat = c.req.query('combat');
+
+  let query = 'SELECT * FROM complication_definitions WHERE 1=1';
+  const params: unknown[] = [];
+
+  if (complicationType) {
+    query += ' AND complication_type = ?';
+    params.push(complicationType);
+  }
+  if (isCombat === 'true') {
+    query += ' AND is_combat = 1';
+  } else if (isCombat === 'false') {
+    query += ' AND is_combat = 0';
+  }
+
+  query += ' ORDER BY severity DESC, name ASC';
+
+  const result = await db.prepare(query).bind(...params).all();
+
+  const complications = result.results.map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    announcementText: row.announcement_text,
+    complicationType: row.complication_type,
+    severity: row.severity,
+    isCombat: row.is_combat === 1,
+    isTimed: row.is_timed === 1,
+    triggerCondition: row.trigger_condition,
+    triggerChanceBase: row.trigger_chance_base,
+    triggerChanceModifiers: row.trigger_chance_modifiers ? JSON.parse(row.trigger_chance_modifiers as string) : null,
+    minTier: row.min_tier,
+    maxTier: row.max_tier,
+    timeLimitSeconds: row.time_limit_seconds,
+    canBePrevented: row.can_be_prevented === 1,
+  }));
+
+  return c.json({
+    success: true,
+    data: { complications, total: complications.length },
+  });
+});
+
+/**
+ * GET /missions/complications/:code
+ * Get specific complication definition with full details.
+ */
+missionRoutes.get('/complications/:code', async (c) => {
+  const db = c.env.DB;
+  const code = c.req.param('code');
+
+  const result = await db
+    .prepare('SELECT * FROM complication_definitions WHERE code = ? OR id = ?')
+    .bind(code, code)
+    .first();
+
+  if (!result) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Complication not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      complication: {
+        id: result.id,
+        code: result.code,
+        name: result.name,
+        description: result.description,
+        announcementText: result.announcement_text,
+        complicationType: result.complication_type,
+        severity: result.severity,
+        isCombat: result.is_combat === 1,
+        isTimed: result.is_timed === 1,
+        triggerCondition: result.trigger_condition,
+        triggerChanceBase: result.trigger_chance_base,
+        triggerChanceModifiers: result.trigger_chance_modifiers ? JSON.parse(result.trigger_chance_modifiers as string) : null,
+        minTier: result.min_tier,
+        maxTier: result.max_tier,
+        effectsOnTrigger: result.effects_on_trigger ? JSON.parse(result.effects_on_trigger as string) : null,
+        effectsOnResolve: result.effects_on_resolve ? JSON.parse(result.effects_on_resolve as string) : null,
+        effectsOnFail: result.effects_on_fail ? JSON.parse(result.effects_on_fail as string) : null,
+        timeLimitSeconds: result.time_limit_seconds,
+        resolutionOptions: result.resolution_options ? JSON.parse(result.resolution_options as string) : null,
+        canBePrevented: result.can_be_prevented === 1,
+        preventionMethods: result.prevention_methods ? JSON.parse(result.prevention_methods as string) : null,
+      },
+    },
+  });
+});
+
+// =============================================================================
+// MISSION OBJECTIVES
+// =============================================================================
+
+/**
+ * GET /missions/:missionId/objectives
+ * Get all objectives for a mission definition.
+ */
+missionRoutes.get('/:missionId/objectives', async (c) => {
+  const db = c.env.DB;
+  const missionId = c.req.param('missionId');
+
+  // Verify mission exists
+  const mission = await db
+    .prepare('SELECT id, title FROM mission_definitions WHERE id = ?')
+    .bind(missionId)
+    .first();
+
+  if (!mission) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Mission not found' }],
+    }, 404);
+  }
+
+  const result = await db
+    .prepare(
+      `SELECT mo.*, l.name as target_location_name, n.name as target_npc_name, i.name as target_item_name
+       FROM mission_objectives mo
+       LEFT JOIN locations l ON mo.target_location_id = l.id
+       LEFT JOIN npc_definitions n ON mo.target_npc_id = n.id
+       LEFT JOIN item_definitions i ON mo.target_item_id = i.id
+       WHERE mo.mission_definition_id = ?
+       ORDER BY mo.sequence_order ASC`
+    )
+    .bind(missionId)
+    .all();
+
+  const objectives = result.results.map((row) => ({
+    id: row.id,
+    missionDefinitionId: row.mission_definition_id,
+    sequenceOrder: row.sequence_order,
+    title: row.title,
+    description: row.description,
+    hintText: row.hint_text,
+    completionText: row.completion_text,
+    objectiveType: row.objective_type,
+    isOptional: row.is_optional === 1,
+    isHidden: row.is_hidden === 1,
+    isBonus: row.is_bonus === 1,
+    targetLocationId: row.target_location_id,
+    targetLocationName: row.target_location_name,
+    targetNpcId: row.target_npc_id,
+    targetNpcName: row.target_npc_name,
+    targetItemId: row.target_item_id,
+    targetItemName: row.target_item_name,
+    targetCoordinates: row.target_coordinates ? JSON.parse(row.target_coordinates as string) : null,
+    targetQuantity: row.target_quantity,
+    completionConditions: row.completion_conditions ? JSON.parse(row.completion_conditions as string) : null,
+    failureConditions: row.failure_conditions ? JSON.parse(row.failure_conditions as string) : null,
+    timeLimitSeconds: row.time_limit_seconds,
+    completionXp: row.completion_xp,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      missionId,
+      missionTitle: mission.title,
+      objectives,
+      total: objectives.length,
+      requiredCount: objectives.filter((o) => !o.isOptional).length,
+      optionalCount: objectives.filter((o) => o.isOptional).length,
+    },
+  });
+});
+
+/**
+ * GET /missions/objectives/:objectiveId
+ * Get specific objective with full details.
+ */
+missionRoutes.get('/objectives/:objectiveId', async (c) => {
+  const db = c.env.DB;
+  const objectiveId = c.req.param('objectiveId');
+
+  const result = await db
+    .prepare(
+      `SELECT mo.*, md.title as mission_title, l.name as target_location_name,
+              n.name as target_npc_name, i.name as target_item_name
+       FROM mission_objectives mo
+       JOIN mission_definitions md ON mo.mission_definition_id = md.id
+       LEFT JOIN locations l ON mo.target_location_id = l.id
+       LEFT JOIN npc_definitions n ON mo.target_npc_id = n.id
+       LEFT JOIN item_definitions i ON mo.target_item_id = i.id
+       WHERE mo.id = ?`
+    )
+    .bind(objectiveId)
+    .first();
+
+  if (!result) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Objective not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      objective: {
+        id: result.id,
+        missionDefinitionId: result.mission_definition_id,
+        missionTitle: result.mission_title,
+        sequenceOrder: result.sequence_order,
+        title: result.title,
+        description: result.description,
+        hintText: result.hint_text,
+        completionText: result.completion_text,
+        objectiveType: result.objective_type,
+        isOptional: result.is_optional === 1,
+        isHidden: result.is_hidden === 1,
+        isBonus: result.is_bonus === 1,
+        targetLocationId: result.target_location_id,
+        targetLocationName: result.target_location_name,
+        targetNpcId: result.target_npc_id,
+        targetNpcName: result.target_npc_name,
+        targetItemId: result.target_item_id,
+        targetItemName: result.target_item_name,
+        targetCoordinates: result.target_coordinates ? JSON.parse(result.target_coordinates as string) : null,
+        targetQuantity: result.target_quantity,
+        completionConditions: result.completion_conditions ? JSON.parse(result.completion_conditions as string) : null,
+        failureConditions: result.failure_conditions ? JSON.parse(result.failure_conditions as string) : null,
+        timeLimitSeconds: result.time_limit_seconds,
+        completionXp: result.completion_xp,
+      },
+    },
+  });
+});
+
+// =============================================================================
 // EXPORTED UTILITIES
 // =============================================================================
 // These utilities are exported for admin endpoints and testing
