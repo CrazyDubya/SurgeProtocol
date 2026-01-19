@@ -7,7 +7,131 @@
 
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { authMiddleware, type AuthVariables } from '../../middleware/auth';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const playerSettingsSchema = z.object({
+  // Display
+  resolution: z.string().regex(/^\d+x\d+$/).optional(),
+  fullscreenMode: z.enum(['WINDOWED', 'FULLSCREEN', 'BORDERLESS']).optional(),
+  vsync: z.boolean().optional(),
+  frameRateLimit: z.number().int().min(30).max(240).optional(),
+  brightness: z.number().min(0.5).max(2.0).optional(),
+  gamma: z.number().min(0.5).max(2.0).optional(),
+  // Graphics
+  qualityPreset: z.enum(['LOW', 'MEDIUM', 'HIGH', 'ULTRA', 'CUSTOM']).optional(),
+  textureQuality: z.number().int().min(1).max(4).optional(),
+  shadowQuality: z.number().int().min(0).max(4).optional(),
+  effectsQuality: z.number().int().min(1).max(4).optional(),
+  drawDistance: z.number().int().min(1).max(5).optional(),
+  antialiasing: z.enum(['OFF', 'FXAA', 'SMAA', 'TAA', 'MSAA_2X', 'MSAA_4X']).optional(),
+  // Audio
+  masterVolume: z.number().min(0).max(1).optional(),
+  musicVolume: z.number().min(0).max(1).optional(),
+  sfxVolume: z.number().min(0).max(1).optional(),
+  voiceVolume: z.number().min(0).max(1).optional(),
+  ambientVolume: z.number().min(0).max(1).optional(),
+  // Controls
+  mouseSensitivity: z.number().min(0.1).max(5.0).optional(),
+  invertY: z.boolean().optional(),
+  controllerVibration: z.boolean().optional(),
+  keyBindings: z.record(z.string().min(1).max(50)).optional(),
+  controllerBindings: z.record(z.string().min(1).max(50)).optional(),
+  // Gameplay
+  autoSaveFrequency: z.number().int().min(1).max(60).optional(),
+  difficultyDefault: z.string().max(50).optional(),
+  tutorialEnabled: z.boolean().optional(),
+  hintsEnabled: z.boolean().optional(),
+  subtitlesEnabled: z.boolean().optional(),
+  subtitleSize: z.number().int().min(1).max(4).optional(),
+  // Accessibility
+  colorblindMode: z.enum(['OFF', 'PROTANOPIA', 'DEUTERANOPIA', 'TRITANOPIA']).optional(),
+  screenShake: z.number().min(0).max(1).optional(),
+  motionBlur: z.boolean().optional(),
+  flashReduction: z.boolean().optional(),
+  textToSpeech: z.boolean().optional(),
+  // Language
+  languageUi: z.string().min(2).max(10).optional(),
+  languageAudio: z.string().min(2).max(10).optional(),
+  languageSubtitles: z.string().min(2).max(10).optional(),
+});
+
+const gameConfigSchema = z.object({
+  configKey: z.string().min(1).max(100).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/),
+  configCategory: z.string().max(50).optional(),
+  description: z.string().max(500).optional(),
+  valueType: z.enum(['STRING', 'INTEGER', 'FLOAT', 'BOOLEAN', 'JSON']).optional(),
+  currentValue: z.string().max(1000).optional(),
+  defaultValue: z.string().max(1000).optional(),
+  minValue: z.string().max(50).optional(),
+  maxValue: z.string().max(50).optional(),
+  allowedValues: z.array(z.string().max(100)).optional(),
+  requiresRestart: z.boolean().optional(),
+  isTunable: z.boolean().optional(),
+  abTestEligible: z.boolean().optional(),
+  environmentOverrides: z.record(z.unknown()).optional(),
+  platformOverrides: z.record(z.unknown()).optional(),
+});
+
+const configUpdateSchema = z.object({
+  currentValue: z.string().max(1000).optional(),
+  description: z.string().max(500).optional(),
+  environmentOverrides: z.record(z.unknown()).optional(),
+  platformOverrides: z.record(z.unknown()).optional(),
+});
+
+const difficultySchema = z.object({
+  code: z.string().min(1).max(50).regex(/^[A-Z][A-Z0-9_]*$/),
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  // Combat
+  damageToPlayer: z.number().min(0.1).max(5.0).optional(),
+  damageFromPlayer: z.number().min(0.1).max(5.0).optional(),
+  enemyHealth: z.number().min(0.1).max(5.0).optional(),
+  enemyAccuracy: z.number().min(0.1).max(5.0).optional(),
+  enemyAggression: z.number().min(0.1).max(5.0).optional(),
+  // Economy
+  creditRewards: z.number().min(0.1).max(5.0).optional(),
+  xpRewards: z.number().min(0.1).max(5.0).optional(),
+  lootQuality: z.number().min(0.1).max(5.0).optional(),
+  prices: z.number().min(0.1).max(5.0).optional(),
+  // Survival
+  healingEffectiveness: z.number().min(0.1).max(5.0).optional(),
+  humanityLossRate: z.number().min(0.1).max(5.0).optional(),
+  addictionSeverity: z.number().min(0.1).max(5.0).optional(),
+  // Progression
+  ratingGain: z.number().min(0.1).max(5.0).optional(),
+  ratingLoss: z.number().min(0.1).max(5.0).optional(),
+  // Special
+  permadeath: z.boolean().optional(),
+  ironmanMode: z.boolean().optional(),
+  achievementEligible: z.boolean().optional(),
+});
+
+const localizedStringSchema = z.object({
+  stringKey: z.string().min(1).max(200).regex(/^[a-zA-Z][a-zA-Z0-9_.]*$/),
+  baseText: z.string().min(1).max(5000),
+  category: z.string().max(50).optional(),
+  context: z.string().max(500).optional(),
+  baseLanguage: z.string().min(2).max(10).optional(),
+  basePluralForms: z.record(z.string()).optional(),
+  characterLimit: z.number().int().min(1).max(10000).optional(),
+  hasVariables: z.boolean().optional(),
+  variableDefinitions: z.record(z.unknown()).optional(),
+  isTranslatable: z.boolean().optional(),
+  priority: z.number().int().min(1).max(10).optional(),
+});
+
+const translationSchema = z.object({
+  languageCode: z.string().min(2).max(10),
+  translatedText: z.string().min(1).max(5000),
+  status: z.enum(['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'REJECTED']).optional(),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -166,10 +290,10 @@ settingsRoutes.get('/player', authMiddleware, async (c) => {
 });
 
 // Update current user's settings
-settingsRoutes.put('/player', authMiddleware, async (c) => {
+settingsRoutes.put('/player', authMiddleware, zValidator('json', playerSettingsSchema), async (c) => {
   const { userId } = c.var;
   const db = c.env.DB;
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
   // Get player_id for user
   const player = await db
@@ -236,10 +360,13 @@ settingsRoutes.put('/player', authMiddleware, async (c) => {
       languageSubtitles: 'language_subtitles',
     };
 
+    // Cast body to allow string indexing since we're iterating over known keys
+    const bodyRecord = body as Record<string, unknown>;
+
     for (const [jsKey, dbKey] of Object.entries(fieldMap)) {
-      if (body[jsKey] !== undefined) {
+      if (bodyRecord[jsKey] !== undefined) {
         updates.push(`${dbKey} = ?`);
-        let value = body[jsKey];
+        let value = bodyRecord[jsKey];
         // Handle booleans
         if (typeof value === 'boolean') {
           value = value ? 1 : 0;
@@ -490,13 +617,9 @@ settingsRoutes.get('/config/:key', async (c) => {
 });
 
 // Create new config (admin only typically)
-settingsRoutes.post('/config', authMiddleware, async (c) => {
+settingsRoutes.post('/config', authMiddleware, zValidator('json', gameConfigSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json();
-
-  if (!body.configKey) {
-    throw new HTTPException(400, { message: 'configKey is required' });
-  }
+  const body = c.req.valid('json');
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -541,10 +664,10 @@ settingsRoutes.post('/config', authMiddleware, async (c) => {
 });
 
 // Update config value
-settingsRoutes.put('/config/:key', authMiddleware, async (c) => {
+settingsRoutes.put('/config/:key', authMiddleware, zValidator('json', configUpdateSchema), async (c) => {
   const db = c.env.DB;
   const key = c.req.param('key');
-  const body = await c.req.json();
+  const body = c.req.valid('json');
 
   const existing = await db
     .prepare('SELECT * FROM game_config WHERE config_key = ?')
@@ -742,13 +865,9 @@ settingsRoutes.get('/difficulty/:code', async (c) => {
 });
 
 // Create difficulty definition
-settingsRoutes.post('/difficulty', authMiddleware, async (c) => {
+settingsRoutes.post('/difficulty', authMiddleware, zValidator('json', difficultySchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json();
-
-  if (!body.code || !body.name) {
-    throw new HTTPException(400, { message: 'code and name are required' });
-  }
+  const body = c.req.valid('json');
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -921,13 +1040,9 @@ settingsRoutes.get('/localization/:key', async (c) => {
 });
 
 // Create localized string
-settingsRoutes.post('/localization', authMiddleware, async (c) => {
+settingsRoutes.post('/localization', authMiddleware, zValidator('json', localizedStringSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json();
-
-  if (!body.stringKey || !body.baseText) {
-    throw new HTTPException(400, { message: 'stringKey and baseText are required' });
-  }
+  const body = c.req.valid('json');
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -968,15 +1083,11 @@ settingsRoutes.post('/localization', authMiddleware, async (c) => {
 });
 
 // Add/update translation
-settingsRoutes.put('/localization/:key/translate', authMiddleware, async (c) => {
+settingsRoutes.put('/localization/:key/translate', authMiddleware, zValidator('json', translationSchema), async (c) => {
   const { userId } = c.var;
   const db = c.env.DB;
   const key = c.req.param('key');
-  const body = await c.req.json();
-
-  if (!body.languageCode || !body.translatedText) {
-    throw new HTTPException(400, { message: 'languageCode and translatedText are required' });
-  }
+  const body = c.req.valid('json');
 
   const str = await db
     .prepare('SELECT id FROM localized_strings WHERE string_key = ?')

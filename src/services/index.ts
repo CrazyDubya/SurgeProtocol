@@ -52,3 +52,30 @@ export type {
   DecayConfig,
   InactiveCharacter,
 } from './rating';
+
+// Character Services
+export {
+  CharacterProgressionService,
+  StatelessProgressionCalculator,
+  HumanityService,
+  StatelessHumanityCalculator,
+  TIER_DEFINITIONS,
+  HUMANITY_THRESHOLDS,
+} from './character';
+
+export type {
+  TierDefinition,
+  XPGainResult,
+  XPGainSource,
+  XPMultiplier,
+  TierAdvancementResult,
+  AttributeAllocation,
+  AllocationResult,
+  ProgressionSnapshot,
+  HumanityThreshold,
+  ThresholdEffect,
+  HumanitySnapshot,
+  HumanityChangeResult,
+  HumanityChangeSource,
+  AugmentHumanityCost,
+} from './character';
