@@ -6,6 +6,8 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { CFTokenService, TOKEN_PROFILES } from '../services/cf-token-service';
 import {
   TOKEN_EXPIRY,
@@ -21,6 +23,28 @@ type Bindings = {
   CACHE: KVNamespace;
 };
 
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const sessionTokenSchema = z.object({
+  userId: z.string().min(1, 'userId is required').max(50),
+  sessionId: z.string().min(1, 'sessionId is required').max(100),
+});
+
+const combatTokenSchema = z.object({
+  combatId: z.string().min(1, 'combatId is required').max(50),
+  characterId: z.string().min(1, 'characterId is required').max(50),
+});
+
+const verifyTokenSchema = z.object({
+  token: z.string().min(1, 'token is required').max(500),
+});
+
+const tokenIdParamSchema = z.object({
+  tokenId: z.string().min(1).max(100),
+});
+
 export const tokenRoutes = new Hono<{ Bindings: Bindings }>();
 
 /**
@@ -29,21 +53,8 @@ export const tokenRoutes = new Hono<{ Bindings: Bindings }>();
  * Creates a scoped session token for game operations.
  * Used when a player authenticates to get a limited-scope token.
  */
-tokenRoutes.post('/session', async (c) => {
-  const { userId, sessionId } = await c.req.json<{
-    userId: string;
-    sessionId: string;
-  }>();
-
-  if (!userId || !sessionId) {
-    return c.json(
-      {
-        success: false,
-        errors: [{ code: 'MISSING_PARAMS', message: 'userId and sessionId are required' }],
-      },
-      400
-    );
-  }
+tokenRoutes.post('/session', zValidator('json', sessionTokenSchema), async (c) => {
+  const { userId, sessionId } = c.req.valid('json');
 
   const tokenService = new CFTokenService({
     masterToken: c.env.CF_MASTER_TOKEN,
@@ -91,21 +102,8 @@ tokenRoutes.post('/session', async (c) => {
  * Creates a combat-specific token with Durable Object access.
  * Shorter lifetime, minimal permissions.
  */
-tokenRoutes.post('/combat', async (c) => {
-  const { combatId, characterId } = await c.req.json<{
-    combatId: string;
-    characterId: string;
-  }>();
-
-  if (!combatId || !characterId) {
-    return c.json(
-      {
-        success: false,
-        errors: [{ code: 'MISSING_PARAMS', message: 'combatId and characterId are required' }],
-      },
-      400
-    );
-  }
+tokenRoutes.post('/combat', zValidator('json', combatTokenSchema), async (c) => {
+  const { combatId, characterId: _characterId } = c.req.valid('json');
 
   const tokenService = new CFTokenService({
     masterToken: c.env.CF_MASTER_TOKEN,
@@ -143,8 +141,8 @@ tokenRoutes.post('/combat', async (c) => {
  *
  * Revokes a token by ID.
  */
-tokenRoutes.delete('/:tokenId', async (c) => {
-  const tokenId = c.req.param('tokenId');
+tokenRoutes.delete('/:tokenId', zValidator('param', tokenIdParamSchema), async (c) => {
+  const { tokenId } = c.req.valid('param');
 
   const tokenService = new CFTokenService({
     masterToken: c.env.CF_MASTER_TOKEN,
@@ -175,18 +173,8 @@ tokenRoutes.delete('/:tokenId', async (c) => {
  *
  * Verifies if a token is still valid.
  */
-tokenRoutes.post('/verify', async (c) => {
-  const { token } = await c.req.json<{ token: string }>();
-
-  if (!token) {
-    return c.json(
-      {
-        success: false,
-        errors: [{ code: 'MISSING_TOKEN', message: 'token is required' }],
-      },
-      400
-    );
-  }
+tokenRoutes.post('/verify', zValidator('json', verifyTokenSchema), async (c) => {
+  const { token } = c.req.valid('json');
 
   const tokenService = new CFTokenService({
     masterToken: c.env.CF_MASTER_TOKEN,
