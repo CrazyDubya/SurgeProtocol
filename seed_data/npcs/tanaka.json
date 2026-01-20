@@ -1,0 +1,253 @@
+{
+  "$schema": "../schemas/npcs.schema.json",
+  "version": "1.0.0",
+  "description": "Dr. Yuki Tanaka - Augmentation Specialist / Underground Physician",
+  "npc": {
+    "code": "TANAKA_DOCTOR",
+    "name": "Dr. Yuki Tanaka",
+    "full_name": "Dr. Yuki Tanaka, M.D., Ph.D.",
+    "aliases": ["Doc Tanaka", "The Sculptor"],
+    "callsign": "The Sculptor",
+    "age": 41,
+    "gender": "FEMALE",
+    "pronouns": "she/her",
+    "occupation": "Augmentation Specialist / Underground Physician",
+    "faction": null,
+    "faction_notes": "Independent (carefully neutral, secret Ghost Network ally)",
+    "tier_appearance": { "min": 1, "max": 10 },
+    "location": "The Hollows - Gray Clinic",
+    "is_quest_giver": true,
+    "is_merchant": true,
+    "merchant_type": "AUGMENTATIONS",
+    "is_romance": false,
+    "can_die": true,
+    "death_condition": "Player betrays Ghost Network to corporations",
+
+    "physical_description": {
+      "appearance": "Petite build, precise movements, prematurely silver hair (genetics, not age) kept in tight bun. Tired but alert eyes behind smart glasses. Surgical scars on hands from early-career accident.",
+      "style_aesthetic": "Clinical but humane—white coat over practical clothing, always immaculately clean despite the dingy clinic. Wears a jade bracelet (her mother's, only non-functional item).",
+      "visible_augmentations": [
+        {
+          "type": "enhanced_eyes",
+          "location": "eyes",
+          "description": "Multilevel magnification, thermal, diagnostic overlays",
+          "functional": true
+        },
+        {
+          "type": "neural_coprocessor",
+          "location": "temple",
+          "description": "Visible port at temple for neural co-processor",
+          "functional": true
+        },
+        {
+          "type": "steady_hand_augments",
+          "location": "hands",
+          "description": "Fingers achieve inhuman surgical precision",
+          "functional": true
+        }
+      ],
+      "augmentation_notes": "Moderate chrome but all functional, nothing cosmetic"
+    },
+
+    "voice_profile": {
+      "type": "Mezzo-soprano, calm, professional",
+      "accent": "Slight Japanese accent on certain words, mostly neutral",
+      "speech_patterns": [
+        "Medical terminology mixed with layman's explanations",
+        "Asks permission before touching",
+        "Always discloses risks",
+        "Precise diction, measured pace"
+      ],
+      "emotion_range": {
+        "default": "Clinical professionalism",
+        "medical_explanations": "Calm, educational",
+        "warnings": "Protective concern",
+        "past_mistakes": "Haunted grief",
+        "tier_9_plea": "Desperate vulnerability"
+      },
+      "line_count_estimate": {
+        "total": 375,
+        "medical_consultations": 150,
+        "backstory_reveals": 50,
+        "tier_specific_warnings": 80,
+        "conditional_reactions": 70,
+        "endgame_dialogue": 30
+      }
+    },
+
+    "personality": {
+      "core_traits": ["Brilliant", "Ethical within her framework", "Protective of bodily autonomy", "Haunted by past mistakes"],
+      "motivations": ["Help people navigate augmentation safely", "Atone for corporate past", "Preserve human agency"],
+      "fears": ["Becoming complicit in dehumanization again", "Algorithm discovering her Ghost Network ties", "Losing patients to chrome psychosis"],
+      "values": ["Informed consent", "Harm reduction", "Medical ethics (even in illegal context)", "Human dignity"]
+    },
+
+    "background": {
+      "origin_story": "Former lead researcher for Nakamura Cybernetics (major corpo). Designed bleeding-edge neural augments. Quit after discovering the company was pushing addictive upgrade cycles and suppressing divergence syndrome data. Went underground 8 years ago.",
+      "current_situation": "Runs a 'gray clinic' in The Hollows—not illegal, but not corpo-approved either. Performs augmentations, removals, and emergency medical care for couriers and street folk who can't afford corporate clinics. Works 16-hour days.",
+      "connection_to_player": "Becomes your augmentation specialist, performs surgeries, counsels on chrome choices. Represents informed consent vs. corpo exploitation.",
+      "former_employer": "Nakamura Cybernetics",
+      "years_underground": 8
+    },
+
+    "secrets": [
+      {
+        "id": "nakamura_access",
+        "description": "Still has Nakamura corporate access codes (uses for research, could be imprisoned if discovered)",
+        "unlock_relationship": 60,
+        "unlock_tier": 5
+      },
+      {
+        "id": "ghost_network_ally",
+        "description": "Actively helps Ghost Network disable Algorithm tracking in augments",
+        "unlock_relationship": 70,
+        "unlock_tier": 6
+      },
+      {
+        "id": "upload_truth",
+        "description": "Has complete data on consciousness upload failures—knows Ascension kills the original",
+        "unlock_relationship": 80,
+        "unlock_tier": 7
+      },
+      {
+        "id": "anti_algorithm_augment",
+        "description": "Performed experimental augment on herself that prevents Algorithm integration (risky, could fail)",
+        "unlock_relationship": 70,
+        "unlock_tier": 6
+      }
+    ],
+
+    "relationships": {
+      "allies": [
+        { "npc_code": "GHOST_NETWORK", "relationship": "Secret medical ally" },
+        { "npc_code": "ROSA_MECHANIC", "relationship": "Mutual patient referrals" },
+        { "npc_code": "CHEN_DISPATCHER", "relationship": "Long professional relationship" }
+      ],
+      "enemies": [
+        { "faction": "NAKAMURA_CYBERNETICS", "reason": "Former employer, knows their crimes" }
+      ],
+      "past_connections": [
+        {
+          "name": "Dr. Kenji Yamamoto",
+          "relationship": "Former colleague",
+          "status": "Lost to Algorithm integration",
+          "story_significance": "Tragic case study for cortical stack warnings"
+        }
+      ]
+    },
+
+    "story_role": {
+      "narrative_function": ["Augmentation Specialist", "Ethical Guide", "Information Source", "Tragic Prophet"],
+      "arc_summary": "Guides player through augmentation decisions while revealing the true costs. Her past corpo experience provides insider knowledge. Represents attempting to use technology ethically in a system designed for exploitation.",
+      "key_story_beats": [
+        { "tier": 1, "description": "First augmentation, establishes informed consent process" },
+        { "tier": 3, "description": "Installs cochlear implant (Algorithm integration), warns about surveillance" },
+        { "tier": 5, "description": "Opens up about Nakamura past if player asks questions" },
+        { "tier": 6, "description": "Cortical stack installation—most serious procedure, maximum warnings" },
+        { "tier": 7, "description": "Can reveal upload truth if player has high relationship" },
+        { "tier": 9, "description": "Final conversation about Ascension—begs player not to do it" }
+      ],
+      "possible_outcomes": [
+        { "condition": "default", "outcome": "Always survives" },
+        { "condition": "player_betrays_ghost_network", "outcome": "Can be killed by corporations" }
+      ]
+    },
+
+    "dialogue_flags": {
+      "required_for_reveal": [
+        { "flag": "KNOWS_TANAKA_KENJI_STORY", "sets_at": "tier_6_cortical_warning" },
+        { "flag": "KNOWS_UPLOAD_TRUTH", "sets_at": "tier_7_upload_revelation" }
+      ],
+      "relationship_thresholds": {
+        "ask_about_past": 40,
+        "full_backstory": 60,
+        "augment_removal": 50,
+        "upload_truth": 70
+      }
+    },
+
+    "humanity_reactions": [
+      { "range": [80, 100], "tone": "pleased", "sample": "You're staying human. Good. That's harder than it looks." },
+      { "range": [60, 79], "tone": "concerned", "sample": "Your humanity metrics are declining. Let's talk about slowing augmentation." },
+      { "range": [40, 59], "tone": "worried", "sample": "You're approaching critical thresholds. I recommend therapy and meditation to stabilize." },
+      { "range": [0, 39], "tone": "alarmed", "sample": "You're in danger of chrome psychosis. We need to discuss augment removal or you'll hollow out." }
+    ],
+
+    "chrome_load_reactions": [
+      { "augment_count": 3, "reaction": "You're building up fast. Remember to integrate each one before adding more." },
+      { "augment_count": 5, "reaction": "That's a significant augment load. How are you feeling? Any identity disturbances?" },
+      { "augment_count": 7, "reaction": "This is getting dangerous. Your body is more machine than meat now. Are you still making these choices, or is the Algorithm?" }
+    ],
+
+    "services": {
+      "augmentation": {
+        "available": true,
+        "types": ["neural", "ocular", "muscular", "skeletal", "dermal", "cochlear", "cortical"],
+        "always_discloses_risks": true,
+        "humanity_warnings": true
+      },
+      "augment_removal": {
+        "available": true,
+        "unlock_relationship": 50,
+        "restores_humanity": true,
+        "has_consequences": true
+      },
+      "medical_care": {
+        "available": true,
+        "types": ["emergency", "post_surgery", "chrome_psychosis_treatment"]
+      }
+    }
+  },
+
+  "greetings": [
+    {
+      "id": "first_meeting",
+      "tier_range": [1, 1],
+      "relationship_range": [0, 100],
+      "text": "You're here for augmentation. Good. Sit down, let's talk about what you actually need versus what you think you need."
+    },
+    {
+      "id": "professional_1",
+      "tier_range": [1, 10],
+      "relationship_range": [0, 30],
+      "text": "Back for an upgrade? Let's review your current augment load first."
+    },
+    {
+      "id": "professional_2",
+      "tier_range": [1, 10],
+      "relationship_range": [0, 30],
+      "text": "How are you feeling? Any glitches, phantom sensations, intrusive thoughts?"
+    },
+    {
+      "id": "trusted_1",
+      "tier_range": [1, 10],
+      "relationship_range": [31, 70],
+      "text": "Good to see you. How's the chrome treating you?"
+    },
+    {
+      "id": "trusted_2",
+      "tier_range": [1, 10],
+      "relationship_range": [31, 70],
+      "text": "Come in. Want tea before we discuss the procedure?"
+    },
+    {
+      "id": "confidant_1",
+      "tier_range": [1, 10],
+      "relationship_range": [71, 100],
+      "text": "You look troubled. Is it the augments, or something else?"
+    },
+    {
+      "id": "confidant_2",
+      "tier_range": [1, 10],
+      "relationship_range": [71, 100],
+      "text": "I've been researching your case. I have some concerns..."
+    },
+    {
+      "id": "heavy_chrome",
+      "tier_range": [1, 10],
+      "relationship_range": [0, 100],
+      "condition": "humanity < 50",
+      "text": "[concerned scan of your augments] We need to talk about your humanity metrics. Sit down."
+    }
+  ]
+}

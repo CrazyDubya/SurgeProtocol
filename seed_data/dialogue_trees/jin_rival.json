@@ -1,0 +1,927 @@
+{
+  "$schema": "../schemas/dialogue_tree.schema.json",
+  "version": "1.0.0",
+  "description": "Jin Park dialogue trees - Rival courier with branching ally/enemy paths",
+  "npc_code": "JIN_RIVAL",
+  "dialogue_trees": [
+    {
+      "id": "jin_first_meeting",
+      "name": "First Meeting - Fresh Meat Race",
+      "trigger": {
+        "type": "QUEST_START",
+        "conditions": { "quest": "fresh_meat", "tier_max": 1 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Yo, you're the new meat? Cute. You got no chrome, no speed, no chance.",
+          "emotion": "COCKY",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[bouncing on enhanced leg actuators] This is my route. Stay in your lane, fresh.",
+          "emotion": "CONFIDENT",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_challenge",
+              "text": "We'll see about that.",
+              "tone": "CONFIDENT",
+              "relationship_change": 5,
+              "next": "challenge_node"
+            },
+            {
+              "id": "opt_humble",
+              "text": "I'm just here to work.",
+              "tone": "HUMBLE",
+              "next": "humble_node"
+            },
+            {
+              "id": "opt_aggressive",
+              "text": "Get out of my way.",
+              "tone": "AGGRESSIVE",
+              "relationship_change": -5,
+              "next": "aggressive_node"
+            }
+          ]
+        },
+        {
+          "id": "challenge_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[grins] Oh for real? Got some fire in you. Alright, fresh. Let's see if you can back it up. Race to the Night Market. First one there gets the contract.",
+          "emotion": "IMPRESSED",
+          "actions": [{ "type": "START_RACE", "target": "fresh_meat_race" }],
+          "next": "end"
+        },
+        {
+          "id": "humble_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Nah, you ain't 'just here to work.' Nobody is. You want what I want—credits, chrome, respect. Difference is, I'm not lying to myself about it.",
+          "emotion": "KNOWING",
+          "next": "humble_2"
+        },
+        {
+          "id": "humble_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[shrugs] Whatever. Race or step aside. I got a delivery to make.",
+          "emotion": "DISMISSIVE",
+          "actions": [{ "type": "START_RACE", "target": "fresh_meat_race" }],
+          "next": "end"
+        },
+        {
+          "id": "aggressive_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[eyes narrow, stops bouncing] You want trouble? 'Cause I can do trouble. Got more chrome than you got attitude, fresh.",
+          "emotion": "THREATENING",
+          "next": "aggressive_2"
+        },
+        {
+          "id": "aggressive_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[forces a smile] But nah. We'll settle this on the route. Better hope you're faster than your mouth.",
+          "emotion": "COLD",
+          "actions": [{ "type": "START_RACE", "target": "fresh_meat_race" }],
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_crash_choice",
+      "name": "Post-Race - Jin Crashes",
+      "trigger": {
+        "type": "QUEST_EVENT",
+        "conditions": { "quest": "fresh_meat", "event": "jin_crashes" }
+      },
+      "priority": 100,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "STAGE_DIRECTION",
+          "text": "[Jin lies against a wall, leg sparking, augment clearly damaged]",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[pained, trying to hide it] Tch. Just a glitch. I'm fine. Go finish your delivery, fresh.",
+          "emotion": "DEFENSIVE",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_help",
+              "text": "You're not fine. Let me help.",
+              "tone": "COMPASSIONATE",
+              "next": "help_node"
+            },
+            {
+              "id": "opt_leave",
+              "text": "[Continue to delivery point]",
+              "tone": "PRAGMATIC",
+              "next": "leave_node"
+            },
+            {
+              "id": "opt_mock",
+              "text": "Not so fast now, are you?",
+              "tone": "MOCKING",
+              "relationship_change": -15,
+              "next": "mock_node"
+            }
+          ]
+        },
+        {
+          "id": "help_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[surprised, guard dropping] Why? We're competing. You should... you should leave me.",
+          "emotion": "CONFUSED",
+          "next": "help_2"
+        },
+        {
+          "id": "help_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_human",
+              "text": "Competition isn't worth someone getting hurt.",
+              "tone": "SINCERE",
+              "relationship_change": 20,
+              "next": "help_accept"
+            },
+            {
+              "id": "opt_practical",
+              "text": "I'll still beat you next time. Come on.",
+              "tone": "PRACTICAL",
+              "relationship_change": 15,
+              "next": "help_accept"
+            }
+          ]
+        },
+        {
+          "id": "help_accept",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[quiet, mask dropping] ...Thanks. Seriously. I... I owe you.",
+          "emotion": "GENUINE",
+          "sets_flag": "JIN_ALLY",
+          "sets_flag_2": "HELPED_JIN",
+          "actions": [{ "type": "COMPLETE_OBJECTIVE", "target": "helped_jin" }],
+          "next": "help_3"
+        },
+        {
+          "id": "help_3",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[as you help them up] Name's Jin. Jin Park. I was wrong about you, fresh. Maybe you're alright.",
+          "emotion": "GRATEFUL",
+          "next": "end"
+        },
+        {
+          "id": "leave_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[watches you go, expression hardening] Yeah. That's how it works, right? Every courier for themselves.",
+          "emotion": "BITTER",
+          "sets_flag": "JIN_NEUTRAL",
+          "next": "leave_2"
+        },
+        {
+          "id": "leave_2",
+          "type": "STAGE_DIRECTION",
+          "text": "[Jin struggles to their feet alone as you disappear into the streets]",
+          "next": "end"
+        },
+        {
+          "id": "mock_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[anger flashing through pain] You think this is funny? I'll remember this. I'll remember you.",
+          "emotion": "COLD",
+          "sets_flag": "JIN_ENEMY",
+          "sets_flag_2": "ABANDONED_JIN",
+          "next": "mock_2"
+        },
+        {
+          "id": "mock_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[quieter, dangerous] Watch your back, fresh. This ain't over.",
+          "emotion": "THREATENING",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_greeting_ally",
+      "name": "Ally Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "flag": "JIN_ALLY", "relationship_min": 20 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Yo! Good timing. I was just about to hit this route. Wanna race? For old times' sake?",
+          "emotion": "FRIENDLY",
+          "variants": [
+            { "text": "Hey, it's you! What's good?", "weight": 40 },
+            { "text": "There's my favorite competition. Keeping busy?", "weight": 30 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "Know any good routes?", "next": "route_tips" },
+            { "text": "How's the debt situation?", "condition": { "flag": "KNOWS_JIN_DEBT" }, "next": "debt_check" },
+            { "text": "Just passing through.", "next": "end" }
+          ]
+        },
+        {
+          "id": "route_tips",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[grins] For you? Yeah, I got something. There's a shortcut through the maintenance tunnels near Red Harbor. Most couriers don't know about it. Watch for the drone patrols though.",
+          "emotion": "HELPFUL",
+          "actions": [{ "type": "UNLOCK_INTEL", "target": "red_harbor_shortcut" }],
+          "next": "hub"
+        },
+        {
+          "id": "debt_check",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[deflects] It's... fine. I'm handling it. Just gotta run more contracts, right? Ha. 화이팅.",
+          "emotion": "STRAINED",
+          "condition": { "not_flag": "JIN_DEBT_RESOLVED" },
+          "next": "hub"
+        }
+      ]
+    },
+    {
+      "id": "jin_greeting_enemy",
+      "name": "Enemy Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "flag": "JIN_ENEMY" }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "You. I remember what you did. Or didn't do. Watch your back.",
+          "emotion": "COLD",
+          "variants": [
+            { "text": "[crosses arms] Got nerve showing your face.", "weight": 50 }
+          ],
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_apologize",
+              "text": "Look, about before... I'm sorry.",
+              "tone": "APOLOGETIC",
+              "next": "apology_node"
+            },
+            {
+              "id": "opt_defensive",
+              "text": "I did what I had to do.",
+              "tone": "DEFENSIVE",
+              "relationship_change": -5,
+              "next": "defensive_node"
+            },
+            {
+              "id": "opt_threaten",
+              "text": "Keep talking. See what happens.",
+              "tone": "THREATENING",
+              "relationship_change": -10,
+              "next": "threaten_node"
+            }
+          ]
+        },
+        {
+          "id": "apology_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[surprised, then bitter] Sorry don't fix a fried augment. Sorry don't pay for the repairs. Sorry don't give back the time I lost while you took my contracts.",
+          "emotion": "BITTER",
+          "next": "apology_2"
+        },
+        {
+          "id": "apology_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[quieter] But... whatever. Maybe if you actually do something to make up for it someday, I'll believe it.",
+          "emotion": "GRUDGING",
+          "relationship_change": 5,
+          "next": "end"
+        },
+        {
+          "id": "defensive_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Sure you did. Just like I'm doing what I have to do now. [walks away] Stay out of my routes.",
+          "emotion": "COLD",
+          "actions": [{ "type": "SET_COMPLICATION", "target": "jin_rival_sabotage" }],
+          "next": "end"
+        },
+        {
+          "id": "threaten_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[enhanced legs tense, ready to run or fight] You really want to go there? Fine. This stops being professional.",
+          "emotion": "DANGEROUS",
+          "sets_flag": "JIN_HOSTILE",
+          "actions": [{ "type": "SET_COMPLICATION", "target": "jin_ambush_threat" }],
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_debt_crisis",
+      "name": "Debt Crisis - Side Quest Start",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": {
+          "tier_min": 4,
+          "flag": "JIN_ALLY",
+          "relationship_min": 30,
+          "not_flag": "JIN_DEBT_QUEST_STARTED"
+        }
+      },
+      "priority": 80,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[finds you in private, different from usual] Hey. I... I need to talk. In person. It's urgent.",
+          "emotion": "SCARED",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[voice cracking] They're coming for my chrome. Nakamura. All of it. I can't... I can't make the payments anymore.",
+          "emotion": "DESPERATE",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_listen",
+              "text": "Slow down. Tell me everything.",
+              "tone": "SUPPORTIVE",
+              "relationship_change": 5,
+              "next": "explain_node"
+            },
+            {
+              "id": "opt_question",
+              "text": "How much do you owe?",
+              "tone": "DIRECT",
+              "next": "explain_node"
+            }
+          ]
+        },
+        {
+          "id": "explain_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Twenty thousand. To Nakamura's augment division. I got the loan when I was twenty—corpo program for promising couriers. 'Invest in yourself,' they said. 'Move up the tiers.'",
+          "emotion": "BITTER",
+          "next": "explain_2"
+        },
+        {
+          "id": "explain_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[laughs bitterly] The interest never stops. I've been running double shifts for years and I barely cover minimum payments. Now they've called the loan. If I miss the deadline...",
+          "emotion": "SCARED",
+          "sets_flag": "KNOWS_JIN_DEBT",
+          "next": "explain_3"
+        },
+        {
+          "id": "explain_3",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[voice breaks] They'll repossess my chrome. All of it. I'll be back to baseline. Back to Tier 0. Six years of work, gone. 아이고...",
+          "emotion": "DEVASTATED",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_money",
+              "text": "How much do you need right now?",
+              "tone": "HELPFUL",
+              "next": "money_node"
+            },
+            {
+              "id": "opt_negotiate",
+              "text": "Maybe we can negotiate with Nakamura.",
+              "tone": "STRATEGIC",
+              "next": "negotiate_node"
+            },
+            {
+              "id": "opt_disappear",
+              "text": "What if you disappeared? Went off-grid?",
+              "tone": "CONSPIRATORIAL",
+              "condition": { "flag": "KNOWS_GHOST_NETWORK" },
+              "next": "disappear_node"
+            },
+            {
+              "id": "opt_sorry",
+              "text": "I'm sorry, Jin. I can't help with this.",
+              "tone": "APOLOGETIC",
+              "relationship_change": -10,
+              "next": "refuse_node"
+            }
+          ]
+        },
+        {
+          "id": "money_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Five thousand. That would buy me time—restructure the loan, get them off my back. But that's... that's a lot to ask. I know.",
+          "emotion": "HOPEFUL",
+          "next": "money_2"
+        },
+        {
+          "id": "money_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_pay",
+              "text": "I'll cover it.",
+              "tone": "GENEROUS",
+              "condition": { "credits_min": 5000 },
+              "relationship_change": 30,
+              "next": "pay_node"
+            },
+            {
+              "id": "opt_partial",
+              "text": "I can help, but not that much.",
+              "tone": "HONEST",
+              "next": "partial_node"
+            },
+            {
+              "id": "opt_other",
+              "text": "Let's find another way.",
+              "tone": "DETERMINED",
+              "next": "node_4"
+            }
+          ]
+        },
+        {
+          "id": "pay_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[stunned] You... for real? Why would you... [tears up] I don't know how to... thank you. I'll pay you back. Every credit. I swear.",
+          "emotion": "OVERWHELMED",
+          "sets_flag": "JIN_DEBT_RESOLVED",
+          "sets_flag_2": "JIN_CHROME_SAVED",
+          "sets_flag_3": "SAVED_JIN_DEBT",
+          "actions": [
+            { "type": "DEDUCT_CREDITS", "amount": 5000 },
+            { "type": "COMPLETE_QUEST", "target": "jin_debt_crisis" }
+          ],
+          "next": "pay_2"
+        },
+        {
+          "id": "pay_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "You saved my life. Twice now. I don't know how to repay that. But I won't forget. Ever.",
+          "emotion": "GRATEFUL",
+          "next": "end"
+        },
+        {
+          "id": "partial_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[nods, still grateful] Every credit helps. We can figure out the rest together. You're... you're a real one.",
+          "emotion": "HOPEFUL",
+          "sets_flag": "JIN_DEBT_QUEST_STARTED",
+          "actions": [{ "type": "START_QUEST", "target": "jin_debt_crisis" }],
+          "next": "end"
+        },
+        {
+          "id": "negotiate_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Negotiate? With Nakamura? [bitter laugh] They don't negotiate with Tier 3 couriers. But... maybe if someone talked to the right people. Someone with connections.",
+          "emotion": "SKEPTICAL",
+          "sets_flag": "JIN_DEBT_QUEST_STARTED",
+          "actions": [{ "type": "START_QUEST", "target": "jin_debt_crisis", "objective": "negotiate" }],
+          "next": "end"
+        },
+        {
+          "id": "disappear_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[surprised] Off-grid? Like... the Ghost Network? I've heard rumors but... could I even do that? Leave everything behind?",
+          "emotion": "UNCERTAIN",
+          "next": "disappear_2"
+        },
+        {
+          "id": "disappear_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[considers it] No more Algorithm. No more debt collectors. But also no more... anything. Everyone I know. [pause] Maybe that's not such a bad trade.",
+          "emotion": "CONFLICTED",
+          "sets_flag": "JIN_DEBT_QUEST_STARTED",
+          "actions": [{ "type": "START_QUEST", "target": "jin_debt_crisis", "objective": "ghost_network" }],
+          "next": "end"
+        },
+        {
+          "id": "refuse_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[mask goes up, hurt hidden behind coldness] Yeah. No, I get it. Everyone's got their own problems, right?",
+          "emotion": "COLD",
+          "next": "refuse_2"
+        },
+        {
+          "id": "refuse_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[turns away] I'll figure it out. I always do.",
+          "emotion": "RESIGNED",
+          "sets_flag": "JIN_DEBT_ABANDONED",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_post_save",
+      "name": "After Debt Resolved - Deep Gratitude",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "flag": "JIN_CHROME_SAVED", "relationship_min": 60 }
+      },
+      "priority": 50,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "You saved my life. Twice. First the crash, now this. I don't know how to repay that. But I won't forget. Ever.",
+          "emotion": "SINCERE",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[serious] Whatever you need, whenever you need it—I'm there. No questions. That's a promise.",
+          "emotion": "LOYAL",
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "I need backup on a job.", "next": "backup" },
+            { "text": "Got any intel?", "next": "intel" },
+            { "text": "How are you doing?", "next": "personal" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        },
+        {
+          "id": "backup",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[cracks knuckles] Say the word. I got your six. What's the job?",
+          "emotion": "EAGER",
+          "actions": [{ "type": "RECRUIT_ALLY", "target": "jin_combat_support" }],
+          "next": "end"
+        },
+        {
+          "id": "intel",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[grins] You know I always got my ear to the ground. What do you need to know? Routes? Rivals? Gang activity?",
+          "emotion": "HELPFUL",
+          "next": "hub"
+        },
+        {
+          "id": "personal",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[genuine smile] Better. Really better. Nakamura's off my back, I'm rebuilding savings, and I got someone who actually gives a damn about me. That last part's the rarest.",
+          "emotion": "HAPPY",
+          "relationship_change": 5,
+          "next": "hub"
+        }
+      ]
+    },
+    {
+      "id": "jin_went_rogue",
+      "name": "Jin in Interstitial (Went Rogue Path)",
+      "trigger": {
+        "type": "LOCATION",
+        "conditions": { "location": "interstitial", "flag": "JIN_WENT_ROGUE", "tier_min": 7 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[emerges from shadows, looking different—calmer, less chrome-obsessed] Well, well. Look who found the quiet places.",
+          "emotion": "PEACEFUL",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "No Algorithm out here. No debt collectors. No ratings to chase. Just... quiet. And community. The Ghost Network takes care of its own.",
+          "emotion": "CONTENT",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_miss",
+              "text": "Do you miss the life?",
+              "tone": "CURIOUS",
+              "next": "miss_node"
+            },
+            {
+              "id": "opt_happy",
+              "text": "You look happy.",
+              "tone": "WARM",
+              "relationship_change": 5,
+              "next": "happy_node"
+            }
+          ]
+        },
+        {
+          "id": "miss_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[considers] The adrenaline, sometimes. The speed. But the stress? The debt? The constant competition? Nah. I don't miss that at all.",
+          "emotion": "REFLECTIVE",
+          "next": "end_node"
+        },
+        {
+          "id": "happy_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[soft smile] I am. For the first time since I started running. Thanks to you. You showed me there was another way.",
+          "emotion": "GRATEFUL",
+          "next": "end_node"
+        },
+        {
+          "id": "end_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "If you ever want to leave the Algorithm behind... you know where to find me. 화이팅, friend.",
+          "emotion": "WARM",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_chrome_repossessed",
+      "name": "Jin After Chrome Repossession",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "flag": "JIN_CHROME_REPOSSESSED", "tier_min": 5 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "STAGE_DIRECTION",
+          "text": "[Jin sits alone in a corner of a cheap bar. Baseline. No chrome. Eyes hollow.]",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[doesn't look up] Hey. Heard you made Tier... whatever. Good for you.",
+          "emotion": "FLAT",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[bitter laugh] Look at me. Back to nothing. Six years. All that work. And now I'm slower than a fresh meat with no chrome.",
+          "emotion": "BROKEN",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_help_now",
+              "text": "It's not too late. I can help you get back on your feet.",
+              "tone": "COMPASSIONATE",
+              "next": "help_late"
+            },
+            {
+              "id": "opt_sorry",
+              "text": "I'm sorry, Jin.",
+              "tone": "SYMPATHETIC",
+              "next": "sorry_node"
+            }
+          ]
+        },
+        {
+          "id": "help_late",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[looks up, something sparking in dead eyes] ...Why? I'm nobody now. Can't help you. Can't race. Can't do anything.",
+          "emotion": "CONFUSED",
+          "next": "help_late_2"
+        },
+        {
+          "id": "help_late_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[voice cracking] You really mean that? After everything?",
+          "emotion": "HOPEFUL",
+          "relationship_change": 15,
+          "actions": [{ "type": "START_QUEST", "target": "jin_recovery" }],
+          "next": "end"
+        },
+        {
+          "id": "sorry_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[shrugs] Yeah. Me too.",
+          "emotion": "EMPTY",
+          "next": "sorry_2"
+        },
+        {
+          "id": "sorry_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[turns back to drink] Go run your routes. One of us should make it.",
+          "emotion": "RESIGNED",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_corpo_loan_warning",
+      "name": "Warning About Corpo Loans (Ally Path)",
+      "trigger": {
+        "type": "CONDITION",
+        "conditions": { "flag": "JIN_ALLY", "flag_2": "CORPO_LOAN_OFFERED" }
+      },
+      "priority": 60,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[catches your arm] Yo, hold up. I heard you're looking at a corpo loan for chrome.",
+          "emotion": "URGENT",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "Don't do what I did. Stay independent. The corpo loan looks good at first—easy credits, premium chrome, fast tier advancement. But the interest... it never stops.",
+          "emotion": "EARNEST",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[bitter] You're never free. You work twice as hard just to stay afloat, and one bad month? They come for everything. Trust me. I know.",
+          "emotion": "WARNING",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_thanks",
+              "text": "Thanks for the warning. I'll be careful.",
+              "tone": "APPRECIATIVE",
+              "relationship_change": 5,
+              "next": "thanks_node"
+            },
+            {
+              "id": "opt_need",
+              "text": "I need the edge to compete.",
+              "tone": "DETERMINED",
+              "next": "need_node"
+            }
+          ]
+        },
+        {
+          "id": "thanks_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[relieved] Good. Save up, buy your chrome outright, even if it takes longer. Your future self will thank you.",
+          "emotion": "SUPPORTIVE",
+          "next": "end"
+        },
+        {
+          "id": "need_node",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[sighs] That's what I told myself. Just... read the fine print. Every word. And remember: if it sounds too good, it's a trap.",
+          "emotion": "RESIGNED",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "jin_gathering_appearance",
+      "name": "Tier 9 Gathering - Ally Appears",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "tier": 9, "flag": "JIN_ALLY", "flag_2": "JIN_CHROME_SAVED", "event": "tier_9_gathering" }
+      },
+      "priority": 150,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[finds you at the Gathering, now Tier 7, chrome upgraded but tasteful] Look at us. Tier 9. Never thought I'd see it.",
+          "emotion": "PROUD",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "I wouldn't be here without you. Literally. I'd be baseline, broken, or worse. Whatever happens next... I wanted you to know that.",
+          "emotion": "SINCERE",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "JIN_RIVAL",
+          "text": "[grins] So. Ready to change the world? 'Cause I got your back. Whatever you decide.",
+          "emotion": "LOYAL",
+          "relationship_change": 10,
+          "next": "end"
+        }
+      ]
+    }
+  ],
+  "relationship_stages": {
+    "-50-0": { "name": "Enemy", "description": "Hostile, may sabotage or ambush" },
+    "1-20": { "name": "Rival", "description": "Competitive, respects skill, mild antagonism" },
+    "21-50": { "name": "Friendly Rival", "description": "Competitive but friendly, shares tips" },
+    "51-80": { "name": "Ally", "description": "Loyal, will help in missions, shares secrets" },
+    "81-100": { "name": "True Friend", "description": "Ride or die, no questions asked" }
+  },
+  "voice_acting_notes": {
+    "voice_type": "Androgynous, mid-20s, energetic",
+    "accent": "American (West Coast), slight Korean inflection",
+    "default_emotion": "Cocky, fast-talking",
+    "key_emotions": ["Cocky", "Vulnerable", "Grateful", "Bitter", "Loyal"],
+    "speech_patterns": [
+      "Fast-talking, sentences run together",
+      "Slang: 'Yo', 'Nah', 'For real?', 'No cap'",
+      "Korean phrases when stressed: '아이고' (aigo), '화이팅' (hwaiting)",
+      "Humor to deflect vulnerability"
+    ],
+    "estimated_line_count": 225
+  }
+}
