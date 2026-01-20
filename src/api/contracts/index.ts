@@ -29,6 +29,67 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const signContractSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  contract_definition_id: z.string().min(1, 'contract_definition_id is required'),
+  issuer_npc_id: z.string().optional(),
+  issuer_faction_id: z.string().optional(),
+  custom_terms: z.record(z.unknown()).optional(),
+  auto_renew: z.boolean().default(false),
+});
+
+const terminateContractSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  reason: z.string().optional(),
+});
+
+const renewContractSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+});
+
+const createDebtSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  creditor_type: z.enum(['BANK', 'FACTION', 'NPC', 'LOAN_SHARK', 'CORPORATE']),
+  creditor_name: z.string().min(1, 'creditor_name is required'),
+  creditor_npc_id: z.string().optional(),
+  creditor_faction_id: z.string().optional(),
+  original_amount: z.number().positive('original_amount must be positive'),
+  interest_rate: z.number().min(0).max(100).default(0),
+  interest_type: z.enum(['SIMPLE', 'COMPOUND', 'NONE']).default('SIMPLE'),
+  payment_frequency: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY']).default('MONTHLY'),
+  minimum_payment: z.number().positive('minimum_payment must be positive'),
+  maturity_months: z.number().int().positive().optional(),
+  collateral: z.object({
+    type: z.string(),
+    item_id: z.string().optional(),
+    value: z.number().positive(),
+  }).optional(),
+  can_work_off: z.boolean().default(false),
+});
+
+const debtPaymentSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  amount: z.number().positive('amount must be positive'),
+  payment_source: z.enum(['WALLET', 'BANK', 'CRYPTO']).default('WALLET'),
+});
+
+const negotiateDebtSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  request: z.enum(['lower_rate', 'lower_minimum', 'extend_maturity', 'partial_forgiveness']),
+  proposed_value: z.number().optional(),
+});
+
+const paginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -725,23 +786,8 @@ contractRoutes.get('/:id', async (c) => {
  * POST /contracts/character/sign
  * Sign a new contract
  */
-contractRoutes.post('/character/sign', async (c) => {
-  const body = await c.req.json<{
-    characterId: string;
-    contract_definition_id: string;
-    issuer_npc_id?: string;
-    issuer_faction_id?: string;
-    custom_terms?: object;
-    auto_renew?: boolean;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (!body.contract_definition_id) {
-    return c.json({ success: false, errors: [{ message: 'contract_definition_id is required' }] }, 400);
-  }
+contractRoutes.post('/character/sign', zValidator('json', signContractSchema), async (c) => {
+  const body = c.req.valid('json');
 
   // Get contract definition
   const definition = await c.env.DB.prepare(
@@ -929,16 +975,9 @@ contractRoutes.get('/character/:id', async (c) => {
  * POST /contracts/character/:id/terminate
  * Early termination of contract
  */
-contractRoutes.post('/character/:id/terminate', async (c) => {
+contractRoutes.post('/character/:id/terminate', zValidator('json', terminateContractSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    reason?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get contract with definition
   const result = await c.env.DB.prepare(`
@@ -981,13 +1020,9 @@ contractRoutes.post('/character/:id/terminate', async (c) => {
  * POST /contracts/character/:id/renew
  * Renew contract
  */
-contractRoutes.post('/character/:id/renew', async (c) => {
+contractRoutes.post('/character/:id/renew', zValidator('json', renewContractSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{ characterId: string }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get contract with definition
   const result = await c.env.DB.prepare(`
@@ -1048,34 +1083,8 @@ contractRoutes.post('/character/:id/renew', async (c) => {
  * POST /contracts/debts
  * Create new debt
  */
-contractRoutes.post('/debts', async (c) => {
-  const body = await c.req.json<{
-    characterId: string;
-    creditor_type: string;
-    creditor_name: string;
-    creditor_npc_id?: string;
-    creditor_faction_id?: string;
-    original_amount: number;
-    interest_rate: number;
-    interest_type?: string;
-    payment_frequency?: string;
-    minimum_payment: number;
-    maturity_months?: number;
-    collateral?: { type: string; item_id?: string; value: number };
-    can_work_off?: boolean;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (!body.creditor_type || !body.creditor_name) {
-    return c.json({ success: false, errors: [{ message: 'creditor_type and creditor_name are required' }] }, 400);
-  }
-
-  if (typeof body.original_amount !== 'number' || body.original_amount <= 0) {
-    return c.json({ success: false, errors: [{ message: 'original_amount must be a positive number' }] }, 400);
-  }
+contractRoutes.post('/debts', zValidator('json', createDebtSchema), async (c) => {
+  const body = c.req.valid('json');
 
   const now = new Date();
   const nowStr = now.toISOString();
@@ -1146,20 +1155,9 @@ contractRoutes.post('/debts', async (c) => {
  * POST /contracts/debts/:id/payment
  * Make a debt payment
  */
-contractRoutes.post('/debts/:id/payment', async (c) => {
+contractRoutes.post('/debts/:id/payment', zValidator('json', debtPaymentSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    amount: number;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (typeof body.amount !== 'number' || body.amount <= 0) {
-    return c.json({ success: false, errors: [{ message: 'amount must be a positive number' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get debt
   const debt = await c.env.DB.prepare(
@@ -1274,17 +1272,9 @@ contractRoutes.get('/debts/:id/schedule', async (c) => {
  * POST /contracts/debts/:id/negotiate
  * Negotiate debt terms
  */
-contractRoutes.post('/debts/:id/negotiate', async (c) => {
+contractRoutes.post('/debts/:id/negotiate', zValidator('json', negotiateDebtSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    request: 'lower_rate' | 'lower_minimum' | 'extend_maturity' | 'partial_forgiveness';
-    proposed_value?: number;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get debt
   const debt = await c.env.DB.prepare(

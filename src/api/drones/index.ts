@@ -30,6 +30,78 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const acquireDroneSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  drone_definition_id: z.string().min(1, 'drone_definition_id is required'),
+  custom_name: z.string().max(100).optional(),
+});
+
+const customizeDroneSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  custom_name: z.string().max(100).optional(),
+  paint_scheme: z.record(z.unknown()).optional(),
+  equipped_weapons: z.array(z.record(z.unknown())).optional(),
+  equipped_tools: z.array(z.record(z.unknown())).optional(),
+});
+
+const deployDroneSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  deploy: z.boolean(),
+  autonomous: z.boolean().default(false),
+  location_id: z.string().optional(),
+});
+
+const repairDroneSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  repair_amount: z.number().positive().optional(),
+  full_repair: z.boolean().optional(),
+}).refine(
+  data => data.repair_amount !== undefined || data.full_repair !== undefined,
+  { message: 'Must specify repair_amount or full_repair' }
+);
+
+const deleteDroneSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+});
+
+const createSwarmSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  name: z.string().min(1, 'name is required').max(100),
+  drone_ids: z.array(z.string()).min(2, 'At least 2 drones required for a swarm'),
+  swarm_type: z.string().optional(),
+  formation: z.string().optional(),
+});
+
+const updateSwarmSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  name: z.string().min(1).max(100).optional(),
+  formation: z.string().optional(),
+  add_drone_ids: z.array(z.string()).optional(),
+  remove_drone_ids: z.array(z.string()).optional(),
+});
+
+const deploySwarmSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  location_id: z.string().optional(),
+});
+
+const recallSwarmSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+});
+
+const swarmCommandSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  command: z.enum(['formation', 'behavior', 'target']),
+  value: z.string(),
+  target_type: z.string().optional(),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -736,20 +808,8 @@ droneRoutes.get('/:id', async (c) => {
  * POST /drones/character/acquire
  * Purchase/acquire a new drone
  */
-droneRoutes.post('/character/acquire', async (c) => {
-  const body = await c.req.json<{
-    characterId: string;
-    drone_definition_id: string;
-    custom_name?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (!body.drone_definition_id) {
-    return c.json({ success: false, errors: [{ message: 'drone_definition_id is required' }] }, 400);
-  }
+droneRoutes.post('/character/acquire', zValidator('json', acquireDroneSchema), async (c) => {
+  const body = c.req.valid('json');
 
   // Verify drone definition exists
   const definition = await c.env.DB.prepare(
@@ -799,19 +859,9 @@ droneRoutes.post('/character/acquire', async (c) => {
  * PATCH /drones/character/:id
  * Customize drone (name, paint, loadout)
  */
-droneRoutes.patch('/character/:id', async (c) => {
+droneRoutes.patch('/character/:id', zValidator('json', customizeDroneSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    custom_name?: string;
-    paint_scheme?: object;
-    equipped_weapons?: object[];
-    equipped_tools?: object[];
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify drone ownership
   const drone = await c.env.DB.prepare(
@@ -871,22 +921,9 @@ droneRoutes.patch('/character/:id', async (c) => {
  * POST /drones/character/:id/deploy
  * Deploy or recall a drone
  */
-droneRoutes.post('/character/:id/deploy', async (c) => {
+droneRoutes.post('/character/:id/deploy', zValidator('json', deployDroneSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    deploy: boolean;
-    autonomous?: boolean;
-    location_id?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (typeof body.deploy !== 'boolean') {
-    return c.json({ success: false, errors: [{ message: 'deploy must be a boolean' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify drone ownership and state
   const drone = await c.env.DB.prepare(
@@ -939,17 +976,9 @@ droneRoutes.post('/character/:id/deploy', async (c) => {
  * POST /drones/character/:id/repair
  * Repair drone damage
  */
-droneRoutes.post('/character/:id/repair', async (c) => {
+droneRoutes.post('/character/:id/repair', zValidator('json', repairDroneSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    repair_amount?: number;
-    full_repair?: boolean;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get drone with definition
   const result = await c.env.DB.prepare(`
@@ -1044,26 +1073,8 @@ droneRoutes.delete('/character/:id', async (c) => {
  * POST /drones/swarms
  * Create a new swarm
  */
-droneRoutes.post('/swarms', async (c) => {
-  const body = await c.req.json<{
-    characterId: string;
-    name: string;
-    drone_ids: string[];
-    swarm_type?: string;
-    formation?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (!body.name) {
-    return c.json({ success: false, errors: [{ message: 'name is required' }] }, 400);
-  }
-
-  if (!body.drone_ids || body.drone_ids.length < 2) {
-    return c.json({ success: false, errors: [{ message: 'At least 2 drones required for a swarm' }] }, 400);
-  }
+droneRoutes.post('/swarms', zValidator('json', createSwarmSchema), async (c) => {
+  const body = c.req.valid('json');
 
   // Verify all drones belong to character and are swarm-compatible
   const drones = await c.env.DB.prepare(`
@@ -1140,19 +1151,9 @@ droneRoutes.post('/swarms', async (c) => {
  * PATCH /drones/swarms/:id
  * Update swarm configuration
  */
-droneRoutes.patch('/swarms/:id', async (c) => {
+droneRoutes.patch('/swarms/:id', zValidator('json', updateSwarmSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    name?: string;
-    formation?: string;
-    add_drone_ids?: string[];
-    remove_drone_ids?: string[];
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify swarm ownership
   const swarm = await c.env.DB.prepare(
@@ -1229,16 +1230,9 @@ droneRoutes.patch('/swarms/:id', async (c) => {
  * POST /drones/swarms/:id/deploy
  * Deploy entire swarm
  */
-droneRoutes.post('/swarms/:id/deploy', async (c) => {
+droneRoutes.post('/swarms/:id/deploy', zValidator('json', deploySwarmSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    location_id?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify swarm ownership
   const swarm = await c.env.DB.prepare(
@@ -1282,13 +1276,9 @@ droneRoutes.post('/swarms/:id/deploy', async (c) => {
  * POST /drones/swarms/:id/recall
  * Recall entire swarm
  */
-droneRoutes.post('/swarms/:id/recall', async (c) => {
+droneRoutes.post('/swarms/:id/recall', zValidator('json', recallSwarmSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{ characterId: string }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify swarm ownership
   const swarm = await c.env.DB.prepare(
@@ -1332,22 +1322,9 @@ droneRoutes.post('/swarms/:id/recall', async (c) => {
  * POST /drones/swarms/:id/command
  * Issue swarm command
  */
-droneRoutes.post('/swarms/:id/command', async (c) => {
+droneRoutes.post('/swarms/:id/command', zValidator('json', swarmCommandSchema), async (c) => {
   const { id } = c.req.param();
-  const body = await c.req.json<{
-    characterId: string;
-    command: 'formation' | 'behavior' | 'target';
-    value: string;
-    target_type?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({ success: false, errors: [{ message: 'characterId is required' }] }, 400);
-  }
-
-  if (!['formation', 'behavior', 'target'].includes(body.command)) {
-    return c.json({ success: false, errors: [{ message: 'Invalid command type' }] }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify swarm ownership
   const swarm = await c.env.DB.prepare(

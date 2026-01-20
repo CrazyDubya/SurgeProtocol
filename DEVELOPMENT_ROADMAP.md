@@ -111,16 +111,23 @@ Source: `surge-narrative/01_CHARACTERS/tier_0_npcs/`, `surge-narrative/05_WORLD_
 ### Week 2: Economy, NPCs & Early Game Content
 
 #### Day 8 (Mon) - Economy Service & Validation
-- [ ] Implement `src/services/economy/transaction.ts`
+- [x] Implement `src/services/economy/transaction.ts`
   - Credit transfers
   - Purchase validation
   - Debt management
-- [ ] Implement `src/services/economy/vendor.ts`
+- [x] Implement `src/services/economy/vendor.ts`
   - Vendor inventory management
   - Price calculation with reputation modifiers
-- [ ] Add Zod validation to `src/api/contracts/index.ts`
-- [ ] Add Zod validation to `src/api/drones/index.ts`
-- [ ] Write tests for economy service
+- [x] Add Zod validation to `src/api/contracts/index.ts`
+- [x] Add Zod validation to `src/api/drones/index.ts`
+- [x] Write tests for economy service
+
+**Day 8 Results:**
+- Created TransactionService with credit transfers, purchases, sales, debt management
+- Created VendorService with buy/sell operations, haggle system, tier access checks
+- Added 7 Zod schemas to contracts API (sign, terminate, renew, debt CRUD, negotiate)
+- Added 10 Zod schemas to drones API (acquire, customize, deploy, repair, swarm ops)
+- Created 33 economy service unit tests (all passing)
 
 #### Day 9 (Tue) - Seed Data: Tier 1-3 NPCs
 Source: `surge-narrative/01_CHARACTERS/tier_1-3_npcs/`
