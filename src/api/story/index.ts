@@ -33,6 +33,42 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const triggerEventSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  choiceMade: z.string().optional(),
+});
+
+const completeEventSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  outcome: z.string().optional(),
+});
+
+const setFlagSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  flagCode: z.string().min(1, 'flagCode is required'),
+  value: z.unknown().optional(),
+  isPermanent: z.boolean().optional(),
+});
+
+const advanceProgressSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  arcId: z.string().optional(),
+  chapterId: z.string().optional(),
+});
+
+const completeArcSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  arcId: z.string().min(1, 'arcId is required'),
+  endingId: z.string().optional(),
+  forceComplete: z.boolean().optional().default(false),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -675,20 +711,10 @@ storyRoutes.get('/events/:id', async (c) => {
  * POST /story/events/:id/trigger
  * Trigger a narrative event
  */
-storyRoutes.post('/events/:id/trigger', async (c) => {
+storyRoutes.post('/events/:id/trigger', zValidator('json', triggerEventSchema), async (c) => {
   const eventId = c.req.param('id');
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    choiceMade?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_PARAM', message: 'characterId is required' }],
-    }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get event
   const event = await db.prepare(`SELECT * FROM narrative_events WHERE id = ?`).bind(eventId).first<NarrativeEvent>();
@@ -755,20 +781,10 @@ storyRoutes.post('/events/:id/trigger', async (c) => {
  * POST /story/events/:id/complete
  * Mark event as completed
  */
-storyRoutes.post('/events/:id/complete', async (c) => {
+storyRoutes.post('/events/:id/complete', zValidator('json', completeEventSchema), async (c) => {
   const eventId = c.req.param('id');
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    outcome?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_PARAM', message: 'characterId is required' }],
-    }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Find the triggered event
   const history = await db.prepare(`
@@ -893,21 +909,9 @@ storyRoutes.get('/flags/character', async (c) => {
  * POST /story/flags/character
  * Set a story flag
  */
-storyRoutes.post('/flags/character', async (c) => {
+storyRoutes.post('/flags/character', zValidator('json', setFlagSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    flagCode: string;
-    value: unknown;
-    isPermanent?: boolean;
-  }>();
-
-  if (!body.characterId || !body.flagCode) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_PARAM', message: 'characterId and flagCode are required' }],
-    }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Verify flag exists
   const flagDef = await db.prepare(`SELECT * FROM story_flags WHERE code = ?`).bind(body.flagCode).first<StoryFlag>();
@@ -1040,20 +1044,9 @@ storyRoutes.get('/progress', async (c) => {
  * POST /story/progress/advance
  * Advance to next chapter
  */
-storyRoutes.post('/progress/advance', async (c) => {
+storyRoutes.post('/progress/advance', zValidator('json', advanceProgressSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    arcId?: string;
-    chapterId?: string;
-  }>();
-
-  if (!body.characterId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_PARAM', message: 'characterId is required' }],
-    }, 400);
-  }
+  const body = c.req.valid('json');
 
   // Get current state
   let state = await db.prepare(`
@@ -1157,20 +1150,9 @@ storyRoutes.post('/progress/advance', async (c) => {
  * POST /story/progress/complete-arc
  * Complete a story arc
  */
-storyRoutes.post('/progress/complete-arc', async (c) => {
+storyRoutes.post('/progress/complete-arc', zValidator('json', completeArcSchema), async (c) => {
   const db = c.env.DB;
-  const body = await c.req.json<{
-    characterId: string;
-    arcId: string;
-    endingId?: string;
-  }>();
-
-  if (!body.characterId || !body.arcId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_PARAM', message: 'characterId and arcId are required' }],
-    }, 400);
-  }
+  const body = c.req.valid('json');
 
   const state = await db.prepare(`
     SELECT * FROM character_story_state WHERE character_id = ?

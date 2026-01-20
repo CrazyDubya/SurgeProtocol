@@ -108,3 +108,47 @@ export type {
   GenerationOptions,
   GenerationResult,
 } from './mission';
+
+// Economy Services
+export {
+  TransactionService,
+  VendorService,
+} from './economy';
+
+export type {
+  CharacterFinances,
+  TransactionRecord,
+  BalanceSummary,
+  AccountType,
+  PaymentMethod,
+  TransferParams,
+  PurchaseParams,
+  DebtCreateParams,
+  DebtPaymentParams,
+  VendorInfo,
+  ItemDefinition,
+  BuyResult,
+  SellResult,
+  HaggleResult,
+} from './economy';
+
+// Combat Services
+export {
+  CombatResolverService,
+} from './combat';
+
+export type {
+  CombatSessionConfig,
+  CombatParticipant,
+  CombatSessionResult,
+  ActionResult,
+  CombatEndResult,
+  CombatPhase,
+  CombatEndReason,
+  CombatActionType,
+  CombatState,
+  Combatant,
+  Weapon,
+  Armor,
+  AttackResult,
+} from './combat';

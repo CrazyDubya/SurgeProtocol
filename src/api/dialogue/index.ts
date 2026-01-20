@@ -21,7 +21,29 @@
  */
 
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import type { AuthVariables } from '../../middleware/auth';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+const startConversationSchema = z.object({
+  characterId: z.string().min(1, 'characterId is required'),
+  treeId: z.string().min(1, 'treeId is required'),
+  npcInstanceId: z.string().optional(),
+});
+
+const respondSchema = z.object({
+  conversationId: z.string().min(1, 'conversationId is required'),
+  responseId: z.string().min(1, 'responseId is required'),
+  skillCheckResult: z.enum(['success', 'failure']).optional(),
+});
+
+const exitConversationSchema = z.object({
+  conversationId: z.string().min(1, 'conversationId is required'),
+});
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -532,32 +554,9 @@ dialogueRoutes.get('/trees/:id', async (c) => {
  * POST /dialogue/start
  * Start a new conversation.
  */
-dialogueRoutes.post('/start', async (c) => {
+dialogueRoutes.post('/start', zValidator('json', startConversationSchema), async (c) => {
   const db = c.env.DB;
-
-  let body: {
-    characterId: string;
-    treeId: string;
-    npcInstanceId?: string;
-  };
-
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({
-      success: false,
-      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
-    }, 400);
-  }
-
-  const { characterId, treeId, npcInstanceId } = body;
-
-  if (!characterId || !treeId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_FIELDS', message: 'characterId and treeId are required' }],
-    }, 400);
-  }
+  const { characterId, treeId, npcInstanceId } = c.req.valid('json');
 
   // Get tree by ID or code
   let tree = await db
@@ -731,32 +730,9 @@ dialogueRoutes.get('/state/:stateId', async (c) => {
  * POST /dialogue/respond
  * Choose a response in a conversation.
  */
-dialogueRoutes.post('/respond', async (c) => {
+dialogueRoutes.post('/respond', zValidator('json', respondSchema), async (c) => {
   const db = c.env.DB;
-
-  let body: {
-    conversationId: string;
-    responseId: string;
-    skillCheckResult?: 'success' | 'failure';
-  };
-
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({
-      success: false,
-      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
-    }, 400);
-  }
-
-  const { conversationId, responseId, skillCheckResult } = body;
-
-  if (!conversationId || !responseId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_FIELDS', message: 'conversationId and responseId are required' }],
-    }, 400);
-  }
+  const { conversationId, responseId, skillCheckResult } = c.req.valid('json');
 
   // Get conversation state
   const state = await db
@@ -916,28 +892,9 @@ dialogueRoutes.post('/respond', async (c) => {
  * POST /dialogue/exit
  * End a conversation early.
  */
-dialogueRoutes.post('/exit', async (c) => {
+dialogueRoutes.post('/exit', zValidator('json', exitConversationSchema), async (c) => {
   const db = c.env.DB;
-
-  let body: { conversationId: string };
-
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({
-      success: false,
-      errors: [{ code: 'INVALID_JSON', message: 'Invalid JSON body' }],
-    }, 400);
-  }
-
-  const { conversationId } = body;
-
-  if (!conversationId) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'MISSING_FIELDS', message: 'conversationId is required' }],
-    }, 400);
-  }
+  const { conversationId } = c.req.valid('json');
 
   const state = await db
     .prepare(`SELECT * FROM conversation_states WHERE id = ?`)
