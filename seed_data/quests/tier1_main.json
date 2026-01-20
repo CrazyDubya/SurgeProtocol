@@ -1,0 +1,458 @@
+{
+  "quest": {
+    "id": "MAIN_T1_FRESH_MEAT",
+    "code": "FRESH_MEAT",
+    "name": "Fresh Meat",
+    "type": "MAIN_STORY",
+    "subType": "LINEAR_PROGRESSION",
+    "tier": 1,
+    "requiredTier": 1,
+    "ratingPointsRequired": 50,
+    "estimatedDuration": "30-40 minutes",
+    "repeatable": false,
+    "synopsis": "You made it to Tier 1. That's better than most rookies. Chen says maybe you'll last a month. But now the real competition begins. You're not the only fresh courier grinding for survival. Meet Jin—another Tier 1, hungry, aggressive, and willing to cut corners you won't. When a high-value contract appears, you both want it. Chen gives it to whoever performs better on a test run.",
+    "description": "This quest establishes rating competition (other couriers exist, they're threats), rival character (Jin, recurring antagonist/frenemy), moral gray areas (cutting corners vs. staying clean), and scarcity mindset (not enough contracts for everyone)."
+  },
+  "prerequisites": {
+    "requiredQuests": ["MAIN_T0_FIRST_RUN"],
+    "factionReputation": null,
+    "storyFlags": [],
+    "tierMinimum": 1,
+    "itemsRequired": []
+  },
+  "questGiver": {
+    "npcId": "chen",
+    "npcName": "Dispatcher Chen",
+    "location": "the_hollows_courier_station",
+    "dialogueTreeId": "tier_1_progression"
+  },
+  "objectives": {
+    "primary": [
+      {
+        "id": "OBJ_T1_1",
+        "description": "Complete test delivery faster than rival courier Jin",
+        "type": "RACE",
+        "competitor": "jin"
+      },
+      {
+        "id": "OBJ_T1_2",
+        "description": "Impress Chen enough to get the premium contract",
+        "type": "APPROVAL",
+        "target": "chen",
+        "threshold": 70
+      }
+    ],
+    "secondary": [
+      {
+        "id": "OBJ_T1_3",
+        "description": "Maintain package integrity (no damage = bonus)",
+        "type": "CONDITION",
+        "condition": "package_integrity >= 90"
+      },
+      {
+        "id": "OBJ_T1_4",
+        "description": "Don't violate traffic laws",
+        "type": "REPUTATION",
+        "optional": true
+      }
+    ],
+    "optional": [
+      {
+        "id": "OBJ_T1_5",
+        "description": "Learn about Jin's background from Rosa",
+        "type": "DIALOGUE",
+        "target": "rosa",
+        "dialogueTreeId": "jin_background"
+      },
+      {
+        "id": "OBJ_T1_6",
+        "description": "Help Jin when they get in trouble",
+        "type": "MORAL_CHOICE",
+        "target": "jin"
+      }
+    ],
+    "hidden": [
+      {
+        "id": "OBJ_T1_7",
+        "description": "Notice Jin is augmented",
+        "type": "OBSERVATION",
+        "target": "jin_augments",
+        "unlocks": "CHROME_PRESSURE_AWARENESS"
+      }
+    ]
+  },
+  "narrativeBeats": {
+    "act1_setup": {
+      "title": "Competition",
+      "hook": "Chen calls you in. 'Got a premium contract. Corp client, regular deliveries, great pay. But I can only give it to one courier. You and Jin are both Tier 1. You both want it. So race.'",
+      "context": [
+        "Player has been doing standard runs since Tier 0",
+        "First encounter with another named courier",
+        "Chen explains: 'This is the life. Not enough work for everyone. Someone gets ahead, someone falls behind.'"
+      ],
+      "jinIntroduction": {
+        "description": "Young (early 20s), cocky, visibly augmented (reflex boosters, enhanced eyes)",
+        "attitude": "Dismissive. 'You're still meat-only? Good luck keeping up.'",
+        "background": "Been a courier for 6 months, already Tier 1 through aggressive tactics"
+      },
+      "chenTest": {
+        "description": "Both of you take the same package type to the same destination. Whoever arrives first with package intact gets the contract. Simple. Fair.",
+        "reality": "[not actually fair—Jin has augments, player doesn't]"
+      },
+      "decisions": [
+        {
+          "id": "RACE_ACCEPT",
+          "prompt": "Accepting the competition...",
+          "options": [
+            {
+              "id": "CONFIDENT",
+              "label": "I can beat them.",
+              "chenResponse": "Good. Prove it."
+            },
+            {
+              "id": "COMPLAINING",
+              "label": "That's not fair. They have chrome.",
+              "chenResponse": "Life's not fair. Deal with it."
+            },
+            {
+              "id": "OPTIMISTIC",
+              "label": "What if we both do well?",
+              "chenResponse": "There's one contract. One winner. That's how this works."
+            }
+          ]
+        }
+      ]
+    },
+    "act2_complication": {
+      "title": "The Race",
+      "testDelivery": {
+        "description": "Both player and Jin get packages. Same destination: Night Market (familiar route from Tier 0). Jin leaves immediately, aggressively.",
+        "destination": "night_market"
+      },
+      "playerChoices": [
+        {
+          "id": "DRIVE_SAFE",
+          "name": "Drive Safe (High Integrity)",
+          "description": "Follow traffic laws, protect package",
+          "outcome": "Slower, but arrives with perfect package condition",
+          "chenReaction": "Approves professionalism",
+          "likelyResult": "Arrives second (Jin faster due to chrome + risk-taking)"
+        },
+        {
+          "id": "DRIVE_AGGRESSIVE",
+          "name": "Drive Aggressive (Speed Priority)",
+          "description": "Cut corners, speed, risky maneuvers",
+          "outcome": "Faster, but package may take damage",
+          "risks": ["police_attention", "package_damage", "crash"],
+          "likelyResult": "Might beat Jin, might crash"
+        },
+        {
+          "id": "SABOTAGE",
+          "name": "Sabotage Jin (Underhanded)",
+          "description": "Actively interfere with Jin's run (hack route, create obstacles)",
+          "requirements": ["tech_skill", "street_smarts"],
+          "outcome": "Morally gray, but effective",
+          "risks": ["Chen finds out", "consequences"]
+        }
+      ],
+      "complication": {
+        "event": "Jin Crashes",
+        "description": "Halfway through the race, player sees Jin's vehicle crash (avoiding obstacles, took too many risks)",
+        "jinStatus": "Injured, package damaged, vehicle smoking",
+        "timedDecision": true
+      },
+      "crashChoices": [
+        {
+          "id": "HELP_JIN",
+          "label": "Stop and Help Jin",
+          "description": "Check on them, call medical",
+          "outcome": "Lose race (Jin delivers late or not at all, but you also arrive late)",
+          "humanityChange": 5,
+          "jinRelationship": 20,
+          "chenReaction": "Respects humanity, gives contract anyway (impressed by character)",
+          "storyFlag": "JIN_SAVED"
+        },
+        {
+          "id": "KEEP_GOING",
+          "label": "Keep Going, Win Race",
+          "description": "Don't stop, deliver on time",
+          "outcome": "Win race by default (Jin can't complete)",
+          "humanityChange": -2,
+          "jinRelationship": -15,
+          "chenReaction": "Gives you contract (you won, technically)",
+          "storyFlag": "JIN_ABANDONED"
+        },
+        {
+          "id": "CALL_ROSA",
+          "label": "Call Rosa to Help, Then Continue",
+          "description": "Quick call to Rosa: 'Jin crashed at [location], can you check on them?'",
+          "outcome": "Rosa helps Jin, you continue and arrive on time (win race)",
+          "humanityChange": 0,
+          "jinRelationship": 5,
+          "chenReaction": "Impressed by problem-solving",
+          "storyFlag": "JIN_PRAGMATIC_HELP"
+        }
+      ]
+    },
+    "act3_resolution": {
+      "title": "First Real Choice",
+      "postRace": {
+        "location": "Chen's Office"
+      },
+      "outcomes": {
+        "helpedJin": {
+          "chenDialogue": "You stopped. You helped a competitor. That's... not what most do. [pause] The contract's yours. Not because you won. Because I can trust you with premium clients. They need reliability, not just speed.",
+          "jinDialogue": "You... you stopped for me. Why?",
+          "playerOptions": [
+            {
+              "id": "HUMBLE",
+              "label": "Anyone would've.",
+              "jinResponse": "No. They wouldn't. Thanks."
+            },
+            {
+              "id": "PRAGMATIC",
+              "label": "Didn't want your death on my conscience.",
+              "jinResponse": "Fair. I owe you."
+            },
+            {
+              "id": "SOLIDARITY",
+              "label": "We're not enemies. We're both just trying to survive.",
+              "jinResponse": "Yeah. Yeah, we are."
+            }
+          ]
+        },
+        "abandonedJin": {
+          "chenDialogue": "You won. Jin crashed, couldn't deliver. Contract's yours. [looks at you] You could've stopped. You didn't. That's the choice you made.",
+          "playerOptions": [
+            {
+              "id": "DEFENSIVE",
+              "label": "I had a job to do.",
+              "chenResponse": "Yeah. You did."
+            },
+            {
+              "id": "LIE",
+              "label": "I called it in.",
+              "chenResponse": "No you didn't. I checked.",
+              "requiresNoCall": true
+            },
+            {
+              "id": "DEFLECTING",
+              "label": "Would you have stopped?",
+              "chenResponse": "I'm not sure anymore."
+            }
+          ],
+          "jinLater": {
+            "dialogue": "You left me there. I could've died.",
+            "playerOptions": [
+              {
+                "id": "COLD",
+                "label": "This is a competition. You'd have done the same.",
+                "jinResponse": "Probably. Doesn't mean I won't remember."
+              },
+              {
+                "id": "APOLOGETIC",
+                "label": "I'm sorry.",
+                "jinResponse": "Not enough. Watch your back."
+              }
+            ]
+          }
+        },
+        "calledRosa": {
+          "chenDialogue": "You won. But you also called Rosa to help Jin. Smart. You got what you wanted and didn't leave a body in the street.",
+          "rosaComms": "Jin's okay. Banged up, but stable. Appreciate the call.",
+          "jinLater": "Heard you called for help. While winning. Efficient. I respect that."
+        }
+      },
+      "premiumContract": {
+        "client": "Meridian Medical",
+        "clientType": "corpo_subsidiary",
+        "deliveries": "Weekly medical supplies, high value, strict deadlines",
+        "pay": 300,
+        "payDescription": "300 credits per run (double standard)",
+        "catch": "Client has high standards, one screw-up and you're blacklisted"
+      },
+      "chenClosing": "This is a step up. Don't screw it. You screw this, you don't just lose a client—you get a reputation as unreliable. Then everyone drops you. Welcome to Tier 1. It doesn't get easier. You just get better. Or you get crushed."
+    }
+  },
+  "branchingPaths": [
+    {
+      "id": "PATH_A_COMPASSIONATE",
+      "name": "Helped Jin (Compassionate)",
+      "outcome": "Premium contract earned through character, not just speed",
+      "humanityChange": 5,
+      "jinRelationship": 20,
+      "chenRelationship": 10,
+      "storyFlag": "JIN_SAVED",
+      "jinFuture": "potential_ally"
+    },
+    {
+      "id": "PATH_B_RUTHLESS",
+      "name": "Abandoned Jin (Ruthless)",
+      "outcome": "Premium contract earned through winning",
+      "humanityChange": -2,
+      "jinRelationship": -15,
+      "chenRelationship": 0,
+      "storyFlag": "JIN_ABANDONED",
+      "jinFuture": "antagonist"
+    },
+    {
+      "id": "PATH_C_PRAGMATIC",
+      "name": "Called Rosa (Pragmatic)",
+      "outcome": "Premium contract earned through smart problem-solving",
+      "humanityChange": 0,
+      "jinRelationship": 5,
+      "chenRelationship": 8,
+      "storyFlag": "JIN_PRAGMATIC_HELP",
+      "jinFuture": "neutral_respect"
+    }
+  ],
+  "complications": [
+    {
+      "id": "COMP_T1_TRAFFIC",
+      "code": "TRAFFIC_JAM",
+      "severity": "minor",
+      "description": "Forces player to choose: wait (lose time) or illegal detour (risk)"
+    },
+    {
+      "id": "COMP_T1_POLICE",
+      "code": "POLICE_CHECKPOINT",
+      "severity": "moderate",
+      "trigger": "aggressive_driving",
+      "description": "Bribe, evade, or comply (time penalty)"
+    },
+    {
+      "id": "COMP_T1_PACKAGE",
+      "code": "PACKAGE_DAMAGE",
+      "severity": "moderate",
+      "trigger": "aggressive_driving",
+      "description": "Arrives damaged, Chen deducts rating points"
+    }
+  ],
+  "rewards": {
+    "base": {
+      "credits": 200,
+      "xp": 100,
+      "ratingChange": {
+        "min": 0.2,
+        "max": 0.4
+      }
+    },
+    "unlocks": [
+      "PREMIUM_CONTRACT_MERIDIAN",
+      "TIER_2_PROGRESSION"
+    ],
+    "pathSpecific": {
+      "compassionate": {
+        "humanityBonus": 5,
+        "jinRelationship": "ally"
+      },
+      "ruthless": {
+        "jinRelationship": "antagonist"
+      },
+      "pragmatic": {
+        "chenRelationship": 8,
+        "jinRelationship": "neutral"
+      }
+    }
+  },
+  "consequences": {
+    "shortTerm": {
+      "premiumContract": "Better pay, but higher pressure",
+      "jinRelationship": "Set for rest of game (ally, enemy, or neutral)",
+      "firstMoralChoice": "Showed player's values (help vs. win)"
+    },
+    "longTerm": {
+      "jinArc": "If saved, becomes ally. If abandoned, becomes antagonist (may sabotage you later)",
+      "chenPerception": "Sees what kind of courier you are",
+      "reputation": "Word spreads (helped competitor = soft? or reliable?)"
+    }
+  },
+  "dialogueReferences": {
+    "questIntro": "tier_1_test_race",
+    "jinIntroduction": "jin_rival_first_meeting",
+    "crashDecision": "jin_crash_choice",
+    "questComplete": "chen_tier_1_contract"
+  },
+  "locations": [
+    {
+      "id": "hollows_courier_station",
+      "name": "The Hollows Station",
+      "type": "starting_point"
+    },
+    {
+      "id": "delivery_route",
+      "name": "Standard delivery route to Night Market",
+      "type": "race_path"
+    },
+    {
+      "id": "jin_crash_site",
+      "name": "Jin crash site",
+      "type": "scripted_event"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "chen",
+      "role": "quest_giver"
+    },
+    {
+      "id": "jin",
+      "role": "rival",
+      "description": "Young (early 20s), cocky, visibly augmented (reflex boosters, enhanced eyes)",
+      "future": "recurring_character"
+    },
+    {
+      "id": "rosa",
+      "role": "optional_helper"
+    }
+  ],
+  "mechanics": [
+    "timed_race",
+    "crash_event_scripted",
+    "moral_choice_timed"
+  ],
+  "items": [
+    {
+      "id": "test_package",
+      "type": "quest_item"
+    },
+    {
+      "id": "premium_contract_document",
+      "type": "reward_item"
+    }
+  ],
+  "narrativeFunction": [
+    "competition_introduction",
+    "first_moral_choice",
+    "jin_relationship_setup",
+    "chrome_pressure_begins",
+    "rating_stakes"
+  ],
+  "centralQuestion": "When survival is a competition, do you help someone who might take your place?",
+  "writingNotes": {
+    "jinCharacter": [
+      "Not evil, just desperate (like player)",
+      "Augmented out of necessity, not choice",
+      "Respects strength and smart play",
+      "Can become genuine friend if player shows character",
+      "OR bitter rival if player shows ruthlessness"
+    ],
+    "chenReaction": [
+      "Tests player's values, not just speed",
+      "Already knows who'll win (Jin has chrome)",
+      "Wants to see if player will do the right thing under pressure",
+      "Disappointed if player abandons Jin"
+    ],
+    "tone": [
+      "Competition, but not cruelty",
+      "Scarcity breeds conflict (system's fault, not individuals')",
+      "First glimpse of 'not everyone makes it'"
+    ]
+  },
+  "relatedContent": {
+    "previousQuest": "MAIN_T0_FIRST_RUN",
+    "nextQuest": "MAIN_T2_PROVISIONAL",
+    "characters": ["chen", "jin"],
+    "complication": "vehicle_crash"
+  }
+}

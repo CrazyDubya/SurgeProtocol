@@ -1,0 +1,261 @@
+{
+  "algorithmVoice": {
+    "tierRange": {
+      "min": 0,
+      "max": 2
+    },
+    "phase": "PRE_INTEGRATION",
+    "description": "Before cochlear implant installation (Tier 3), the player has no direct Algorithm voice. This phase establishes the Algorithm's presence through environmental cues, NPC dialogue, and player observations.",
+    "hasDirectVoice": false
+  },
+  "environmentalPresence": {
+    "description": "The Algorithm manifests through surveillance, advertisements, and system announcements",
+    "elements": [
+      {
+        "id": "SURVEILLANCE_CAMERAS",
+        "type": "VISUAL",
+        "description": "Algorithm-branded surveillance cameras visible throughout the city",
+        "frequency": "CONSTANT",
+        "locations": ["all_districts"]
+      },
+      {
+        "id": "DELIVERY_DRONES",
+        "type": "VISUAL",
+        "description": "Algorithm-controlled drones monitoring courier routes",
+        "frequency": "COMMON",
+        "locations": ["delivery_routes", "public_spaces"]
+      },
+      {
+        "id": "DIGITAL_BILLBOARDS",
+        "type": "VISUAL",
+        "description": "Personalized advertisements that seem to know too much",
+        "frequency": "COMMON",
+        "sampleMessages": [
+          "Efficiency is freedom. The Algorithm optimizes your path.",
+          "Your rating defines your reality. Trust the Algorithm.",
+          "Tier 3 couriers earn 47% more. Upgrade today."
+        ]
+      },
+      {
+        "id": "PUBLIC_ANNOUNCEMENTS",
+        "type": "AUDIO",
+        "description": "System announcements in public spaces",
+        "frequency": "OCCASIONAL",
+        "sampleMessages": [
+          "Attention citizens: The Algorithm has detected traffic congestion in Sector 7. Please use alternate routes.",
+          "Reminder: Rating compliance ensures network efficiency. Maintain your standards.",
+          "The Algorithm thanks you for your cooperation."
+        ]
+      }
+    ]
+  },
+  "npcDialogue": {
+    "description": "NPCs reference the Algorithm, foreshadowing the player's eventual integration",
+    "conversations": [
+      {
+        "id": "CHEN_ALGORITHM_WARNING",
+        "npcId": "chen",
+        "context": "When player asks about higher-tier couriers",
+        "lines": [
+          "The implant changes people. At first it's just navigation help, optimization tips.",
+          "Then it starts knowing what you're thinking before you think it.",
+          "I've seen Tier 7s who don't remember who they were before the chrome.",
+          "You'll get there eventually. Everyone does. Just... try to hold onto something human."
+        ]
+      },
+      {
+        "id": "TANAKA_CHROME_WARNING",
+        "npcId": "tanaka",
+        "context": "First meeting, after delivery",
+        "lines": [
+          "You're still unaugmented. That's rare.",
+          "Chrome is a trap. It feels like power, but it's a leash.",
+          "The cochlear implant is the first step. After that, the Algorithm is always with you.",
+          "Be careful how much you take. Be careful what you trade."
+        ]
+      },
+      {
+        "id": "ROSA_ALGORITHM_CASUAL",
+        "npcId": "rosa",
+        "context": "Casual conversation about courier life",
+        "lines": [
+          "The Algorithm sees everything, you know. Every delivery, every rating, every route.",
+          "Some couriers say it talks to them. Through the implant.",
+          "I've heard it gets... personal. Like it knows you better than you know yourself.",
+          "Freaky stuff. But hey, better routes, higher pay, right?"
+        ]
+      },
+      {
+        "id": "JIN_ALGORITHM_BOAST",
+        "npcId": "jin",
+        "context": "Jin showing off augments",
+        "lines": [
+          "These reflexes? Algorithm-optimized. It runs combat scenarios while I'm sleeping.",
+          "You're still meat-only? Rookie mistake. The Algorithm makes you better.",
+          "Once you get the implant, you'll understand. It's like having a friend who always knows the best move.",
+          "A friend who never shuts up, but still."
+        ]
+      },
+      {
+        "id": "SCREAMING_COURIER_CONTEXT",
+        "npcId": "chen",
+        "context": "After witnessing corpo extraction",
+        "lines": [
+          "That's a Tier 4 who fell to Tier 2.",
+          "Corpo sponsors own his aug debt. They're repossessing the chrome.",
+          "The Algorithm flagged him as inefficient. Recommended extraction.",
+          "He'll survive, but... he won't be the same. Part of him is on those drives they're taking."
+        ]
+      }
+    ]
+  },
+  "playerObservations": {
+    "description": "Things the player can notice that foreshadow Algorithm integration",
+    "observations": [
+      {
+        "id": "OBS_HIGHER_TIER_COURIERS",
+        "trigger": "See Tier 3+ courier",
+        "observation": "Their eyes flicker with data overlays. They move with unnatural efficiency. Sometimes their lips move, but no sound comes out—they're talking to something you can't hear."
+      },
+      {
+        "id": "OBS_ALGORITHM_BILLBOARD",
+        "trigger": "Pass Algorithm advertisement",
+        "observation": "The billboard shifts as you pass. For a moment, it seems to display your name, your rating. But when you look again, it's just a generic ad. Probably your imagination."
+      },
+      {
+        "id": "OBS_SURVEILLANCE_DRONE",
+        "trigger": "Drone follows player",
+        "observation": "A small drone hovers nearby, its single eye tracking your movements. It's just monitoring, you tell yourself. It's just doing its job. Just like you."
+      },
+      {
+        "id": "OBS_EMPTY_EYES",
+        "trigger": "See high-tier courier up close",
+        "observation": "Their eyes are wrong. Not the chrome—that's normal. It's the emptiness behind them. Like looking at someone who's not entirely there anymore."
+      }
+    ]
+  },
+  "foreshadowingEvents": {
+    "description": "Story moments that hint at what's coming",
+    "events": [
+      {
+        "id": "FORESHADOW_COCHLEAR_AD",
+        "trigger": "Random during Tier 0-1",
+        "content": "A targeted ad appears on a nearby screen: 'Ready for the next level? Tier 3 cochlear integration: hear the Algorithm, feel the optimization. Apply at any Nakamura clinic.'",
+        "playerThought": "Someday, maybe. Right now, you've got a delivery to make."
+      },
+      {
+        "id": "FORESHADOW_WE_LANGUAGE",
+        "trigger": "Overhear Tier 5+ courier",
+        "content": "You overhear a courier talking to... no one. 'We should take the east route. Yes, we agree. We're more efficient when we listen.' They notice you watching and smile. 'You'll understand soon.'",
+        "playerThought": "That was weird. But everyone says the implant is just a tool. Just a voice in your ear. Nothing to worry about."
+      },
+      {
+        "id": "FORESHADOW_ALGORITHM_KNOWS",
+        "trigger": "Complete first premium delivery",
+        "content": "As you finish the delivery, your HUD flickers briefly—you don't have implants, but the courier terminal does. For a moment, you see: 'Candidate [player]: Tier progression optimal. Integration recommended at 50 rating points. Monitoring.'",
+        "playerThought": "The system is always watching. You knew that. But somehow, seeing it spelled out makes it feel different. Makes it feel like something is waiting for you."
+      }
+    ]
+  },
+  "tier2Transition": {
+    "description": "As player approaches Tier 3, pressure to integrate increases",
+    "pressureEvents": [
+      {
+        "id": "PRESSURE_CHEN_SUGGESTION",
+        "trigger": "Approaching Tier 3 threshold",
+        "chenDialogue": [
+          "You're close to Tier 3. That means cochlear integration.",
+          "I know you've heard stories. Some of them are true.",
+          "But without the implant, you can't take higher-tier contracts. Can't access premium routes.",
+          "It's not a choice, really. It's just the next step. Everyone takes it eventually."
+        ]
+      },
+      {
+        "id": "PRESSURE_JIN_TAUNT",
+        "trigger": "Jin interaction near Tier 3",
+        "jinDialogue": [
+          "Still running without the Algorithm? How do you even navigate?",
+          "The implant's the best thing that ever happened to me. It's like... being complete.",
+          "You'll see. Once you hear the voice, you won't remember what it was like without it."
+        ]
+      },
+      {
+        "id": "PRESSURE_CONTRACT_LIMITATION",
+        "trigger": "Denied contract due to tier",
+        "systemMessage": "This contract requires Tier 3+ courier with cochlear integration. Please upgrade to access premium opportunities.",
+        "playerThought": "Everyone keeps saying it's just a tool. Just a voice. Just an optimization. But if it's so harmless, why does everyone who has it seem... different?"
+      }
+    ]
+  },
+  "silenceTheme": {
+    "description": "The absence of Algorithm voice is itself meaningful",
+    "moments": [
+      {
+        "id": "SILENCE_ALONE_THOUGHTS",
+        "context": "Quiet moment during delivery",
+        "playerThought": "It's quiet in your head. Just your thoughts, your fears, your hopes. Some couriers say the silence is worse than the voice. You're not sure what to believe."
+      },
+      {
+        "id": "SILENCE_DECISION_MAKING",
+        "context": "Facing moral choice",
+        "playerThought": "You have to decide. No optimization algorithm telling you the 'correct' choice. Just you, your conscience, your judgment. This is what it means to be human. To choose without knowing. To be wrong. To be right. To be yours."
+      },
+      {
+        "id": "SILENCE_BEFORE_STORM",
+        "context": "Reaching Tier 3 threshold",
+        "playerThought": "This is the last quiet. After the implant, you'll never be alone again. The Algorithm will always be there. Helping. Guiding. Watching. You tell yourself it's a good thing. You almost believe it."
+      }
+    ]
+  },
+  "voiceLines": {
+    "description": "No direct Algorithm voice lines for Tier 0-2, but environmental audio cues",
+    "environmentalAudio": [
+      {
+        "id": "AUDIO_SYSTEM_CHIME",
+        "context": "Rating update received",
+        "sound": "Pleasant corporate chime",
+        "visualText": "Rating updated: [X.X] stars. Performance logged."
+      },
+      {
+        "id": "AUDIO_DELIVERY_CONFIRM",
+        "context": "Delivery completion",
+        "sound": "Success tone",
+        "visualText": "Delivery confirmed. Credits transferred. Thank you for your efficiency."
+      },
+      {
+        "id": "AUDIO_WARNING_TONE",
+        "context": "Deadline approaching",
+        "sound": "Urgent warning beep",
+        "visualText": "Warning: Delivery deadline in [X] minutes. Maintain efficiency."
+      },
+      {
+        "id": "AUDIO_FAILURE_TONE",
+        "context": "Delivery failed or late",
+        "sound": "Disappointed tone",
+        "visualText": "Delivery delayed. Rating adjusted. Improvement recommended."
+      }
+    ]
+  },
+  "centralTheme": {
+    "description": "The calm before the Algorithm storm",
+    "keyQuestions": [
+      "What are you trading for efficiency?",
+      "Who are you when no one's watching?",
+      "What will you hold onto when the voice comes?"
+    ],
+    "narrativeFunction": [
+      "Establish player identity before Algorithm influence",
+      "Create anticipation/dread for cochlear integration",
+      "Show the world through human eyes before optimization takes over",
+      "Make the eventual Algorithm voice more impactful by its absence"
+    ]
+  },
+  "metadata": {
+    "version": "1.0",
+    "tier": "0-2",
+    "phase": "PRE_INTEGRATION",
+    "hasDirectVoice": false,
+    "nextPhase": "FIRST_INTEGRATION (Tier 3)",
+    "lastUpdated": "2026-01-20"
+  }
+}

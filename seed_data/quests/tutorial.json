@@ -1,0 +1,436 @@
+{
+  "quest": {
+    "id": "MAIN_T0_FIRST_RUN",
+    "code": "FIRST_RUN",
+    "name": "First Run",
+    "type": "MAIN_STORY",
+    "subType": "TUTORIAL",
+    "tier": 0,
+    "requiredTier": 0,
+    "estimatedDuration": "15-20 minutes",
+    "repeatable": false,
+    "synopsis": "You're a fresh courier in The Hollows with nothing but desperation and a busted vehicle. Dispatcher Chen sizes you up, decides you might last a week, and gives you a simple delivery: medical supplies to the Night Market. It's supposed to be routine. But in this city, nothing ever is.",
+    "description": "This tutorial introduces core mechanics: navigation, package handling, time pressure, basic driving, and the rating system. The player learns that every delivery matters—your reputation is your survival."
+  },
+  "prerequisites": {
+    "requiredQuests": [],
+    "factionReputation": null,
+    "storyFlags": [],
+    "tierMinimum": 0,
+    "itemsRequired": []
+  },
+  "questGiver": {
+    "npcId": "chen",
+    "npcName": "Dispatcher Chen",
+    "location": "the_hollows_courier_station",
+    "dialogueTreeId": "chen_first_meeting"
+  },
+  "objectives": {
+    "primary": [
+      {
+        "id": "OBJ_T0_1",
+        "description": "Deliver medical supplies to Dr. Tanaka's clinic in the Night Market",
+        "type": "DELIVERY",
+        "target": "tanaka_clinic",
+        "timeLimit": 1200,
+        "timeLimitDisplay": "20 minutes"
+      }
+    ],
+    "secondary": [
+      {
+        "id": "OBJ_T0_2",
+        "description": "Arrive with package intact",
+        "type": "CONDITION",
+        "condition": "package_integrity >= 80"
+      },
+      {
+        "id": "OBJ_T0_3",
+        "description": "Meet Rosa at the station garage",
+        "type": "INTERACTION",
+        "target": "rosa",
+        "location": "hollows_garage"
+      }
+    ],
+    "optional": [
+      {
+        "id": "OBJ_T0_4",
+        "description": "Explore The Hollows - find 2 street landmarks",
+        "type": "DISCOVERY",
+        "target": "hollows_landmarks",
+        "count": 2
+      },
+      {
+        "id": "OBJ_T0_5",
+        "description": "Talk to Chen about courier life",
+        "type": "DIALOGUE",
+        "target": "chen",
+        "dialogueTreeId": "chen_rating_explanation"
+      }
+    ],
+    "hidden": [
+      {
+        "id": "OBJ_T0_6",
+        "description": "Notice the Algorithm surveillance",
+        "type": "OBSERVATION",
+        "target": "algorithm_surveillance",
+        "unlocks": "LORE_ALGORITHM_INTRO"
+      }
+    ]
+  },
+  "narrativeBeats": {
+    "act1_setup": {
+      "hook": "You're broke, desperate, and out of options. The courier gig is the last chance before the streets swallow you.",
+      "context": "The Hollows Courier Station is a lifeline for people like you—bottom-tier, unaugmented, hungry. Dispatcher Chen has seen a thousand rookies come through. Most don't make it. But he gives everyone a chance.",
+      "decisions": [
+        {
+          "id": "INTRO_CHOICE",
+          "prompt": "When Chen offers the job...",
+          "options": [
+            {
+              "id": "EAGER",
+              "label": "Accept immediately",
+              "tone": "desperate",
+              "chenReaction": "Expected."
+            },
+            {
+              "id": "CAUTIOUS",
+              "label": "Ask questions",
+              "tone": "smart",
+              "chenReaction": "Good. Questions mean you think."
+            },
+            {
+              "id": "BOLD",
+              "label": "Negotiate payment",
+              "tone": "risky",
+              "chenReaction": "Bold. I respect that."
+            }
+          ]
+        }
+      ]
+    },
+    "act2_complication": {
+      "setup": "The drive to Night Market is straightforward. Tutorial tooltips explain navigation, HUD elements, package handling. Rosa fixed your vehicle—it runs, barely. The route takes you through safe zones.",
+      "twist": "Halfway to the destination, you witness a corporate recovery team extracting a crashed courier from a wreck. The courier is screaming. Heavy chrome, barely human, being hauled away like property.",
+      "chenComms": "Don't stop. Keep moving. That's what happens when you miss too many deliveries.",
+      "decisions": [
+        {
+          "id": "EXTRACTION_WITNESS",
+          "prompt": "Witnessing the corpo extraction...",
+          "timed": false,
+          "options": [
+            {
+              "id": "STOP_WATCH",
+              "label": "Stop and watch",
+              "tone": "empathy",
+              "humanityChange": 2,
+              "consequence": "time_pressure_increases"
+            },
+            {
+              "id": "KEEP_DRIVING",
+              "label": "Keep driving",
+              "tone": "pragmatic",
+              "humanityChange": 0,
+              "consequence": "stays_on_schedule"
+            },
+            {
+              "id": "SPEED_UP",
+              "label": "Speed up to get away",
+              "tone": "fear",
+              "humanityChange": -1,
+              "consequence": "arrives_early"
+            }
+          ]
+        }
+      ],
+      "moralWeight": "This moment establishes the tone—this world is cruel, and you're one missed delivery from that fate."
+    },
+    "act3_resolution": {
+      "climax": "You arrive at Dr. Tanaka's clinic (a gray-market medical facility in Night Market). She's professional, grateful, pays immediately.",
+      "tanakaWarning": "Chrome is a trap. It feels like power, but it's a leash. Be careful how much you take.",
+      "firstRating": "Not bad for a rookie. Client was satisfied. You got a 4.2 star rating. Keep that up, you'll make Tier 1 in a week. Drop below 3 stars, and you're done."
+    }
+  },
+  "branchingPaths": [
+    {
+      "id": "PATH_A_EFFICIENT",
+      "name": "Efficient Professional",
+      "trigger": "Deliver on time, package intact, didn't stop for complication",
+      "consequences": {
+        "chenReaction": "You're focused. Good.",
+        "tanakaNote": "Notes your professionalism"
+      },
+      "rewards": {
+        "creditsBonus": 25
+      },
+      "storyFlags": ["EFFICIENT_COURIER"]
+    },
+    {
+      "id": "PATH_B_EMPATHETIC",
+      "name": "Empathetic Observer",
+      "trigger": "Stopped to watch the corpo extraction, asked Chen about it afterwards",
+      "consequences": {
+        "chenReaction": "Empathy gets you killed in this job.",
+        "tanakaNote": "Senses your horror"
+      },
+      "rewards": {
+        "humanityBonus": 2
+      },
+      "storyFlags": ["WITNESSED_EXTRACTION", "ASKS_QUESTIONS"]
+    },
+    {
+      "id": "PATH_C_SCARED",
+      "name": "Scared Survivor",
+      "trigger": "Sped away from extraction scene, delivered early but shaken",
+      "consequences": {
+        "chenReaction": "You'll get used to it. Or you'll quit.",
+        "tanakaNote": "Offers mild sedative"
+      },
+      "rewards": {
+        "humanityPenalty": 1
+      },
+      "storyFlags": ["AFRAID_OF_CORPS"]
+    }
+  ],
+  "complications": [
+    {
+      "id": "COMP_T0_TRAFFIC",
+      "code": "TRAFFIC_SLOWDOWN",
+      "severity": "minor",
+      "description": "Construction zone, must detour",
+      "resolution": "Follow HUD reroute (teaches navigation)",
+      "timeCost": 120
+    },
+    {
+      "id": "COMP_T0_VEHICLE",
+      "code": "VEHICLE_WARNING",
+      "severity": "minor",
+      "description": "Engine temperature rising (teaches vehicle monitoring)",
+      "resolution": "Pull over briefly, let engine cool",
+      "failureConsequence": "If ignored, vehicle breaks down (teaches failure states)"
+    },
+    {
+      "id": "COMP_T0_VENDOR",
+      "code": "FRIENDLY_NPC_HAIL",
+      "severity": "optional",
+      "description": "Street vendor flags you down, offers discount food",
+      "resolution": "Can buy (teaches economy) or ignore (teaches time pressure)"
+    }
+  ],
+  "rewards": {
+    "base": {
+      "credits": 150,
+      "xp": 50,
+      "ratingRange": {
+        "min": 4.0,
+        "max": 4.5
+      }
+    },
+    "unlocks": [
+      "TIER_1_PROGRESSION",
+      "CONTACT_ROSA",
+      "CONTACT_TANAKA",
+      "FREE_ROAM_HOLLOWS"
+    ],
+    "pathSpecific": {
+      "efficient": {
+        "creditsBonus": 25,
+        "chenRelationship": 8
+      },
+      "empathetic": {
+        "humanityBonus": 2,
+        "tanakaRelationship": 5,
+        "unlocks": ["PHILOSOPHICAL_DIALOGUE_OPTION"]
+      },
+      "scared": {
+        "storyFlags": ["MINOR_TRAUMA"],
+        "chenExtraAdvice": true
+      }
+    }
+  },
+  "consequences": {
+    "shortTerm": {
+      "immediateImpact": "You're now a courier. The city's rating system owns you.",
+      "economicReality": "150 credits isn't much. You'll need many more runs to survive.",
+      "socialIntegration": "The Hollows Station becomes your home base."
+    },
+    "longTerm": {
+      "storyRamifications": "How you handled the extraction scene affects how NPCs perceive you",
+      "characterOutcomes": "Chen, Rosa, and Tanaka are now part of your world",
+      "worldStateChanges": "You're in the system—the Algorithm knows you exist"
+    }
+  },
+  "dialogueReferences": {
+    "questIntro": "chen_first_meeting",
+    "midQuest": "tutorial_complication_witness",
+    "questComplete": "chen_first_rating",
+    "optional": {
+      "rosa": "rosa_first_meeting",
+      "tanaka": "tanaka_chrome_warning"
+    }
+  },
+  "tutorialElements": {
+    "coreMechanics": [
+      "navigation",
+      "time_management",
+      "package_integrity",
+      "rating_system",
+      "economy"
+    ],
+    "hudElements": [
+      {
+        "id": "objective_tracker",
+        "position": "top-right",
+        "description": "Shows current objectives"
+      },
+      {
+        "id": "navigation_waypoint",
+        "position": "ar_overlay",
+        "description": "AR navigation overlay"
+      },
+      {
+        "id": "timer",
+        "position": "top-center",
+        "description": "Countdown to deadline"
+      },
+      {
+        "id": "package_status",
+        "position": "bottom-left",
+        "description": "Package integrity percentage"
+      },
+      {
+        "id": "credits_rating",
+        "position": "bottom-right",
+        "description": "Current credits and rating"
+      }
+    ],
+    "npcInteraction": [
+      "dialogue_choices_matter",
+      "relationship_tracking",
+      "timed_choices"
+    ],
+    "worldBuilding": [
+      "the_hollows_district",
+      "corpo_influence",
+      "gray_market_economy"
+    ]
+  },
+  "locations": [
+    {
+      "id": "hollows_courier_station",
+      "name": "The Hollows Courier Station",
+      "type": "starting_hub"
+    },
+    {
+      "id": "hollows_streets",
+      "name": "The Hollows Streets",
+      "type": "safe_tutorial_zone"
+    },
+    {
+      "id": "extraction_scene",
+      "name": "Corpo Extraction Site",
+      "type": "scripted_event"
+    },
+    {
+      "id": "tanaka_clinic",
+      "name": "Dr. Tanaka's Clinic",
+      "type": "destination",
+      "district": "night_market"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "chen",
+      "role": "quest_giver",
+      "functions": ["rating_explainer", "mentor"]
+    },
+    {
+      "id": "rosa",
+      "role": "optional_interaction",
+      "functions": ["vehicle_tutorial", "potential_romance"]
+    },
+    {
+      "id": "tanaka",
+      "role": "quest_completion",
+      "functions": ["chrome_philosophy_intro", "augment_specialist"]
+    },
+    {
+      "id": "corpo_recovery_team",
+      "role": "background",
+      "functions": ["world_building"]
+    },
+    {
+      "id": "screaming_courier",
+      "role": "scripted_npc",
+      "functions": ["stakes_demonstration"]
+    }
+  ],
+  "items": [
+    {
+      "id": "medical_supplies_package",
+      "type": "quest_item",
+      "flags": ["fragile"],
+      "description": "Medical supplies for Dr. Tanaka's clinic"
+    }
+  ],
+  "scriptedEvents": [
+    {
+      "id": "chen_introduction",
+      "type": "cutscene",
+      "skippable": true,
+      "skippableAfter": "first_playthrough"
+    },
+    {
+      "id": "rosa_garage_scene",
+      "type": "optional_scene",
+      "teaches": "vehicle_maintenance"
+    },
+    {
+      "id": "corpo_extraction",
+      "type": "triggered_event",
+      "triggerLocation": "extraction_scene",
+      "hasBranchingChoices": true
+    },
+    {
+      "id": "tanaka_delivery",
+      "type": "quest_complete",
+      "establishes": "tanaka_character"
+    },
+    {
+      "id": "chen_rating_call",
+      "type": "post_delivery",
+      "explains": "progression_system"
+    }
+  ],
+  "narrativeFunction": [
+    "tone_setter",
+    "mechanics_tutorial",
+    "relationship_foundation",
+    "thematic_introduction",
+    "player_agency"
+  ],
+  "writingNotes": {
+    "tone": [
+      "grounded_desperation",
+      "no_heroics",
+      "quiet_horror",
+      "economic_anxiety"
+    ],
+    "chenVoice": "Tired pragmatist, seen it all. Not cruel, but not soft.",
+    "rosaVoice": "Warm, competent, friendly. Wants you to succeed.",
+    "tanakaVoice": "Professional, clinical, but humane. Early warning about chrome."
+  },
+  "playerTakeaway": [
+    "This world is cruel and exploitative",
+    "The rating system is life or death",
+    "Chrome is everywhere, and you'll need it eventually",
+    "There are good people trying to help you survive",
+    "Failure looks like that screaming courier",
+    "You're in the system now—there's no going back"
+  ],
+  "centralQuestion": "How far will you go to stay alive? What will you trade?",
+  "relatedContent": {
+    "nextQuest": "MAIN_T1_FRESH_MEAT",
+    "characters": ["chen", "rosa", "tanaka"],
+    "locations": ["the_hollows"]
+  }
+}
