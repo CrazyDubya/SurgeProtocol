@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surge Protocol — Codebase Subway Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, #0a0a1a 60%, transparent);
+    padding: 20px 30px 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .header > * { pointer-events: auto; }
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #00ffc8;
+    text-shadow: 0 0 20px rgba(0,255,200,0.3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header .subtitle {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* Legend */
+  .legend {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    background: rgba(10,10,26,0.92);
+    border: 1px solid #1e1e3a;
+    border-radius: 12px;
+    padding: 16px 20px;
+    backdrop-filter: blur(10px);
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .legend h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .legend-item:hover { background: rgba(255,255,255,0.05); }
+  .legend-item .line-color {
+    width: 28px;
+    height: 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend-item .line-name {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .legend-item .line-desc {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    z-index: 200;
+    background: rgba(10,10,30,0.95);
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 14px 18px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    max-width: 340px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip .tt-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .tooltip .tt-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #00ffc8;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+  .tooltip .tt-desc {
+    font-size: 12px;
+    color: #999;
+    line-height: 1.4;
+  }
+  .tooltip .tt-lines {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .tooltip .tt-line-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Map container */
+  .map-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .map-container.grabbing { cursor: grabbing; }
+
+  /* SVG */
+  svg { user-select: none; }
+
+  /* Station hover effects */
+  .station { cursor: pointer; }
+  .station:hover .station-dot { filter: brightness(1.4); }
+  .station:hover .station-ring { opacity: 1; }
+  .station-ring {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  /* Transfer station pulse */
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.1; transform: scale(1.8); }
+  }
+  .transfer-pulse {
+    animation: pulse 3s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  /* Line glow */
+  .line-path {
+    transition: filter 0.3s;
+  }
+  .line-path.highlighted {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  /* Controls */
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ctrl-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    background: rgba(10,10,26,0.9);
+    color: #888;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .ctrl-btn:hover {
+    background: rgba(30,30,60,0.9);
+    color: #ccc;
+    border-color: #3a3a5a;
+  }
+
+  /* Zone labels */
+  .zone-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* Connection dashed */
+  .connection {
+    stroke-dasharray: 6 4;
+    opacity: 0.3;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Surge Protocol</h1>
+    <div class="subtitle">Codebase Architecture — Subway Map</div>
+  </div>
+</div>
+
+<div class="legend" id="legend">
+  <h3>Lines</h3>
+  <div class="legend-item" data-line="red" onmouseenter="highlightLine('red')" onmouseleave="unhighlightLine('red')">
+    <div class="line-color" style="background:#ff3860"></div>
+    <span class="line-name" style="color:#ff3860">API Express</span>
+    <span class="line-desc">Backend REST endpoints</span>
+  </div>
+  <div class="legend-item" data-line="blue" onmouseenter="highlightLine('blue')" onmouseleave="unhighlightLine('blue')">
+    <div class="line-color" style="background:#42a5f5"></div>
+    <span class="line-name" style="color:#42a5f5">Frontend Line</span>
+    <span class="line-desc">Preact UI pages</span>
+  </div>
+  <div class="legend-item" data-line="green" onmouseenter="highlightLine('green')" onmouseleave="unhighlightLine('green')">
+    <div class="line-color" style="background:#00e676"></div>
+    <span class="line-name" style="color:#00e676">Engine Line</span>
+    <span class="line-desc">Game mechanics &amp; rules</span>
+  </div>
+  <div class="legend-item" data-line="orange" onmouseenter="highlightLine('orange')" onmouseleave="unhighlightLine('orange')">
+    <div class="line-color" style="background:#ff9100"></div>
+    <span class="line-name" style="color:#ff9100">Realtime Express</span>
+    <span class="line-desc">Durable Objects &amp; WebSocket</span>
+  </div>
+  <div class="legend-item" data-line="pink" onmouseenter="highlightLine('pink')" onmouseleave="unhighlightLine('pink')">
+    <div class="line-color" style="background:#e91e63"></div>
+    <span class="line-name" style="color:#e91e63">State Line</span>
+    <span class="line-desc">Preact Signal stores</span>
+  </div>
+  <div class="legend-item" data-line="purple" onmouseenter="highlightLine('purple')" onmouseleave="unhighlightLine('purple')">
+    <div class="line-color" style="background:#ab47bc"></div>
+    <span class="line-name" style="color:#ab47bc">Data Line</span>
+    <span class="line-desc">Database &amp; migrations</span>
+  </div>
+  <div class="legend-item" data-line="yellow" onmouseenter="highlightLine('yellow')" onmouseleave="unhighlightLine('yellow')">
+    <div class="line-color" style="background:#ffd740"></div>
+    <span class="line-name" style="color:#ffd740">Infrastructure</span>
+    <span class="line-desc">Middleware &amp; services</span>
+  </div>
+  <div class="legend-item" data-line="teal" onmouseenter="highlightLine('teal')" onmouseleave="unhighlightLine('teal')">
+    <div class="line-color" style="background:#26c6da"></div>
+    <span class="line-name" style="color:#26c6da">Narrative Line</span>
+    <span class="line-desc">Story &amp; content</span>
+  </div>
+  <h3 style="margin-top: 14px;">Symbols</h3>
+  <div class="legend-item">
+    <svg width="28" height="20"><circle cx="14" cy="10" r="7" fill="none" stroke="#fff" stroke-width="2"/><circle cx="14" cy="10" r="3" fill="#fff"/></svg>
+    <span class="line-name" style="color:#ccc; font-size:11px">Transfer Station</span>
+  </div>
+  <div class="legend-item">
+    <svg width="28" height="20"><circle cx="14" cy="10" r="5" fill="#ff3860"/></svg>
+    <span class="line-name" style="color:#ccc; font-size:11px">Station</span>
+  </div>
+  <div class="legend-item">
+    <svg width="28" height="20"><line x1="2" y1="10" x2="26" y2="10" stroke="#555" stroke-width="2" stroke-dasharray="4 3"/></svg>
+    <span class="line-name" style="color:#ccc; font-size:11px">Cross-system link</span>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-path" id="tt-path"></div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-lines" id="tt-lines"></div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="zoomIn()" title="Zoom in">+</button>
+  <button class="ctrl-btn" onclick="zoomOut()" title="Zoom out">−</button>
+  <button class="ctrl-btn" onclick="resetView()" title="Reset view">⌂</button>
+</div>
+
+<div class="map-container" id="mapContainer">
+<svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1500">
+  <defs>
+    <!-- Line glows -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="glow-strong">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- ===================== ZONE LABELS (background) ===================== -->
+  <text x="350" y="160" class="zone-label" fill="#111122" font-size="60">Frontend</text>
+  <text x="250" y="470" class="zone-label" fill="#111122" font-size="48">State</text>
+  <text x="500" y="750" class="zone-label" fill="#111122" font-size="60">Backend API</text>
+  <text x="540" y="1100" class="zone-label" fill="#111122" font-size="48">Game Engine</text>
+  <text x="100" y="1050" class="zone-label" fill="#111122" font-size="42">Data Layer</text>
+  <text x="1100" y="1100" class="zone-label" fill="#111122" font-size="42">Narrative</text>
+  <text x="850" y="340" class="zone-label" fill="#111122" font-size="42">Realtime</text>
+
+  <!-- ===================== CROSS-SYSTEM CONNECTIONS ===================== -->
+  <!-- Dashboard to Surge Central (Frontend → Backend) -->
+  <line x1="640" y1="150" x2="640" y2="460" class="connection" stroke="#555" stroke-width="2"/>
+  <line x1="700" y1="700" x2="700" y2="460" class="connection" stroke="#555" stroke-width="2"/>
+  <!-- Character Page → Characters API -->
+  <line x1="980" y1="150" x2="1060" y2="700" class="connection" stroke="#555" stroke-width="2"/>
+  <!-- Combat Store → Combat Engine -->
+  <line x1="1160" y1="460" x2="700" y2="1050" class="connection" stroke="#555" stroke-width="2"/>
+  <!-- Missions Page → Missions API -->
+  <line x1="810" y1="150" x2="1230" y2="700" class="connection" stroke="#555" stroke-width="2"/>
+  <!-- War Page → War Theater DO -->
+  <line x1="1660" y1="150" x2="1180" y2="310" class="connection" stroke="#555" stroke-width="2"/>
+
+  <!-- ===================== LINE PATHS ===================== -->
+
+  <!-- RED LINE: API Express (horizontal east from Surge Central) -->
+  <path d="M 700,700 L 1780,700"
+        class="line-path" data-line="red"
+        stroke="#ff3860" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- YELLOW LINE: Infrastructure (west from Surge Central, then south) -->
+  <path d="M 700,700 L 200,700 L 200,1020"
+        class="line-path" data-line="yellow"
+        stroke="#ffd740" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- GREEN LINE: Game Engine (south from Surge Central) -->
+  <path d="M 700,700 L 700,1400"
+        class="line-path" data-line="green"
+        stroke="#00e676" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- ORANGE LINE: Realtime (NE from Surge Central) -->
+  <path d="M 700,700 L 780,620 L 1300,200"
+        class="line-path" data-line="orange"
+        stroke="#ff9100" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- BLUE LINE: Frontend (horizontal top) -->
+  <path d="M 130,150 L 1660,150"
+        class="line-path" data-line="blue"
+        stroke="#42a5f5" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- PINK LINE: State Stores (vertical from Dashboard, then horizontal east) -->
+  <path d="M 640,150 L 640,460 L 1680,460"
+        class="line-path" data-line="pink"
+        stroke="#e91e63" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- PURPLE LINE: Data Layer (SW diagonal from Surge Central) -->
+  <path d="M 700,700 L 150,1300"
+        class="line-path" data-line="purple"
+        stroke="#ab47bc" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- TEAL LINE: Narrative (south from Missions area on Red) -->
+  <path d="M 1230,700 L 1230,1400"
+        class="line-path" data-line="teal"
+        stroke="#26c6da" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- ===================== STATIONS ===================== -->
+
+  <!-- ===== SURGE CENTRAL (Transfer: Red, Yellow, Green, Orange, Purple) ===== -->
+  <g class="station" data-name="Surge Central" data-path="src/index.ts" data-desc="Main entry point — Hono app init, route mounting, middleware, WebSocket handlers, Durable Object exports" data-lines="red,yellow,green,orange,purple">
+    <circle cx="700" cy="700" r="20" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" class="transfer-pulse"/>
+    <circle cx="700" cy="700" r="14" fill="#0a0a1a" stroke="#fff" stroke-width="3" class="station-dot"/>
+    <circle cx="700" cy="700" r="5" fill="#fff"/>
+    <circle cx="700" cy="700" r="20" fill="transparent" stroke="transparent" stroke-width="8" class="station-ring"/>
+    <text x="716" y="740" fill="#fff" font-size="15" font-weight="700" font-family="JetBrains Mono, monospace">SURGE CENTRAL</text>
+    <text x="716" y="756" fill="#666" font-size="10" font-family="JetBrains Mono, monospace">src/index.ts</text>
+  </g>
+
+  <!-- ===== RED LINE STATIONS ===== -->
+  <g class="station" data-name="Auth" data-path="src/api/auth/index.ts" data-desc="Authentication routes — login, register, token refresh, session management via JWT" data-lines="red">
+    <circle cx="880" cy="700" r="7" fill="#ff3860" class="station-dot"/>
+    <circle cx="880" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="865" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Auth</text>
+  </g>
+
+  <g class="station" data-name="Characters" data-path="src/api/characters/index.ts" data-desc="Character CRUD, progression, attributes (PWR, AGI, END, VEL, INT, WIS, EMP, PRC), consciousness system" data-lines="red,teal">
+    <circle cx="1060" cy="700" r="12" fill="#0a0a1a" stroke="#fff" stroke-width="2.5" class="station-dot"/>
+    <circle cx="1060" cy="700" r="4" fill="#fff"/>
+    <circle cx="1060" cy="700" r="18" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1060" y="685" fill="#fff" font-size="13" font-weight="700" font-family="Inter, sans-serif" text-anchor="middle">Characters</text>
+  </g>
+
+  <g class="station" data-name="Missions" data-path="src/api/missions/index.ts" data-desc="Mission listing, acceptance, completion, rewards — connects to narrative quest system" data-lines="red,teal">
+    <circle cx="1230" cy="700" r="12" fill="#0a0a1a" stroke="#fff" stroke-width="2.5" class="station-dot"/>
+    <circle cx="1230" cy="700" r="4" fill="#fff"/>
+    <circle cx="1230" cy="700" r="18" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1230" y="685" fill="#fff" font-size="13" font-weight="700" font-family="Inter, sans-serif" text-anchor="middle">Missions</text>
+  </g>
+
+  <g class="station" data-name="Factions" data-path="src/api/factions/index.ts" data-desc="Faction reputation, wars, territory control, leaderboards" data-lines="red">
+    <circle cx="1390" cy="700" r="7" fill="#ff3860" class="station-dot"/>
+    <circle cx="1390" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1390" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Factions</text>
+  </g>
+
+  <g class="station" data-name="Skills" data-path="src/api/skills/index.ts" data-desc="Skill system endpoints — skill checks, progression, specializations" data-lines="red">
+    <circle cx="1510" cy="700" r="7" fill="#ff3860" class="station-dot"/>
+    <circle cx="1510" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1510" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Skills</text>
+  </g>
+
+  <g class="station" data-name="World & Items" data-path="src/api/world/ & src/api/items/" data-desc="World state, environments, districts + item database, inventory management, augmentations" data-lines="red">
+    <circle cx="1640" cy="700" r="7" fill="#ff3860" class="station-dot"/>
+    <circle cx="1640" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1640" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">World & Items</text>
+  </g>
+
+  <g class="station" data-name="Economy" data-path="src/api/economy/index.ts" data-desc="Currency, vendors, transactions, contracts, debt system" data-lines="red">
+    <circle cx="1780" cy="700" r="7" fill="#ff3860" class="station-dot"/>
+    <circle cx="1780" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1780" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Economy</text>
+  </g>
+
+  <!-- ===== YELLOW LINE STATIONS ===== -->
+  <g class="station" data-name="CORS" data-path="src/middleware/" data-desc="Cross-Origin Resource Sharing configuration for API access" data-lines="yellow">
+    <circle cx="530" cy="700" r="7" fill="#ffd740" class="station-dot"/>
+    <circle cx="530" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="530" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">CORS</text>
+  </g>
+
+  <g class="station" data-name="Logging" data-path="src/middleware/" data-desc="Request ID generation, timing, structured logging middleware" data-lines="yellow">
+    <circle cx="370" cy="700" r="7" fill="#ffd740" class="station-dot"/>
+    <circle cx="370" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="370" y="687" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Logging</text>
+  </g>
+
+  <g class="station" data-name="Auth Middleware" data-path="src/middleware/auth.ts" data-desc="JWT verification, session storage, token generation (jose library)" data-lines="yellow">
+    <circle cx="200" cy="700" r="7" fill="#ffd740" class="station-dot"/>
+    <circle cx="200" cy="700" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="200" y="680" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Auth MW</text>
+  </g>
+
+  <g class="station" data-name="Rate Limiter" data-path="src/middleware/rateLimit.ts" data-desc="Dynamic and expensive operation rate limiting" data-lines="yellow">
+    <circle cx="200" cy="860" r="7" fill="#ffd740" class="station-dot"/>
+    <circle cx="200" cy="860" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="220" y="866" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="start">Rate Limiter</text>
+  </g>
+
+  <g class="station" data-name="KV Cache" data-path="src/cache/" data-desc="Cloudflare KV namespace — session caching, temporary state, performance layer" data-lines="yellow">
+    <circle cx="200" cy="1020" r="7" fill="#ffd740" class="station-dot"/>
+    <circle cx="200" cy="1020" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="220" y="1026" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="start">KV Cache</text>
+  </g>
+
+  <!-- ===== GREEN LINE STATIONS ===== -->
+  <g class="station" data-name="Dice System" data-path="src/game/mechanics/dice.ts" data-desc="2d6 core system — skill checks, extended checks, criticals (snake eyes/boxcars), target numbers" data-lines="green">
+    <circle cx="700" cy="870" r="7" fill="#00e676" class="station-dot"/>
+    <circle cx="700" cy="870" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="720" y="876" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Dice System</text>
+  </g>
+
+  <g class="station" data-name="Combat Engine" data-path="src/game/mechanics/combat.ts" data-desc="Initiative (2d6+VEL), attacks, damage rolls, armor reduction, wound tracking, combat actions" data-lines="green,orange">
+    <circle cx="700" cy="1050" r="12" fill="#0a0a1a" stroke="#fff" stroke-width="2.5" class="station-dot"/>
+    <circle cx="700" cy="1050" r="4" fill="#fff"/>
+    <circle cx="700" cy="1050" r="18" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="720" y="1046" fill="#fff" font-size="13" font-weight="700" font-family="Inter, sans-serif">Combat Engine</text>
+    <text x="720" y="1062" fill="#666" font-size="10" font-family="JetBrains Mono, monospace">combat.ts + CombatSession DO</text>
+  </g>
+
+  <g class="station" data-name="Rating System" data-path="src/game/mechanics/rating.ts" data-desc="Carrier rating calculation — Tier 1-10 progression based on performance metrics" data-lines="green">
+    <circle cx="700" cy="1220" r="7" fill="#00e676" class="station-dot"/>
+    <circle cx="700" cy="1220" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="720" y="1226" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Rating System</text>
+  </g>
+
+  <g class="station" data-name="Dialogue System" data-path="src/game/dialogue/index.ts" data-desc="Dialogue trigger handling, conversation trees, NPC interaction logic" data-lines="green">
+    <circle cx="700" cy="1400" r="7" fill="#00e676" class="station-dot"/>
+    <circle cx="700" cy="1400" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="720" y="1406" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Dialogue</text>
+  </g>
+
+  <!-- ===== ORANGE LINE STATIONS ===== -->
+  <g class="station" data-name="WebSocket Hub" data-path="src/realtime/" data-desc="WebSocket endpoint routing — /ws/combat, /ws/war, /ws/war-theater, /ws/world" data-lines="orange">
+    <circle cx="830" cy="590" r="7" fill="#ff9100" class="station-dot"/>
+    <circle cx="830" cy="590" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="850" y="596" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">WebSocket Hub</text>
+  </g>
+
+  <g class="station" data-name="Combat Session DO" data-path="src/realtime/combat.ts" data-desc="Durable Object — real-time combat state machine (initiative, turns, WebSocket connections per session)" data-lines="orange">
+    <circle cx="990" cy="450" r="7" fill="#ff9100" class="station-dot"/>
+    <circle cx="990" cy="450" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1010" y="446" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Combat Session</text>
+    <text x="1010" y="462" fill="#666" font-size="10" font-family="JetBrains Mono, monospace">Durable Object</text>
+  </g>
+
+  <g class="station" data-name="War Theater DO" data-path="src/realtime/war.ts" data-desc="Durable Object — territory control, war scores, faction conflict aggregation in real-time" data-lines="orange">
+    <circle cx="1120" cy="340" r="7" fill="#ff9100" class="station-dot"/>
+    <circle cx="1120" cy="340" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1140" y="336" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">War Theater</text>
+    <text x="1140" y="352" fill="#666" font-size="10" font-family="JetBrains Mono, monospace">Durable Object</text>
+  </g>
+
+  <g class="station" data-name="World Clock DO" data-path="src/realtime/world.ts" data-desc="Durable Object — shared game time, weather cycles, environmental effects broadcast" data-lines="orange">
+    <circle cx="1300" cy="200" r="7" fill="#ff9100" class="station-dot"/>
+    <circle cx="1300" cy="200" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1280" y="186" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="end">World Clock</text>
+    <text x="1280" y="200" fill="#666" font-size="10" font-family="JetBrains Mono, monospace" text-anchor="end">Durable Object</text>
+  </g>
+
+  <!-- ===== BLUE LINE STATIONS (Frontend) ===== -->
+  <g class="station" data-name="Login" data-path="frontend/src/pages/Login/" data-desc="Authentication UI — email/password form, error handling, redirect to dashboard" data-lines="blue">
+    <circle cx="130" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="130" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="130" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Login</text>
+  </g>
+
+  <g class="station" data-name="Register" data-path="frontend/src/pages/Register/" data-desc="Account creation wizard — username, email, password with validation" data-lines="blue">
+    <circle cx="300" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="300" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="300" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Register</text>
+  </g>
+
+  <g class="station" data-name="Character Select" data-path="frontend/src/pages/CharacterSelect/" data-desc="Character selection screen — list existing characters, option to create new" data-lines="blue">
+    <circle cx="470" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="470" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="470" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Char Select</text>
+  </g>
+
+  <g class="station" data-name="Dashboard" data-path="frontend/src/pages/Dashboard/" data-desc="Main game interface (lazy-loaded) — hub connecting to all game systems, status overview" data-lines="blue,pink">
+    <circle cx="640" cy="150" r="14" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" class="transfer-pulse"/>
+    <circle cx="640" cy="150" r="12" fill="#0a0a1a" stroke="#fff" stroke-width="2.5" class="station-dot"/>
+    <circle cx="640" cy="150" r="4" fill="#fff"/>
+    <circle cx="640" cy="150" r="18" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="640" y="128" fill="#fff" font-size="14" font-weight="700" font-family="Inter, sans-serif" text-anchor="middle">Dashboard</text>
+  </g>
+
+  <g class="station" data-name="Missions Page" data-path="frontend/src/pages/Missions/" data-desc="Mission browser — available missions, active tracker, completion UI" data-lines="blue">
+    <circle cx="810" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="810" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="810" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Missions</text>
+  </g>
+
+  <g class="station" data-name="Character Page" data-path="frontend/src/pages/Character/" data-desc="Character sheet — attributes, progression, skills, augmentations view" data-lines="blue">
+    <circle cx="980" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="980" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="980" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Character</text>
+  </g>
+
+  <g class="station" data-name="Inventory Page" data-path="frontend/src/pages/Inventory/" data-desc="Item management UI — equipped gear, inventory grid, item details" data-lines="blue">
+    <circle cx="1150" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="1150" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1150" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Inventory</text>
+  </g>
+
+  <g class="station" data-name="Factions Page" data-path="frontend/src/pages/Factions/" data-desc="Faction standing, leaderboards, reputation display" data-lines="blue">
+    <circle cx="1320" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="1320" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1320" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Factions</text>
+  </g>
+
+  <g class="station" data-name="Algorithm Page" data-path="frontend/src/pages/Algorithm/" data-desc="AI character interaction terminal — The Algorithm dialogue interface" data-lines="blue">
+    <circle cx="1490" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="1490" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1490" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Algorithm</text>
+  </g>
+
+  <g class="station" data-name="War Page" data-path="frontend/src/pages/War/" data-desc="Faction war interface — territory map, live scores, war actions" data-lines="blue">
+    <circle cx="1660" cy="150" r="7" fill="#42a5f5" class="station-dot"/>
+    <circle cx="1660" cy="150" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1660" y="135" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">War</text>
+  </g>
+
+  <!-- ===== PINK LINE STATIONS (State Stores) ===== -->
+  <g class="station" data-name="Auth Store" data-path="frontend/src/stores/authStore.ts" data-desc="Login state, JWT tokens, current user — Preact Signal store" data-lines="pink,blue">
+    <circle cx="640" cy="460" r="12" fill="#0a0a1a" stroke="#fff" stroke-width="2.5" class="station-dot"/>
+    <circle cx="640" cy="460" r="4" fill="#fff"/>
+    <text x="640" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Auth Store</text>
+  </g>
+
+  <g class="station" data-name="Character Store" data-path="frontend/src/stores/characterStore.ts" data-desc="Selected character, attributes, progression state — Preact Signal" data-lines="pink">
+    <circle cx="810" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="810" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="810" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Char Store</text>
+  </g>
+
+  <g class="station" data-name="Mission Store" data-path="frontend/src/stores/missionStore.ts" data-desc="Available/active missions state — Preact Signal" data-lines="pink">
+    <circle cx="990" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="990" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="990" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Mission Store</text>
+  </g>
+
+  <g class="station" data-name="Combat Store" data-path="frontend/src/stores/combatStore.ts" data-desc="Current combat state, actions, initiative order — Preact Signal" data-lines="pink">
+    <circle cx="1160" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="1160" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1160" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">Combat Store</text>
+  </g>
+
+  <g class="station" data-name="War Store" data-path="frontend/src/stores/warTheaterStore.ts" data-desc="War information, territory standings — Preact Signal" data-lines="pink">
+    <circle cx="1330" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="1330" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1330" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">War Store</text>
+  </g>
+
+  <g class="station" data-name="World Store" data-path="frontend/src/stores/worldClockStore.ts" data-desc="Game time, weather state — Preact Signal" data-lines="pink">
+    <circle cx="1500" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="1500" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1500" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">World Store</text>
+  </g>
+
+  <g class="station" data-name="UI Store" data-path="frontend/src/stores/uiStore.ts" data-desc="UI state — modals, panels, theme, loading states — Preact Signal" data-lines="pink">
+    <circle cx="1680" cy="460" r="6" fill="#e91e63" class="station-dot"/>
+    <circle cx="1680" cy="460" r="12" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1680" y="490" fill="#ddd" font-size="12" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle">UI Store</text>
+  </g>
+
+  <!-- ===== PURPLE LINE STATIONS (Data Layer) ===== -->
+  <g class="station" data-name="DB Types" data-path="src/db/types.ts" data-desc="TypeScript type definitions for all 270 database tables" data-lines="purple">
+    <circle cx="562" cy="838" r="7" fill="#ab47bc" class="station-dot"/>
+    <circle cx="562" cy="838" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="544" y="830" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="end">DB Types</text>
+  </g>
+
+  <g class="station" data-name="Queries" data-path="src/db/queries.ts" data-desc="60+ database query functions — character, mission, inventory, faction, combat, skills" data-lines="purple">
+    <circle cx="424" cy="976" r="7" fill="#ab47bc" class="station-dot"/>
+    <circle cx="424" cy="976" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="406" y="968" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="end">Queries</text>
+    <text x="406" y="984" fill="#666" font-size="10" font-family="JetBrains Mono, monospace" text-anchor="end">60+ functions</text>
+  </g>
+
+  <g class="station" data-name="Seed Data" data-path="src/db/seed.ts" data-desc="Development data seeding — initial game data population" data-lines="purple">
+    <circle cx="287" cy="1114" r="7" fill="#ab47bc" class="station-dot"/>
+    <circle cx="287" cy="1114" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="269" y="1108" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif" text-anchor="end">Seed Data</text>
+  </g>
+
+  <g class="station" data-name="Migrations" data-path="migrations/" data-desc="10 SQL migration files — 270 tables covering enums, characters, augmentation, skills, missions, economy, combat, narrative, persistence" data-lines="purple">
+    <circle cx="150" cy="1252" r="9" fill="#ab47bc" class="station-dot"/>
+    <circle cx="150" cy="1252" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="170" y="1248" fill="#ddd" font-size="14" font-weight="700" font-family="Inter, sans-serif">Migrations</text>
+    <text x="170" y="1266" fill="#666" font-size="10" font-family="JetBrains Mono, monospace">270 tables · D1 SQLite</text>
+  </g>
+
+  <!-- ===== TEAL LINE STATIONS (Narrative) ===== -->
+  <g class="station" data-name="NPC Characters" data-path="surge-narrative/01_CHARACTERS/" data-desc="NPC character profiles — backstories, motivations, dialogue styles, relationship maps" data-lines="teal">
+    <circle cx="1230" cy="870" r="7" fill="#26c6da" class="station-dot"/>
+    <circle cx="1230" cy="870" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1250" y="876" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">NPCs</text>
+  </g>
+
+  <g class="station" data-name="Quest Design" data-path="surge-narrative/03_QUESTS/" data-desc="Quest design documents — objectives, branching paths, rewards, failure conditions" data-lines="teal">
+    <circle cx="1230" cy="1040" r="7" fill="#26c6da" class="station-dot"/>
+    <circle cx="1230" cy="1040" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1250" y="1046" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Quest Design</text>
+  </g>
+
+  <g class="station" data-name="Complications" data-path="surge-narrative/04_COMPLICATIONS/" data-desc="Mission complications — dynamic events, environmental hazards, NPC interference" data-lines="teal">
+    <circle cx="1230" cy="1210" r="7" fill="#26c6da" class="station-dot"/>
+    <circle cx="1230" cy="1210" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1250" y="1216" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Complications</text>
+  </g>
+
+  <g class="station" data-name="Procedural Content" data-path="surge-narrative/11_PROCEDURAL/" data-desc="Procedural encounter generation — random events, dynamic world content, district modifiers" data-lines="teal">
+    <circle cx="1230" cy="1400" r="7" fill="#26c6da" class="station-dot"/>
+    <circle cx="1230" cy="1400" r="14" fill="transparent" stroke="transparent" class="station-ring"/>
+    <text x="1250" y="1406" fill="#ddd" font-size="13" font-weight="600" font-family="Inter, sans-serif">Procedural</text>
+  </g>
+
+  <!-- ===================== DISTRICT / ZONE DECORATIONS ===================== -->
+  <!-- Subtle zone boundary rectangles -->
+  <rect x="60" y="80" width="1660" height="130" rx="16" fill="none" stroke="#1a1a3a" stroke-width="1" stroke-dasharray="8 4"/>
+  <rect x="570" y="400" width="1170" height="120" rx="16" fill="none" stroke="#1a1a3a" stroke-width="1" stroke-dasharray="8 4"/>
+
+  <!-- ===================== WATERMARK ===================== -->
+  <text x="1830" y="1470" fill="#151530" font-size="14" font-family="JetBrains Mono, monospace" text-anchor="end">
+    Cloudflare Workers · Hono · Preact · D1 · KV · R2 · Durable Objects
+  </text>
+
+</svg>
+</div>
+
+<script>
+// ===== Pan & Zoom =====
+const container = document.getElementById('mapContainer');
+const svg = document.getElementById('map');
+let scale = 1;
+let panX = 0, panY = 0;
+let isPanning = false;
+let startX, startY;
+const MIN_SCALE = 0.3;
+const MAX_SCALE = 3;
+
+function updateTransform() {
+  svg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  svg.style.transformOrigin = '0 0';
+}
+
+container.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.station')) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  container.classList.add('grabbing');
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  updateTransform();
+});
+
+window.addEventListener('mouseup', () => {
+  isPanning = false;
+  container.classList.remove('grabbing');
+});
+
+container.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * delta));
+
+  // Zoom towards mouse position
+  const rect = container.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  panX = mouseX - (mouseX - panX) * (newScale / scale);
+  panY = mouseY - (mouseY - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+}, { passive: false });
+
+function zoomIn() {
+  const newScale = Math.min(MAX_SCALE, scale * 1.3);
+  const cx = container.clientWidth / 2;
+  const cy = container.clientHeight / 2;
+  panX = cx - (cx - panX) * (newScale / scale);
+  panY = cy - (cy - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+}
+
+function zoomOut() {
+  const newScale = Math.max(MIN_SCALE, scale * 0.7);
+  const cx = container.clientWidth / 2;
+  const cy = container.clientHeight / 2;
+  panX = cx - (cx - panX) * (newScale / scale);
+  panY = cy - (cy - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+}
+
+function resetView() {
+  // Fit the map to the viewport
+  const vw = container.clientWidth;
+  const vh = container.clientHeight;
+  scale = Math.min(vw / 1920, vh / 1500) * 0.92;
+  panX = (vw - 1920 * scale) / 2;
+  panY = (vh - 1500 * scale) / 2;
+  updateTransform();
+}
+
+// Initial fit
+resetView();
+
+// ===== Tooltip =====
+const tooltip = document.getElementById('tooltip');
+const ttName = document.getElementById('tt-name');
+const ttPath = document.getElementById('tt-path');
+const ttDesc = document.getElementById('tt-desc');
+const ttLines = document.getElementById('tt-lines');
+
+const lineColors = {
+  red: '#ff3860',
+  blue: '#42a5f5',
+  green: '#00e676',
+  orange: '#ff9100',
+  pink: '#e91e63',
+  purple: '#ab47bc',
+  yellow: '#ffd740',
+  teal: '#26c6da'
+};
+
+const lineNames = {
+  red: 'API Express',
+  blue: 'Frontend Line',
+  green: 'Engine Line',
+  orange: 'Realtime Express',
+  pink: 'State Line',
+  purple: 'Data Line',
+  yellow: 'Infrastructure',
+  teal: 'Narrative Line'
+};
+
+document.querySelectorAll('.station').forEach(station => {
+  station.addEventListener('mouseenter', (e) => {
+    const name = station.dataset.name;
+    const path = station.dataset.path;
+    const desc = station.dataset.desc;
+    const lines = station.dataset.lines ? station.dataset.lines.split(',') : [];
+
+    ttName.textContent = name;
+    ttName.style.color = lines.length > 0 ? lineColors[lines[0]] : '#fff';
+    ttPath.textContent = path;
+    ttDesc.textContent = desc;
+
+    ttLines.innerHTML = '';
+    lines.forEach(l => {
+      const dot = document.createElement('div');
+      dot.className = 'tt-line-dot';
+      dot.style.background = lineColors[l];
+      dot.title = lineNames[l];
+      ttLines.appendChild(dot);
+    });
+
+    tooltip.classList.add('visible');
+  });
+
+  station.addEventListener('mousemove', (e) => {
+    let x = e.clientX + 16;
+    let y = e.clientY + 16;
+    // Keep tooltip in viewport
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    if (x + tw > window.innerWidth) x = e.clientX - tw - 16;
+    if (y + th > window.innerHeight) y = e.clientY - th - 16;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  });
+
+  station.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+  });
+});
+
+// ===== Line highlighting =====
+function highlightLine(lineName) {
+  document.querySelectorAll('.line-path').forEach(path => {
+    if (path.dataset.line === lineName) {
+      path.classList.add('highlighted');
+      path.style.filter = `drop-shadow(0 0 8px ${lineColors[lineName]})`;
+    } else {
+      path.style.opacity = '0.15';
+    }
+  });
+  // Dim stations not on this line
+  document.querySelectorAll('.station').forEach(station => {
+    const lines = station.dataset.lines ? station.dataset.lines.split(',') : [];
+    if (!lines.includes(lineName)) {
+      station.style.opacity = '0.15';
+    }
+  });
+}
+
+function unhighlightLine(lineName) {
+  document.querySelectorAll('.line-path').forEach(path => {
+    path.classList.remove('highlighted');
+    path.style.filter = '';
+    path.style.opacity = '';
+  });
+  document.querySelectorAll('.station').forEach(station => {
+    station.style.opacity = '';
+  });
+}
+
+// ===== Touch support =====
+let lastTouchDist = 0;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+container.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isPanning = true;
+    startX = e.touches[0].clientX - panX;
+    startY = e.touches[0].clientY - panY;
+  } else if (e.touches.length === 2) {
+    isPanning = false;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+    lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+  }
+}, { passive: true });
+
+container.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (e.touches.length === 1 && isPanning) {
+    panX = e.touches[0].clientX - startX;
+    panY = e.touches[0].clientY - startY;
+    updateTransform();
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const delta = dist / lastTouchDist;
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * delta));
+
+    const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
+    lastTouchDist = dist;
+    updateTransform();
+  }
+}, { passive: false });
+
+container.addEventListener('touchend', () => {
+  isPanning = false;
+});
+
+// Resize handler
+window.addEventListener('resize', resetView);
+</script>
+
+</body>
+</html>
