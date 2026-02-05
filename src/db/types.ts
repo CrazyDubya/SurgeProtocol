@@ -26,6 +26,10 @@ export type DamageType = 'PHYSICAL' | 'ENERGY' | 'CHEMICAL' | 'EMP' | 'NEURAL' |
 export type ReputationTier = 'HOSTILE' | 'UNFRIENDLY' | 'NEUTRAL' | 'FRIENDLY' | 'ALLIED' | 'REVERED';
 export type FactionType = 'CORPORATION' | 'GANG' | 'SYNDICATE' | 'GOVERNMENT' | 'UNDERGROUND' | 'CULT' | 'INDEPENDENT';
 
+export type VehicleClass = 'BIKE' | 'CAR' | 'TRUCK' | 'VAN' | 'SUV' | 'MOTORCYCLE' | 'SCOOTER' | 'QUADCOPTER' | 'VTOL' | 'BOAT' | 'MECH_LIGHT' | 'MECH_HEAVY' | 'EXOTIC';
+export type SaveType = 'MANUAL' | 'AUTO' | 'QUICK' | 'CHECKPOINT' | 'IRONMAN' | 'BACKUP' | 'CLOUD';
+export type DifficultyLevel = 'STORY' | 'EASY' | 'NORMAL' | 'HARD' | 'NIGHTMARE' | 'IRONMAN' | 'CUSTOM';
+
 // =============================================================================
 // CORE ENTITIES
 // =============================================================================
@@ -173,6 +177,9 @@ export interface MissionDefinition {
   base_xp: number;
   time_limit_minutes: number | null;
   cargo_type: CargoType;
+  cargo_weight_kg: number | null;
+  required_vehicle_class: VehicleClass | null;
+  distance_km: number | null;
   is_repeatable: number;
   cooldown_hours: number | null;
   created_at: string;
@@ -279,4 +286,237 @@ export interface LeaderboardEntry {
   carrier_rating: number;
   total_deliveries: number;
   perfect_deliveries: number;
+}
+
+// =============================================================================
+// VEHICLE TYPES
+// =============================================================================
+
+/** Vehicle definition from vehicle_definitions table */
+export interface VehicleDefinition {
+  id: string;
+  code: string;
+  name: string;
+  manufacturer: string | null;
+  model_year: number | null;
+  description: string | null;
+
+  // Classification
+  vehicle_class: VehicleClass;
+  vehicle_type: string | null;
+  size_category: string | null;
+  rarity: Rarity;
+
+  // Performance
+  top_speed_kmh: number;
+  acceleration_0_100_seconds: number;
+  handling_rating: number;
+  braking_rating: number;
+  offroad_capability: number;
+
+  // Durability
+  max_hull_points: number;
+  armor_rating: number;
+  damage_resistances: string | null; // JSON
+
+  // Capacity
+  passenger_capacity: number;
+  cargo_capacity_kg: number;
+  cargo_volume_liters: number;
+  towing_capacity_kg: number;
+
+  // Power
+  power_source: string | null;
+  fuel_capacity: number;
+  fuel_consumption_per_km: number;
+  range_km: number;
+  recharge_time_hours: number;
+
+  // Requirements
+  required_tier: number;
+  required_skill_id: string | null;
+  required_skill_level: number;
+  license_required: string | null;
+
+  // Economy
+  base_price: number;
+  insurance_cost_monthly: number;
+  maintenance_cost_monthly: number;
+
+  // Features
+  autopilot_level: number;
+  network_connected: number; // boolean
+  stealth_capable: number; // boolean
+  centaur_compatible: number; // boolean
+  neural_interface_required: number; // boolean
+
+  created_at: string;
+  updated_at: string;
+}
+
+/** Character's owned vehicle from character_vehicles table */
+export interface CharacterVehicle {
+  id: string;
+  character_id: string;
+  vehicle_definition_id: string;
+  acquired_at: string;
+
+  // Identity
+  custom_name: string | null;
+  license_plate: string | null;
+  vin: string | null;
+  is_registered: number; // boolean
+
+  // State
+  current_location_id: string | null;
+  current_coordinates: string | null; // JSON {lat, lng}
+  current_hull_points: number;
+  current_fuel: number;
+  odometer_km: number;
+  is_damaged: number; // boolean
+
+  // Customization
+  paint_color_primary: string | null;
+  paint_color_secondary: string | null;
+  installed_mods: string | null; // JSON
+
+  // Ownership
+  ownership_type: string | null;
+  owned_outright: number; // boolean
+  loan_id: string | null;
+  insured: number; // boolean
+
+  // Corporate
+  corporate_issued: number; // boolean
+  corporate_tracked: number; // boolean
+  transponder_disabled: number; // boolean
+
+  // Tracking
+  total_deliveries: number;
+  total_distance_km: number;
+  accidents: number;
+}
+
+/** Character vehicle with definition details */
+export interface CharacterVehicleWithDetails extends CharacterVehicle {
+  definition: VehicleDefinition;
+}
+
+// =============================================================================
+// SAVE SYSTEM TYPES
+// =============================================================================
+
+/** Save game record from save_games table */
+export interface SaveGame {
+  id: string;
+  player_id: string;
+  created_at: string;
+  updated_at: string;
+
+  // Identity
+  save_name: string | null;
+  save_type: SaveType;
+  save_slot: number | null;
+  is_auto_save: number; // boolean
+  is_quicksave: number; // boolean
+
+  // Character
+  character_id: string | null;
+  character_name: string | null;
+  character_tier: number | null;
+  character_track: string | null;
+
+  // Progress
+  playtime_seconds: number;
+  story_progress_percent: number;
+  main_arc_name: string | null;
+  main_mission_name: string | null;
+
+  // Location
+  current_location_id: string | null;
+  current_location_name: string | null;
+  current_coordinates: string | null; // JSON
+
+  // Thumbnail
+  screenshot_asset: string | null;
+  thumbnail_asset: string | null;
+
+  // Version
+  game_version: string | null;
+  save_version: number;
+  compatible_versions: string | null; // JSON
+
+  // State
+  is_valid: number; // boolean
+  is_corrupted: number; // boolean
+  is_ironman: number; // boolean
+  difficulty: DifficultyLevel | null;
+
+  // Metadata
+  total_missions_completed: number;
+  total_credits_earned: number;
+  total_distance_km: number;
+  enemies_defeated: number;
+  deaths: number;
+
+  // Cloud
+  cloud_synced: number; // boolean
+  cloud_sync_at: string | null;
+  cloud_id: string | null;
+
+  // Integrity
+  data_checksum: string | null;
+  tamper_detected: number; // boolean
+}
+
+/** Save data chunk from save_data_chunks table */
+export interface SaveDataChunk {
+  id: string;
+  save_id: string;
+  chunk_type: string;
+
+  // Data
+  data: string; // JSON compressed state
+  data_version: number;
+  compressed: number; // boolean
+  compressed_size_bytes: number | null;
+  uncompressed_size_bytes: number | null;
+
+  // Integrity
+  checksum: string | null;
+  is_valid: number; // boolean
+
+  // Dependencies
+  depends_on_chunks: string | null; // JSON
+  load_priority: number;
+
+  created_at: string;
+  updated_at: string;
+}
+
+/** Checkpoint record from checkpoints table */
+export interface Checkpoint {
+  id: string;
+  save_id: string;
+  created_at: string;
+
+  // Context
+  checkpoint_type: string | null;
+  trigger_source: string | null;
+  description: string | null;
+
+  // Location
+  location_id: string | null;
+  coordinates: string | null; // JSON
+
+  // State
+  critical_state: string | null; // JSON
+
+  // Limits
+  expires_at: string | null;
+  is_persistent: number; // boolean
+
+  // Meta
+  replay_possible: number; // boolean
+  restore_count: number;
 }

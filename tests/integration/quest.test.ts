@@ -269,7 +269,7 @@ describe('Quest System Integration', () => {
     it('should accept a quest', async () => {
       const request = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
 
       const response = await app.fetch(request, env);
@@ -288,7 +288,7 @@ describe('Quest System Integration', () => {
       // quest-2 requires tier 3, character is tier 2
       const request = createTestRequest('POST', '/api/quests/quest-2/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
 
       const response = await app.fetch(request, env);
@@ -306,14 +306,14 @@ describe('Quest System Integration', () => {
       // First accept
       const firstRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(firstRequest, env);
 
       // Try to accept again
       const secondRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
 
       const response = await app.fetch(secondRequest, env);
@@ -348,7 +348,7 @@ describe('Quest System Integration', () => {
       // Accept a quest first
       const acceptRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(acceptRequest, env);
 
@@ -374,17 +374,17 @@ describe('Quest System Integration', () => {
       // Accept quest first
       const acceptRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(acceptRequest, env);
 
       // Update progress
       const progressRequest = createTestRequest('POST', '/api/quests/find_lost_package/progress', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           objectiveId: 'obj-1-1',
           progress: 2,
-        }),
+        },
       });
 
       const response = await app.fetch(progressRequest, env);
@@ -403,17 +403,17 @@ describe('Quest System Integration', () => {
       // Accept quest
       const acceptRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(acceptRequest, env);
 
       // Complete objective
       const progressRequest = createTestRequest('POST', '/api/quests/find_lost_package/progress', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           objectiveId: 'obj-1-1',
           progress: 3,
-        }),
+        },
       });
 
       const response = await app.fetch(progressRequest, env);
@@ -433,7 +433,7 @@ describe('Quest System Integration', () => {
       // Accept quest
       const acceptRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(acceptRequest, env);
 
@@ -458,7 +458,7 @@ describe('Quest System Integration', () => {
       // Accept quest
       const acceptRequest = createTestRequest('POST', '/api/quests/quest-1/accept', {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ tracked: true }),
+        body: { tracked: true },
       });
       await app.fetch(acceptRequest, env);
 
@@ -643,11 +643,11 @@ describe('Mission Action Handlers Integration', () => {
     it('should process dialogue with NPC', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'DIALOGUE',
           targetId: 'npc-1',
           parameters: {},
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -665,10 +665,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should require NPC target', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'DIALOGUE',
           parameters: {},
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -687,10 +687,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should use consumable item', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'USE_ITEM',
           parameters: { itemId: 'item-medkit' },
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -708,10 +708,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should require item ID', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'USE_ITEM',
           parameters: {},
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -728,10 +728,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should fail for items not in inventory', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'USE_ITEM',
           parameters: { itemId: 'nonexistent-item' },
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -750,10 +750,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should process stealth check', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'STEALTH',
           parameters: { type: 'SNEAK' },
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -772,10 +772,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should use character stealth skill', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'STEALTH',
           parameters: { type: 'HIDE' },
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -794,10 +794,10 @@ describe('Mission Action Handlers Integration', () => {
     it('should process wait action', async () => {
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'WAIT',
           parameters: { duration: 5, reason: 'REST' },
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);
@@ -815,17 +815,17 @@ describe('Mission Action Handlers Integration', () => {
 
     it('should reject wait longer than remaining time', async () => {
       // Update mission to have very short time limit
-      env.DB._update('mission_instances', testMissionInstanceId, {
+      env.DB._updateWhere('mission_instances', { id: testMissionInstanceId }, {
         time_limit_minutes: 1,
         started_at: new Date(Date.now() - 50000).toISOString(), // Started 50 seconds ago
       });
 
       const request = createTestRequest('POST', `/api/missions/${testMissionInstanceId}/action`, {
         headers: { Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({
+        body: {
           actionType: 'WAIT',
           parameters: { duration: 30 }, // 30 minutes, but only ~10 seconds remaining
-        }),
+        },
       });
 
       const response = await app.fetch(request, env);

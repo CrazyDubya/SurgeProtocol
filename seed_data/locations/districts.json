@@ -1,0 +1,208 @@
+{
+  "$schema": "../schemas/locations.schema.json",
+  "version": "1.0.0",
+  "description": "Districts and locations in Surge Protocol",
+  "districts": [
+    {
+      "code": "THE_HOLLOWS",
+      "name": "The Hollows",
+      "district_type": "RESIDENTIAL",
+      "tier_range": { "min": 0, "max": 2 },
+      "description": "Lower City starting area. Dense, claustrophobic, community-focused despite poverty.",
+      "danger_level": 3,
+      "surveillance_level": 1,
+      "population": 300000,
+      "controlling_factions": ["CHROME_SAINTS", "RAZOR_COLLECTIVE"],
+      "atmosphere": {
+        "color_palette": ["Gray concrete", "Rust orange", "Industrial yellow", "Fluorescent green", "Neon pink/blue"],
+        "sounds": ["Factory machinery hum", "Multilingual conversations", "Street vendors", "Sirens"],
+        "smells": ["Salt air", "Industrial chemicals", "Cooking food", "Garbage", "Ozone"]
+      },
+      "key_locations": [
+        { "name": "Chen's Dispatch Office", "type": "quest_hub", "npc": "CHEN_DISPATCHER" },
+        { "name": "Tanaka's Clinic", "type": "medical", "npc": "DR_TANAKA" },
+        { "name": "Rosa's Mechanic Shop", "type": "vendor", "npc": "ROSA_MECHANIC" },
+        { "name": "Hollows Market", "type": "market", "npc": null },
+        { "name": "The Gutters", "type": "residential", "npc": null }
+      ],
+      "hazards": ["Toxic puddles", "Unstable structures", "Gang checkpoints", "Repo teams"],
+      "resources": ["Cheap augments", "Street food", "Community support"],
+      "narrative_role": "Tutorial zone, emotional baseline, thematic foundation",
+      "algorithm_flavor": "DISTRICT: THE HOLLOWS. EFFICIENCY INDEX: LOW. MONITORING PRIORITY: MINIMAL."
+    },
+    {
+      "code": "RED_HARBOR",
+      "name": "Red Harbor",
+      "district_type": "INDUSTRIAL",
+      "tier_range": { "min": 2, "max": 5 },
+      "description": "Industrial corridor and shipping hub. Working class but more isolated and competitive than The Hollows.",
+      "danger_level": 4,
+      "surveillance_level": 2,
+      "population": 180000,
+      "controlling_factions": ["NEON_SAINTS"],
+      "atmosphere": {
+        "color_palette": ["Industrial gray", "Shipping container rust", "Harbor blue", "Warning yellow"],
+        "sounds": ["Ship horns", "Crane machinery", "Cargo loading", "Dockworker chatter"],
+        "smells": ["Diesel", "Sea salt", "Fish processing", "Metal"]
+      },
+      "key_locations": [
+        { "name": "Docklands", "type": "shipping", "npc": null },
+        { "name": "Red Harbor Ruins", "type": "abandoned", "npc": null },
+        { "name": "Delilah's Operations", "type": "quest_hub", "npc": "DELILAH_FIXER" }
+      ],
+      "hazards": ["Gang territory", "Smuggling operations", "Cargo accidents", "Syndicate activity"],
+      "resources": ["Smuggled goods", "Contraband", "Shipping routes"],
+      "narrative_role": "Mid-game progression, gray market introduction",
+      "algorithm_flavor": "DISTRICT: RED HARBOR. SHIPPING EFFICIENCY: OPTIMAL. CONTRABAND ACTIVITY: FLAGGED."
+    },
+    {
+      "code": "INDUSTRIAL_ZONE",
+      "name": "Industrial Zone",
+      "district_type": "INDUSTRIAL",
+      "tier_range": { "min": 3, "max": 7 },
+      "description": "Factory corridors and heavy manufacturing. Iron Dragon territory. Dangerous but profitable routes.",
+      "danger_level": 5,
+      "surveillance_level": 2,
+      "population": 120000,
+      "controlling_factions": ["IRON_DRAGONS"],
+      "atmosphere": {
+        "color_palette": ["Furnace orange", "Steel gray", "Warning red", "Industrial black"],
+        "sounds": ["Heavy machinery", "Metal forging", "Pneumatic hisses", "Gang patrols"],
+        "smells": ["Hot metal", "Machine oil", "Chemical processing", "Sweat"]
+      },
+      "key_locations": [
+        { "name": "Old Factory #7", "type": "industrial", "npc": null },
+        { "name": "The Forge", "type": "gang_hq", "npc": null }
+      ],
+      "hazards": ["Iron Dragons", "Industrial accidents", "Toxic exposure", "Heavy aug enforcers"],
+      "resources": ["Heavy augments", "Industrial parts", "Forge repairs"],
+      "narrative_role": "Combat zone, gang interaction, augment economy",
+      "algorithm_flavor": "DISTRICT: INDUSTRIAL. THREAT LEVEL: ELEVATED. AUGMENTED HOSTILES DETECTED."
+    },
+    {
+      "code": "NIGHT_MARKET",
+      "name": "Night Market",
+      "district_type": "COMMERCIAL",
+      "tier_range": { "min": 1, "max": 6 },
+      "description": "Black market hub where everything has a price. Illegal goods, information, and services.",
+      "danger_level": 3,
+      "surveillance_level": 1,
+      "population": 50000,
+      "controlling_factions": [],
+      "atmosphere": {
+        "color_palette": ["Neon everything", "Market lights", "Holographic ads", "Vendor displays"],
+        "sounds": ["Haggling", "Music overlapping", "Arcade sounds", "Crowd noise"],
+        "smells": ["Street food", "Incense", "Electronics burning", "Synth-smoke"]
+      },
+      "key_locations": [
+        { "name": "Main Market Plaza", "type": "market", "npc": null },
+        { "name": "Back Alleys", "type": "black_market", "npc": null },
+        { "name": "Information Booths", "type": "vendor", "npc": null }
+      ],
+      "hazards": ["Pickpockets", "Scammers", "Corpo security sweeps", "Bad deals"],
+      "resources": ["Black market goods", "Information", "Contraband tech", "Illegal augments"],
+      "narrative_role": "Shopping hub, side quest hooks, gray economy",
+      "algorithm_flavor": "DISTRICT: NIGHT MARKET. CONTRABAND INDEX: HIGH. MONITORING: COMPROMISED."
+    },
+    {
+      "code": "SILICON_HEIGHTS",
+      "name": "Silicon Heights",
+      "district_type": "CORPORATE",
+      "tier_range": { "min": 4, "max": 9 },
+      "description": "Tech companies and research labs. High security, clean streets, corporate surveillance everywhere.",
+      "danger_level": 2,
+      "surveillance_level": 5,
+      "population": 75000,
+      "controlling_factions": ["NAKAMURA_CORP", "APEX_SECURITY"],
+      "atmosphere": {
+        "color_palette": ["Clean white", "Chrome silver", "Corporate blue", "Sterile gray"],
+        "sounds": ["Quiet hum", "Security drones", "Corporate announcements", "Elevator muzak"],
+        "smells": ["Filtered air", "Coffee", "Clean surfaces", "Ozone from tech"]
+      },
+      "key_locations": [
+        { "name": "Nakamura Tower", "type": "corporate_hq", "npc": null },
+        { "name": "Research Labs", "type": "restricted", "npc": null },
+        { "name": "Corporate Plaza", "type": "public", "npc": null }
+      ],
+      "hazards": ["Corpo security", "Surveillance", "Access restrictions", "Corporate politics"],
+      "resources": ["Premium contracts", "Corporate intel", "High-end tech"],
+      "narrative_role": "Corporate espionage, high-tier contracts, Ascension path",
+      "algorithm_flavor": "DISTRICT: SILICON HEIGHTS. EFFICIENCY INDEX: OPTIMAL. AUTHORIZED PERSONNEL ONLY."
+    },
+    {
+      "code": "UPTOWN",
+      "name": "Uptown Corporate",
+      "district_type": "CORPORATE",
+      "tier_range": { "min": 5, "max": 10 },
+      "description": "Corporate heart of the city. Clean, surveilled, expensive. Where the elite live and work.",
+      "danger_level": 2,
+      "surveillance_level": 5,
+      "population": 50000,
+      "controlling_factions": ["OMNIDELIVER", "APEX_SECURITY"],
+      "atmosphere": {
+        "color_palette": ["Glass and steel", "Pristine white", "Gold accents", "Holographic displays"],
+        "sounds": ["Quiet wealth", "Hovercraft traffic", "Corporate muzak", "Polite conversation"],
+        "smells": ["Perfume", "Clean air", "Premium coffee", "Money"]
+      },
+      "key_locations": [
+        { "name": "Corporate Tower", "type": "corporate_hq", "npc": null },
+        { "name": "Executive Residences", "type": "residential", "npc": null },
+        { "name": "Premium Delivery Hub", "type": "quest_hub", "npc": null }
+      ],
+      "hazards": ["Corpo security", "Class discrimination", "Political danger", "Golden handcuffs"],
+      "resources": ["Premium everything", "Corporate contacts", "Executive contracts"],
+      "narrative_role": "Endgame progression, corporate path, Ascension destination",
+      "algorithm_flavor": "DISTRICT: UPTOWN. PREMIUM TIER ACCESS REQUIRED. WELCOME TO SUCCESS."
+    },
+    {
+      "code": "THE_INTERSTITIAL",
+      "name": "The Interstitial",
+      "district_type": "OFF_GRID",
+      "tier_range": { "min": 7, "max": 10 },
+      "description": "The space between. Off-grid communities hidden from Algorithm surveillance. Rogue territory.",
+      "danger_level": 4,
+      "surveillance_level": 0,
+      "population": null,
+      "controlling_factions": ["GHOST_NETWORK"],
+      "atmosphere": {
+        "color_palette": ["Shadows", "Warm light", "Hidden spaces", "Natural materials"],
+        "sounds": ["Silence", "Wind", "Distant city", "Off-grid generators"],
+        "smells": ["Fresh air", "Earth", "Cooking fires", "Freedom"]
+      },
+      "key_locations": [
+        { "name": "Solomon's Sanctum", "type": "quest_hub", "npc": "SOLOMON_SAGE" },
+        { "name": "Ghost Network Safe Houses", "type": "hidden", "npc": "PHANTOM_GHOST" },
+        { "name": "Off-Grid Communities", "type": "residential", "npc": null }
+      ],
+      "hazards": ["Getting lost", "Corpo hunters", "Resource scarcity", "Isolation"],
+      "resources": ["Freedom", "Chrome removal", "New identity", "Alternative path"],
+      "narrative_role": "Third Path location, Rogue ending, off-grid life",
+      "algorithm_flavor": "LOCATION NOT FOUND. NO DATA AVAILABLE. ENTITY CLASSIFICATION: NULL."
+    },
+    {
+      "code": "DOCKLANDS",
+      "name": "Docklands",
+      "district_type": "INDUSTRIAL",
+      "tier_range": { "min": 3, "max": 6 },
+      "description": "Shipping and smuggling. Neon Saints controlled. Where legal and illegal cargo moves.",
+      "danger_level": 3,
+      "surveillance_level": 2,
+      "population": 85000,
+      "controlling_factions": ["NEON_SAINTS"],
+      "atmosphere": {
+        "color_palette": ["Ocean blue", "Container rust", "Dock lights", "Neon reflections"],
+        "sounds": ["Waves", "Ship engines", "Cargo cranes", "Seagulls"],
+        "smells": ["Ocean", "Fish", "Diesel", "Salt"]
+      },
+      "key_locations": [
+        { "name": "Main Docks", "type": "shipping", "npc": null },
+        { "name": "Warehouse District", "type": "storage", "npc": null },
+        { "name": "Syndicate Front Businesses", "type": "criminal", "npc": null }
+      ],
+      "hazards": ["Syndicate activity", "Smuggling risks", "Dock accidents", "Corruption"],
+      "resources": ["Smuggled goods", "Shipping contracts", "Syndicate connections"],
+      "narrative_role": "Smuggling missions, syndicate interaction, port access",
+      "algorithm_flavor": "DISTRICT: DOCKLANDS. SHIPPING OPTIMIZATION: COMPROMISED. CONTRABAND PROBABILITY: ELEVATED."
+    }
+  ]
+}

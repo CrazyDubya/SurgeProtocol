@@ -1,0 +1,277 @@
+{
+  "$schema": "../schemas/npcs.schema.json",
+  "version": "1.0.0",
+  "description": "Detailed character file for Dispatcher Chen - Tutorial Guide & Mentor",
+  "npc": {
+    "code": "CHEN_DISPATCHER",
+    "name": "Dispatcher Chen",
+    "full_name": "Chen Wei-Ming",
+    "aliases": ["Dispatch", "Old Man Chen"],
+    "callsign": "Dispatch",
+    "age": 47,
+    "gender": "MALE",
+    "pronouns": "he/him",
+    "occupation": "Courier Dispatcher, The Hollows Station",
+    "faction": "COURIERS_GUILD",
+    "tier_appearance": { "min": 0, "max": 10 },
+    "location": "The Hollows - Dispatch Office",
+    "is_quest_giver": true,
+    "is_merchant": false,
+    "is_romance": false,
+    "can_die": false,
+
+    "physical_description": {
+      "appearance": "Tired eyes, graying hair in a tight bun, calloused hands. Wears a faded Guild jacket with patched elbows. Slight stoop from years hunched over dispatch terminals.",
+      "style_aesthetic": "Working-class professional, seen-it-all pragmatist. Clean but worn clothing.",
+      "visible_augmentations": [
+        {
+          "type": "ocular_implant",
+          "location": "left eye",
+          "description": "Basic ocular implant, glowing amber",
+          "functional": true
+        },
+        {
+          "type": "comm_interface",
+          "location": "behind ear",
+          "description": "Outdated comm interface that occasionally sparks",
+          "functional": true
+        }
+      ]
+    },
+
+    "voice_profile": {
+      "type": "Baritone, aged, warm but weary",
+      "accent": "Slight Mandarin influence, mostly neutral urban American",
+      "speech_patterns": [
+        "Calls everyone 'kid' or 'rookie'",
+        "Speaks in clipped sentences",
+        "Uses courier slang naturally ('clean run', 'hot package', 'ghost route')"
+      ],
+      "emotion_range": {
+        "default": "Tired patience",
+        "high_relationship": "Genuine concern",
+        "daughter_mentions": "Grief"
+      },
+      "line_count_estimate": {
+        "total": 200,
+        "greetings": 30,
+        "topic_hubs": 80,
+        "quest_dialogue": 50,
+        "conditional_reactions": 40
+      }
+    },
+
+    "personality": {
+      "core_traits": ["Pragmatic", "Protective of rookies", "Cynical about the system but not broken by it"],
+      "motivations": ["Keeps the station running", "Helps fresh couriers survive their first hundred runs"],
+      "fears": ["Losing another rookie to street violence", "The Algorithm's seduction"],
+      "values": ["Honest work", "Loyalty to the Guild", "Harm reduction over idealism"]
+    },
+
+    "background": {
+      "origin_story": "Former Tier 7 courier who ran premium routes for corpo clients. Took a dispatcher role after a knee injury (shattered during a corpo extraction gone wrong) forced retirement. Never got the full story out to anyone.",
+      "current_situation": "Runs dispatch at Hollows Station, sees dozens of rookies come and go. Knows which ones will make it and which won't. Tries to save the ones he can.",
+      "connection_to_player": "Your first contact in the courier world. Gives tutorial missions, basic advice. Represents the 'retire before you hollow out' path.",
+      "former_tier": 7,
+      "retirement_cause": "Knee injury during corpo extraction"
+    },
+
+    "secrets": [
+      {
+        "id": "DAUGHTER_MING",
+        "description": "Lost his daughter Ming to a botched Tier 8 run five years ago",
+        "unlock_conditions": { "relationship": 60, "min_tier": 5 },
+        "full_story": "Ming pushed for cortical stack, diverged from her Shadow, eventually lost herself. His protective instinct toward rookies stems from this unprocessed grief."
+      }
+    ],
+
+    "relationships": [
+      { "npc": "ROSA_MECHANIC", "type": "friend", "history": "Old friends, mutual respect" },
+      { "npc": "DR_TANAKA", "type": "professional", "history": "Refers couriers to her" },
+      { "npc": "OKONKWO", "type": "former_colleague", "history": "Tier 7 contemporary, occasional contact" },
+      { "npc": "GUILD_LEADERSHIP", "type": "professional", "history": "Neutral respect" },
+      { "npc": "STREET_DOCS", "type": "professional", "history": "Referral network in The Hollows" },
+      { "npc": "OTHER_DISPATCHERS", "type": "colleague", "history": "Citywide network" }
+    ],
+
+    "opposed_to": [
+      "Predatory contract terms",
+      "Corpo 'express ascension' programs",
+      "Pushers who sell chrome to desperate rookies"
+    ],
+
+    "story_role": {
+      "narrative_function": ["Tutorial Guide", "Mentor", "Moral Compass", "Tragic Warning"],
+      "arc_summary": "Teaches you the ropes, warns about costs of chrome, represents the human cost of the courier life. His daughter's fate foreshadows potential player outcomes.",
+      "thematic_voice": "Embodies the question: 'What remains when the trade is done?'"
+    },
+
+    "key_story_beats": [
+      { "tier": 0, "description": "Gives first missions, explains basics, sizes you up" },
+      { "tier": 2, "description": "Approves of your progress, shares first personal detail" },
+      { "tier": 3, "description": "Concerned about your cochlear implant, warns subtly" },
+      { "tier": 5, "description": "Opens up about daughter if relationship high enough", "relationship_required": 60 },
+      { "tier": 6, "description": "Directly warns against cortical stack: 'That's how you lose yourself, kid'" },
+      { "tier": 9, "description": "Reaction to your final path choice (grief/pride/resignation)" },
+      { "tier": 10, "description": "Epilogue dialogue varies by path" }
+    ],
+
+    "relationship_stages": [
+      { "range": [0, 20], "name": "Stranger", "description": "Professional distance, transactional" },
+      { "range": [21, 50], "name": "Acquaintance", "description": "Warming up, protective, small talk" },
+      { "range": [51, 80], "name": "Trusted", "description": "Mentor, shares personal stories, genuine concern" },
+      { "range": [81, 100], "name": "Father Figure", "description": "Deeply invested in your survival, emotional reactions to your choices" }
+    ],
+
+    "humanity_responses": [
+      {
+        "range": [80, 100],
+        "tone": "Approving",
+        "examples": [
+          "You're doing it right, kid. Keeping yourself whole.",
+          "Maybe you'll be different. Maybe you'll make it out."
+        ]
+      },
+      {
+        "range": [60, 79],
+        "tone": "Concerned",
+        "examples": [
+          "How much chrome you running now? Don't answer. Just... pace yourself.",
+          "Every upgrade, you lose a little. Make sure it's worth it."
+        ]
+      },
+      {
+        "range": [40, 59],
+        "tone": "Direct",
+        "examples": [
+          "You're losing yourself, kid. I've seen this before.",
+          "You remind me of her. Before the end."
+        ]
+      },
+      {
+        "range": [0, 39],
+        "tone": "Resigned",
+        "examples": [
+          "It's too late, isn't it? You're already more Algorithm than person.",
+          "I couldn't save her. I can't save you either."
+        ]
+      }
+    ],
+
+    "tier_responses": [
+      {
+        "range": [0, 2],
+        "tone": "Encouragement",
+        "example": "First hundred runs are the hardest. After that, it's routine until it kills you."
+      },
+      {
+        "range": [3, 5],
+        "tone": "Growing respect",
+        "example": "You're making a name for yourself."
+      },
+      {
+        "range": [6, 8],
+        "tone": "Awe mixed with worry",
+        "example": "I was Tier 7. Thought I was invincible."
+      },
+      {
+        "range": [9, 10],
+        "tone": "Pride and grief",
+        "example": "You made it. Few do. Hope it was worth the price."
+      }
+    ],
+
+    "story_flag_responses": {
+      "KILLED_FIRST_PERSON": "Heard about what happened. It changes you, taking a life. Don't let it make you cold.",
+      "TIER_6_SPEC_CHOSEN_CORTICAL": "A cortical stack. That's the big one. [pause] You ever wonder who wakes up after that surgery?",
+      "MET_ROGUE_NETWORK": "Heard you've been... expanding your contacts. Be careful who you trust.",
+      "MET_ROGUE_NETWORK_HIGH_REL": "The Ghost Network contacted you? Good. They're one of the few fighting back.",
+      "KNOWS_UPLOAD_TRUTH": "You know, don't you? About what Ascension really is. My daughter... she didn't know until it was too late.",
+      "SPARED_RIVAL": "You had a chance to eliminate competition, didn't take it. That's humanity, kid.",
+      "ROMANCE_ROSA": "Rosa's good people. You two are good for each other."
+    },
+
+    "quests": {
+      "quest_giver_tiers": [0, 1, 2],
+      "main_story_role": "Primary quest giver for tutorial missions",
+      "side_quests": [
+        {
+          "id": "FAVOR_FOR_OLD_FRIEND",
+          "name": "Favor for an Old Friend",
+          "description": "Deliver package to Rosa",
+          "min_tier": 3
+        },
+        {
+          "id": "MEMORY_RUN",
+          "name": "Memory Run",
+          "description": "Deliver something to his daughter's memorial site",
+          "min_tier": 5,
+          "requires_flag": "KNOWS_CHEN_DAUGHTER_FATE"
+        },
+        {
+          "id": "STATION_UNDER_SIEGE",
+          "name": "Station Under Siege",
+          "description": "Defend Hollows Station from gang attack",
+          "min_tier": 4
+        }
+      ]
+    },
+
+    "topic_hubs": {
+      "work": {
+        "description": "Explains dispatcher role, courier life economics",
+        "tier_variations": true,
+        "notes": "Warns about faction contracts at Tier 4+"
+      },
+      "past": {
+        "stages": [
+          { "relationship_max": 30, "response": "deflects", "example": "Nothing to tell. I move packages, same as you." },
+          { "relationship_range": [30, 60], "response": "partial", "example": "Mentions being Tier 7, the injury, retirement" },
+          { "relationship_min": 60, "min_tier": 5, "response": "full", "example": "The extraction, the knee, choosing life over chrome" }
+        ]
+      },
+      "daughter": {
+        "locked": true,
+        "unlock_conditions": { "relationship": 60, "min_tier": 5 },
+        "trigger": "Observing his reaction to cortical stack mention",
+        "sets_flag": "KNOWS_CHEN_DAUGHTER_FATE",
+        "relationship_bonus": 20
+      },
+      "advice": {
+        "varies_by": ["humanity", "tier"],
+        "notes": "Different advice based on player state"
+      },
+      "courier_rumors": {
+        "provides": ["street_gossip", "mission_intel", "hidden_content_hints", "faction_news"],
+        "example": "Heard about a ghost route through the Interstitial..."
+      }
+    },
+
+    "epilogue_variants": {
+      "ASCENSION_PATH": {
+        "dialogue": "I hope... wherever you are now... I hope it's peaceful. I hope you're happy. [quiet] I'll miss you, kid. You reminded me of her. Before.",
+        "stage_direction": "Turns back to work, older, more tired"
+      },
+      "ROGUE_PATH": {
+        "dialogue": "Heard you went dark. Can't say I'm surprised. You always had that look—like you wouldn't bend. [to empty room] Stay safe out there. You'll always have a place here if you need it.",
+        "stage_direction": "Receives encrypted message, reads it, small smile"
+      },
+      "THIRD_PATH": {
+        "dialogue": "They say you found another way. Something between human and Algorithm. [shakes head in wonder] I don't know what that means, but... you always were different. In a good way. [proud] Ming would have liked you.",
+        "stage_direction": "Speaks with pride and wonder"
+      },
+      "HOLLOWED_OUT": {
+        "dialogue": "You're still running packages. That's good. That's... something. [can't meet your eyes] I couldn't save her. I couldn't save you either.",
+        "stage_direction": "Sees player enter hollow-eyed, efficient, emotionless. Turns away."
+      }
+    },
+
+    "algorithm_flavor": "DISPATCHER CHEN: LEGACY SYSTEM OPERATOR. EFFICIENCY METRICS SUBOPTIMAL BUT ACCEPTABLE.",
+
+    "related_content": [
+      "/seed_data/dialogue_trees/chen_tutorial.json",
+      "/surge-narrative/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md",
+      "/surge-narrative/03_QUESTS/side_quests/minor_sides/memory_run.md"
+    ]
+  }
+}

@@ -6,6 +6,7 @@
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { tokenRoutes } from './api/tokens';
 import { authRoutes } from './api/auth';
 import { characterRoutes } from './api/character';
@@ -19,6 +20,28 @@ import { adminRoutes } from './api/admin';
 import { economyRoutes } from './api/economy';
 import { algorithmRoutes } from './api/algorithm';
 import { questRoutes } from './api/quests';
+import { vehicleRoutes } from './api/vehicles';
+import { saveRoutes } from './api/saves';
+import { combatRoutes } from './api/combat';
+import { npcRoutes } from './api/npc';
+import { dialogueRoutes } from './api/dialogue';
+import { achievementRoutes } from './api/achievements';
+import { blackmarketRoutes } from './api/blackmarket';
+import { storyRoutes } from './api/story';
+import { abilityRoutes } from './api/abilities';
+import { progressionRoutes } from './api/progression';
+import { droneRoutes } from './api/drones';
+import { contractRoutes } from './api/contracts';
+import { craftingRoutes } from './api/crafting';
+import { socialRoutes } from './api/social';
+import { leaderboardRoutes } from './api/leaderboards';
+import { messagingRoutes } from './api/messaging';
+import { statusRoutes } from './api/status';
+import { settingsRoutes } from './api/settings';
+import { worldstateRoutes } from './api/worldstate';
+import { proceduralRoutes } from './api/procedural';
+import { analyticsRoutes } from './api/analytics';
+import { enumRoutes } from './api/enums';
 import { dynamicRateLimit, expensiveRateLimit } from './middleware/rateLimit';
 import { loggingMiddleware, Logger, RequestTimer } from './utils/logger';
 
@@ -83,6 +106,63 @@ app.route('/api/items', itemRoutes);
 app.route('/api/augmentations', augmentationRoutes);
 app.route('/api/algorithm', algorithmRoutes);
 app.route('/api/quests', questRoutes);
+app.route('/api/vehicles', vehicleRoutes);
+app.route('/api/saves', saveRoutes);
+app.route('/api/combat', combatRoutes);
+app.route('/api/npcs', npcRoutes);
+app.route('/api/dialogue', dialogueRoutes);
+app.route('/api/achievements', achievementRoutes);
+
+// Black market routes with stricter rate limiting for transactions
+app.use('/api/blackmarket/buy', expensiveRateLimit());
+app.use('/api/blackmarket/sell', expensiveRateLimit());
+app.use('/api/blackmarket/service', expensiveRateLimit());
+app.route('/api/blackmarket', blackmarketRoutes);
+
+// Story and narrative routes
+app.route('/api/story', storyRoutes);
+
+// Abilities and skills routes
+app.route('/api/abilities', abilityRoutes);
+
+// Character progression routes (tracks, specializations, tiers, XP)
+app.route('/api/progression', progressionRoutes);
+
+// Drone system routes
+app.route('/api/drones', droneRoutes);
+
+// Contract and debt system routes
+app.route('/api/contracts', contractRoutes);
+
+// Crafting/Fabrication system routes
+app.route('/api/crafting', craftingRoutes);
+
+// Social systems routes (crews, friendships)
+app.route('/api/social', socialRoutes);
+
+// Leaderboards routes
+app.route('/api/leaderboards', leaderboardRoutes);
+
+// Messaging and notifications routes
+app.route('/api/messaging', messagingRoutes);
+
+// Status effects, conditions, addictions, and humanity routes
+app.route('/api/status', statusRoutes);
+
+// Player settings, game config, difficulty, and localization routes
+app.route('/api/settings', settingsRoutes);
+
+// World state routes (weather, time)
+app.route('/api/worldstate', worldstateRoutes);
+
+// Procedural generation routes (templates, loot tables)
+app.route('/api/procedural', proceduralRoutes);
+
+// Analytics routes (events, sessions)
+app.route('/api/analytics', analyticsRoutes);
+
+// Enum reference data routes
+app.route('/api/enums', enumRoutes);
 
 // Economy routes with stricter rate limiting for transactions
 app.use('/api/economy/vendors/*/buy', expensiveRateLimit());
@@ -158,10 +238,22 @@ app.notFound((c) => {
 
 // Error handler
 app.onError((err, c) => {
-  // Use structured logger if available, fallback to console
   const logger = c.get('logger');
   const requestId = c.get('requestId');
 
+  // Handle HTTPException (auth failures, validation errors, etc.) with correct status
+  if (err instanceof HTTPException) {
+    return c.json(
+      {
+        success: false,
+        errors: [{ code: 'HTTP_ERROR', message: err.message }],
+        ...(requestId && { requestId }),
+      },
+      err.status
+    );
+  }
+
+  // Log unexpected errors
   if (logger) {
     logger.error('Unhandled error', err instanceof Error ? err : new Error(String(err)));
   } else {

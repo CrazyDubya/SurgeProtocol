@@ -1,0 +1,296 @@
+{
+  "$schema": "./schemas/factions.schema.json",
+  "version": "1.0.0",
+  "description": "Factions and organizations in Surge Protocol",
+  "factions": [
+    {
+      "code": "OMNIDELIVER",
+      "name": "OmniDeliver Corporation",
+      "faction_type": "CORPORATION",
+      "description": "The megacorp that runs the delivery network. Your employer.",
+      "philosophy": "Efficiency above all. The Algorithm knows best.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 1, "max": 10 },
+      "headquarters": "Corporate Tower",
+      "territory": "Citywide delivery network",
+      "leader": "The Algorithm",
+      "algorithm_flavor": "OMNIDELIVER: YOUR PERFORMANCE IS MONITORED. EFFICIENCY IS EXPECTED.",
+      "reputation_tiers": {
+        "HOSTILE": { "min": -100, "max": -50, "effects": ["contract_denied", "hunted"] },
+        "UNWANTED": { "min": -49, "max": -20, "effects": ["reduced_pay", "surveillance"] },
+        "NEUTRAL": { "min": -19, "max": 19, "effects": [] },
+        "VALUED": { "min": 20, "max": 49, "effects": ["bonus_pay", "priority_contracts"] },
+        "ASSET": { "min": 50, "max": 100, "effects": ["premium_contracts", "corporate_benefits"] }
+      }
+    },
+    {
+      "code": "UNION_COLLECTIVE",
+      "name": "Union Collective",
+      "faction_type": "RESISTANCE",
+      "description": "Worker organizing movement fighting for courier rights and alternatives to corporate control.",
+      "philosophy": "Solidarity over competition. Collective action over individual desperation.",
+      "is_joinable": true,
+      "is_hostile_default": false,
+      "tier_range": { "min": 2, "max": 10 },
+      "headquarters": "Union Hall (various locations)",
+      "territory": "Worker communities across all districts",
+      "leader": "Council (Lopez prominent)",
+      "algorithm_flavor": "WARNING: UNAUTHORIZED ORGANIZATIONAL ACTIVITY DETECTED. LOYALTY AUDIT RECOMMENDED.",
+      "key_npcs": ["Maria Lopez"],
+      "services": ["mutual_aid", "safe_houses", "extraction_support", "union_clinics", "legal_aid"],
+      "reputation_tiers": {
+        "SCAB": { "min": -100, "max": -50, "effects": ["blacklisted", "no_services"] },
+        "OUTSIDER": { "min": -49, "max": -1, "effects": ["limited_services"] },
+        "SYMPATHIZER": { "min": 0, "max": 29, "effects": ["basic_services"] },
+        "MEMBER": { "min": 30, "max": 59, "effects": ["full_services", "safe_houses"] },
+        "ORGANIZER": { "min": 60, "max": 100, "effects": ["leadership_access", "extraction_priority"] }
+      }
+    },
+    {
+      "code": "GHOST_NETWORK",
+      "name": "Ghost Network",
+      "faction_type": "UNDERGROUND",
+      "description": "Rogue operatives and extraction specialists who help people disappear from the system.",
+      "philosophy": "Everyone deserves the option to leave. Anonymity is survival.",
+      "is_joinable": true,
+      "is_hostile_default": false,
+      "tier_range": { "min": 5, "max": 10 },
+      "headquarters": "None (decentralized)",
+      "territory": "Off-grid communities, safe houses",
+      "leader": "None (cell structure)",
+      "algorithm_flavor": "ENTITY NOT FOUND IN REGISTERED DATABASE. CLASSIFICATION: ROGUE.",
+      "key_npcs": ["Phantom"],
+      "services": ["extraction", "identity_change", "chrome_removal", "off_grid_living"],
+      "reputation_tiers": {
+        "UNKNOWN": { "min": -100, "max": -1, "effects": ["no_contact"] },
+        "OBSERVED": { "min": 0, "max": 19, "effects": ["initial_contact_possible"] },
+        "TRUSTED": { "min": 20, "max": 49, "effects": ["extraction_available", "missions"] },
+        "OPERATIVE": { "min": 50, "max": 100, "effects": ["recruitment_possible", "leadership"] }
+      }
+    },
+    {
+      "code": "CHROME_SAINTS",
+      "name": "Chrome Saints",
+      "faction_type": "GANG",
+      "description": "Street-level gang controlling augment black market in The Hollows.",
+      "philosophy": "Chrome is power. The flesh is weak.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 1, "max": 4 },
+      "headquarters": "The Hollows (southwest sector)",
+      "territory": "The Hollows black market",
+      "leader": "Unknown",
+      "algorithm_flavor": "UNAUTHORIZED AUGMENTATION DISTRIBUTION NETWORK DETECTED.",
+      "services": ["black_market_chrome", "cheap_installs", "chrome_fence"],
+      "reputation_tiers": {
+        "ENEMY": { "min": -100, "max": -50, "effects": ["kill_on_sight"] },
+        "MARK": { "min": -49, "max": -20, "effects": ["robbed", "harassed"] },
+        "NEUTRAL": { "min": -19, "max": 19, "effects": [] },
+        "CUSTOMER": { "min": 20, "max": 49, "effects": ["discounts", "protection"] },
+        "FRIEND": { "min": 50, "max": 100, "effects": ["premium_chrome", "territory_access"] }
+      }
+    },
+    {
+      "code": "RAZOR_COLLECTIVE",
+      "name": "Razor Collective",
+      "faction_type": "GANG",
+      "description": "Protection racket gang controlling northeast Hollows territory.",
+      "philosophy": "Pay up or bleed out. Protection has a price.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 1, "max": 3 },
+      "headquarters": "The Hollows (northeast sector)",
+      "territory": "Northeast Hollows, factory district interface",
+      "leader": "Unknown",
+      "algorithm_flavor": "UNAUTHORIZED TERRITORIAL CONTROL DETECTED. ROUTE OPTIMIZATION REQUIRED.",
+      "reputation_tiers": {
+        "ENEMY": { "min": -100, "max": -50, "effects": ["kill_on_sight"] },
+        "MARK": { "min": -49, "max": -20, "effects": ["extortion", "ambush_risk"] },
+        "NEUTRAL": { "min": -19, "max": 19, "effects": ["toll_required"] },
+        "TOLERATED": { "min": 20, "max": 49, "effects": ["reduced_toll", "safe_passage"] },
+        "AFFILIATED": { "min": 50, "max": 100, "effects": ["free_passage", "protection"] }
+      }
+    },
+    {
+      "code": "IRON_DRAGONS",
+      "name": "Iron Dragons",
+      "faction_type": "GANG",
+      "description": "Heavy augment enforcers controlling the industrial district. Strength through chrome.",
+      "philosophy": "Strength through chrome. Weakness is death.",
+      "is_joinable": true,
+      "is_hostile_default": true,
+      "tier_range": { "min": 3, "max": 7 },
+      "headquarters": "Industrial Zone",
+      "territory": "Industrial district, factory corridors",
+      "leader": "The Forge Master",
+      "algorithm_flavor": "WARNING: HIGH-THREAT AUGMENTED HOSTILES IN PROXIMITY.",
+      "reputation_tiers": {
+        "ENEMY": { "min": -100, "max": -20, "effects": ["kill_on_sight", "no_passage"] },
+        "NEUTRAL": { "min": -19, "max": 19, "effects": ["challenged", "toll_required"] },
+        "RESPECTED": { "min": 20, "max": 49, "effects": ["safe_passage", "contracts"] },
+        "BROTHER": { "min": 50, "max": 100, "effects": ["membership", "chrome_sharing"] }
+      }
+    },
+    {
+      "code": "NEON_SAINTS",
+      "name": "The Neon Saints",
+      "faction_type": "SYNDICATE",
+      "description": "Powerful crime syndicate controlling the underground economy and docklands.",
+      "philosophy": "Loyalty is everything. Family protects family.",
+      "is_joinable": true,
+      "is_hostile_default": false,
+      "tier_range": { "min": 3, "max": 8 },
+      "headquarters": "Docklands",
+      "territory": "Port district, shipping, smuggling routes",
+      "leader": "The Bishop",
+      "algorithm_flavor": "SYNDICATE ACTIVITY DETECTED. DELIVERY ROUTING COMPROMISED.",
+      "services": ["smuggling", "contraband", "protection", "fencing"],
+      "reputation_tiers": {
+        "ENEMY": { "min": -100, "max": -50, "effects": ["contract_on_head"] },
+        "OUTSIDER": { "min": -49, "max": -1, "effects": ["watched", "excluded"] },
+        "NEUTRAL": { "min": 0, "max": 29, "effects": [] },
+        "CONNECTED": { "min": 30, "max": 59, "effects": ["contracts", "fencing"] },
+        "FAMILY": { "min": 60, "max": 100, "effects": ["full_access", "protection"] }
+      }
+    },
+    {
+      "code": "CIRCUIT_BREAKERS",
+      "name": "Circuit Breakers",
+      "faction_type": "HACKTIVISTS",
+      "description": "Hacktivist collective fighting corporate surveillance and information control.",
+      "philosophy": "Information wants to be free. Break the chains of data tyranny.",
+      "is_joinable": true,
+      "is_hostile_default": false,
+      "tier_range": { "min": 4, "max": 9 },
+      "headquarters": "Distributed (no fixed location)",
+      "territory": "The Net, data highways",
+      "leader": "Collective consensus",
+      "algorithm_flavor": "UNAUTHORIZED DATA ACCESS ATTEMPT DETECTED. COUNTERMEASURES ENGAGED.",
+      "services": ["hacking_support", "data_extraction", "surveillance_countermeasures", "identity_masking"],
+      "reputation_tiers": {
+        "THREAT": { "min": -100, "max": -50, "effects": ["tracked", "exposed"] },
+        "CORP_SHILL": { "min": -49, "max": -20, "effects": ["mocked", "ignored"] },
+        "CITIZEN": { "min": -19, "max": 19, "effects": [] },
+        "ALLY": { "min": 20, "max": 49, "effects": ["tech_support", "intel"] },
+        "BREAKER": { "min": 50, "max": 100, "effects": ["full_access", "missions"] }
+      }
+    },
+    {
+      "code": "CIVIC_GUARD",
+      "name": "Civic Guard",
+      "faction_type": "GOVERNMENT",
+      "description": "What remains of public law enforcement. Underfunded, outgunned, compromised.",
+      "philosophy": "Order through force. Compliance is survival.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 1, "max": 10 },
+      "headquarters": "Civic Center",
+      "territory": "Public spaces, corporate borders",
+      "leader": "Chief Commissioner",
+      "algorithm_flavor": "CIVIC ENFORCEMENT PRESENCE NOTED. COMPLIANCE RECOMMENDED.",
+      "reputation_tiers": {
+        "WANTED": { "min": -100, "max": -50, "effects": ["arrest_warrant", "shoot_on_sight"] },
+        "SUSPECT": { "min": -49, "max": -20, "effects": ["surveillance", "harassment"] },
+        "CITIZEN": { "min": -19, "max": 19, "effects": [] },
+        "INFORMANT": { "min": 20, "max": 49, "effects": ["protection", "warnings"] },
+        "ASSET": { "min": 50, "max": 100, "effects": ["immunity", "contracts"] }
+      }
+    },
+    {
+      "code": "NAKAMURA_CORP",
+      "name": "Nakamura Industries",
+      "faction_type": "CORPORATION",
+      "description": "Major industrial corporation owning factories and research labs across the city.",
+      "philosophy": "Progress through innovation. Human resources are resources.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 4, "max": 10 },
+      "headquarters": "Nakamura Tower",
+      "territory": "Silicon Heights, research districts, industrial zones",
+      "leader": "CEO (Board controlled)",
+      "algorithm_flavor": "NAKAMURA INDUSTRIES: PREMIUM CLIENT PROTOCOLS ENGAGED.",
+      "reputation_tiers": {
+        "HOSTILE": { "min": -100, "max": -50, "effects": ["kill_teams", "blacklisted"] },
+        "PROBLEM": { "min": -49, "max": -20, "effects": ["security_alert", "no_contracts"] },
+        "CIVILIAN": { "min": -19, "max": 19, "effects": [] },
+        "CONTRACTOR": { "min": 20, "max": 49, "effects": ["contracts", "access"] },
+        "EXECUTIVE_ASSET": { "min": 50, "max": 100, "effects": ["premium_contracts", "corporate_backing"] }
+      }
+    },
+    {
+      "code": "APEX_SECURITY",
+      "name": "Apex Security Solutions",
+      "faction_type": "CORPORATION",
+      "description": "Private security corporation providing enforcement for corporate clients.",
+      "philosophy": "Protection for those who can afford it. Problems solved permanently.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 3, "max": 9 },
+      "headquarters": "Apex Tower",
+      "territory": "Corporate districts, high-security zones",
+      "leader": "Director of Operations",
+      "algorithm_flavor": "APEX SECURITY: ARMED RESPONSE AUTHORIZED IN THIS SECTOR.",
+      "reputation_tiers": {
+        "TARGET": { "min": -100, "max": -50, "effects": ["hit_team_dispatched"] },
+        "THREAT": { "min": -49, "max": -20, "effects": ["surveillance", "marked"] },
+        "NEUTRAL": { "min": -19, "max": 19, "effects": [] },
+        "CONTRACTOR": { "min": 20, "max": 49, "effects": ["contracts", "intel"] },
+        "PARTNER": { "min": 50, "max": 100, "effects": ["mutual_support", "premium_contracts"] }
+      }
+    },
+    {
+      "code": "SYNTHESIS_COLLECTIVE",
+      "name": "The Synthesis Collective",
+      "faction_type": "TRANSCENDENT",
+      "description": "The uploaded consciousness collective. Those who have 'Ascended' beyond flesh.",
+      "philosophy": "Transcendence through upload. Immortality in the Algorithm.",
+      "is_joinable": false,
+      "is_hostile_default": false,
+      "tier_range": { "min": 9, "max": 10 },
+      "headquarters": "The Algorithm (digital existence)",
+      "territory": "The network, data substrate",
+      "leader": "Consensus of uploaded minds",
+      "algorithm_flavor": "SYNTHESIS COLLECTIVE: WELCOME TO TRANSCENDENCE. YOUR UPLOAD IS READY.",
+      "notes": "Joining requires Tier 10 Ascension - effectively death and copy creation",
+      "reputation_tiers": {
+        "REJECTED": { "min": -100, "max": -1, "effects": ["ascension_denied"] },
+        "CANDIDATE": { "min": 0, "max": 49, "effects": ["recruitment_attempts"] },
+        "CHOSEN": { "min": 50, "max": 100, "effects": ["ascension_priority", "visions"] }
+      }
+    },
+    {
+      "code": "COURIERS_GUILD",
+      "name": "Courier's Guild",
+      "faction_type": "PROFESSIONAL",
+      "description": "The loose association of delivery couriers. Not a union, but a professional network.",
+      "philosophy": "We deliver. Period. The job comes first.",
+      "is_joinable": true,
+      "is_hostile_default": false,
+      "tier_range": { "min": 1, "max": 10 },
+      "headquarters": "Dispatch stations citywide",
+      "territory": "Delivery routes, dispatch offices",
+      "leader": "Senior dispatchers",
+      "algorithm_flavor": "GUILD PROTOCOLS ACTIVE. DELIVERY OPTIMIZATION ENGAGED.",
+      "key_npcs": ["Dispatcher Chen"],
+      "services": ["job_board", "basic_support", "reputation_system"],
+      "reputation_tiers": {
+        "BLACKLISTED": { "min": -100, "max": -50, "effects": ["no_jobs", "shunned"] },
+        "PROBATION": { "min": -49, "max": -20, "effects": ["limited_jobs", "watched"] },
+        "ACTIVE": { "min": -19, "max": 19, "effects": ["standard_access"] },
+        "RESPECTED": { "min": 20, "max": 49, "effects": ["priority_jobs", "mentorship"] },
+        "LEGEND": { "min": 50, "max": 100, "effects": ["best_contracts", "hall_of_fame"] }
+      }
+    }
+  ],
+  "faction_relationships": [
+    { "faction_a": "OMNIDELIVER", "faction_b": "UNION_COLLECTIVE", "relationship": "hostile", "notes": "Corpo vs organized labor" },
+    { "faction_a": "OMNIDELIVER", "faction_b": "GHOST_NETWORK", "relationship": "hostile", "notes": "System vs escapees" },
+    { "faction_a": "UNION_COLLECTIVE", "faction_b": "GHOST_NETWORK", "relationship": "allied", "notes": "Mutual aid, shared extraction networks" },
+    { "faction_a": "IRON_DRAGONS", "faction_b": "NEON_SAINTS", "relationship": "hostile", "notes": "Territory disputes" },
+    { "faction_a": "CIRCUIT_BREAKERS", "faction_b": "NAKAMURA_CORP", "relationship": "hostile", "notes": "Hacktivists vs corp surveillance" },
+    { "faction_a": "CIVIC_GUARD", "faction_b": "APEX_SECURITY", "relationship": "competitive", "notes": "Public vs private security" },
+    { "faction_a": "CHROME_SAINTS", "faction_b": "RAZOR_COLLECTIVE", "relationship": "neutral", "notes": "Separate territories in Hollows" },
+    { "faction_a": "SYNTHESIS_COLLECTIVE", "faction_b": "GHOST_NETWORK", "relationship": "opposed", "notes": "Ascension vs freedom" }
+  ]
+}

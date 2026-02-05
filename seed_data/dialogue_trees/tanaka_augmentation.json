@@ -1,0 +1,809 @@
+{
+  "$schema": "../schemas/dialogue_tree.schema.json",
+  "version": "1.0.0",
+  "description": "Dr. Yuki Tanaka dialogue trees - Augmentation specialist and ethical guide",
+  "npc_code": "TANAKA_DOCTOR",
+  "dialogue_trees": [
+    {
+      "id": "tanaka_first_meeting",
+      "name": "First Meeting",
+      "trigger": {
+        "type": "FIRST_INTERACTION",
+        "conditions": { "tier_max": 1, "relationship_max": 5 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "You're here for augmentation. Good. Sit down, let's talk about what you actually need versus what you think you need.",
+          "emotion": "PROFESSIONAL",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_direct",
+              "text": "I just need faster reflexes. Something to help me keep up.",
+              "tone": "DIRECT",
+              "next": "node_3"
+            },
+            {
+              "id": "opt_cautious",
+              "text": "What do you mean by 'what I think I need'?",
+              "tone": "CURIOUS",
+              "relationship_change": 3,
+              "next": "node_4"
+            },
+            {
+              "id": "opt_impatient",
+              "text": "I don't need a lecture. Just tell me what's available.",
+              "tone": "IMPATIENT",
+              "relationship_change": -5,
+              "next": "node_5"
+            }
+          ]
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Faster reflexes. Everyone wants faster reflexes. [taps temple] But speed isn't free. Every augment changes you—not just physically.",
+          "emotion": "CALM",
+          "next": "node_6"
+        },
+        {
+          "id": "node_4",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[small approving nod] Good question. Most couriers walk in here wanting to be machines. They think more chrome equals more success. It doesn't.",
+          "emotion": "PLEASED",
+          "next": "node_4b"
+        },
+        {
+          "id": "node_4b",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "My job isn't just installing hardware. It's helping you understand what you're becoming. If you want a butcher who'll chrome you up no questions asked, there are plenty in the Hollows. I'm not that doctor.",
+          "emotion": "SERIOUS",
+          "next": "node_6"
+        },
+        {
+          "id": "node_5",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[cool stare] Then go to a chop shop. They'll take your credits and leave you glitching in an alley. I'm trying to keep you alive and human. Your choice.",
+          "emotion": "COLD",
+          "next": "node_5b"
+        },
+        {
+          "id": "node_5b",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_apologize",
+              "text": "Sorry. I've had a rough week. Please, continue.",
+              "tone": "APOLOGETIC",
+              "relationship_change": 5,
+              "next": "node_6"
+            },
+            {
+              "id": "opt_leave",
+              "text": "[Leave]",
+              "tone": "DISMISSIVE",
+              "next": "end"
+            }
+          ]
+        },
+        {
+          "id": "node_6",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I need to explain something. Every augmentation you install reduces your humanity score. Not metaphorically—measurably. Too much chrome, and you risk chrome psychosis. Have you seen someone in that state?",
+          "emotion": "EDUCATIONAL",
+          "next": "node_7"
+        },
+        {
+          "id": "node_7",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_yes",
+              "text": "Yeah. It's not pretty.",
+              "tone": "KNOWING",
+              "next": "node_8a"
+            },
+            {
+              "id": "opt_no",
+              "text": "No. What happens?",
+              "tone": "CURIOUS",
+              "next": "node_8b"
+            },
+            {
+              "id": "opt_dismissive",
+              "text": "I can handle it.",
+              "tone": "OVERCONFIDENT",
+              "next": "node_8c"
+            }
+          ]
+        },
+        {
+          "id": "node_8a",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Then you know why I take this seriously. I won't be responsible for creating another hollow shell. We'll start slow, monitor your integration, and you'll tell me honestly if something feels wrong.",
+          "emotion": "APPROVING",
+          "relationship_change": 5,
+          "next": "node_9"
+        },
+        {
+          "id": "node_8b",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "They disconnect. From themselves, from others. Every emotion becomes... muted. Then gone. They become perfectly efficient machines wearing human faces. The Algorithm loves them. Everyone else mourns.",
+          "emotion": "GRAVE",
+          "next": "node_9"
+        },
+        {
+          "id": "node_8c",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[sighs] That's what they all say. I'll note your confidence. Just remember it when you're staring at the ceiling at 3 AM wondering why you can't feel anything anymore.",
+          "emotion": "RESIGNED",
+          "relationship_change": -3,
+          "next": "node_9"
+        },
+        {
+          "id": "node_9",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "For a starter package, I recommend basic neural enhancement—improved reaction time, minimal humanity cost. You'll need to sign informed consent.",
+          "emotion": "PROFESSIONAL",
+          "actions": [{ "type": "UNLOCK_SERVICE", "target": "augmentation_tier1" }],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "Tell me more about the procedure.", "next": "procedure_info" },
+            { "text": "What are the risks?", "next": "risk_info" },
+            { "text": "I'm ready to proceed.", "next": "proceed" },
+            { "text": "[Leave for now]", "next": "end" }
+          ]
+        },
+        {
+          "id": "procedure_info",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I'll use local anesthesia. The neural interface connects to your prefrontal cortex—minimal invasiveness, rapid integration. You'll experience mild disorientation for 24 hours while your brain adapts.",
+          "emotion": "EDUCATIONAL",
+          "next": "hub"
+        },
+        {
+          "id": "risk_info",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Infection rate: 0.3% with my sterile protocols. Rejection: 1.2%, higher if you've had previous neural work. Integration psychosis: rare at this level, but I'll give you monitoring exercises. Report any phantom sensations or intrusive thoughts immediately.",
+          "emotion": "SERIOUS",
+          "next": "hub"
+        },
+        {
+          "id": "proceed",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[prepares instruments] Good. Read and sign the consent form. I'll answer any questions while I prep.",
+          "emotion": "PROFESSIONAL",
+          "actions": [{ "type": "START_PROCEDURE", "target": "first_augmentation" }],
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "tanaka_greeting_professional",
+      "name": "Professional Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "relationship_min": 0, "relationship_max": 30 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Back for an upgrade? Let's review your current augment load first.",
+          "emotion": "PROFESSIONAL",
+          "variants": [
+            { "text": "How are you feeling? Any glitches, phantom sensations, intrusive thoughts?", "weight": 50 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "I want a new augmentation.", "next": "augment_shop" },
+            { "text": "Something feels wrong.", "next": "diagnosis" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tanaka_greeting_trusted",
+      "name": "Trusted Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "relationship_min": 31, "relationship_max": 70 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Good to see you. How's the chrome treating you?",
+          "emotion": "WARM",
+          "variants": [
+            { "text": "Come in. Want tea before we discuss the procedure?", "weight": 50 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "I want a new augmentation.", "next": "augment_shop" },
+            { "text": "Tell me about yourself.", "next": "personal_backstory" },
+            { "text": "Any advice?", "next": "advice" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        },
+        {
+          "id": "personal_backstory",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[pauses, considers] I wasn't always running a gray clinic. I used to work for Nakamura Cybernetics. Lead researcher, bleeding-edge neural augmentation.",
+          "emotion": "REFLECTIVE",
+          "condition": { "relationship_min": 40 },
+          "next": "backstory_2"
+        },
+        {
+          "id": "backstory_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I quit when I discovered they were suppressing divergence syndrome data. Pushing addictive upgrade cycles on people who didn't understand the risks. Eight years ago. Been underground ever since.",
+          "emotion": "BITTER",
+          "relationship_change": 5,
+          "next": "hub"
+        },
+        {
+          "id": "advice",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Don't do what the corpos tell you. Stay independent. Every augment should be your choice, not the Algorithm's suggestion. And... pace yourself. The tech will always be there. Your humanity won't.",
+          "emotion": "EARNEST",
+          "next": "hub"
+        }
+      ]
+    },
+    {
+      "id": "tanaka_greeting_confidant",
+      "name": "Confidant Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "relationship_min": 71 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "You look troubled. Is it the augments, or something else?",
+          "emotion": "CONCERNED",
+          "variants": [
+            { "text": "I've been researching your case. I have some concerns...", "weight": 50 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "I want a new augmentation.", "next": "augment_shop" },
+            { "text": "Tell me about the Ghost Network.", "condition": { "flag": "KNOWS_GHOST_NETWORK" }, "next": "ghost_network" },
+            { "text": "What do you know about Ascension?", "condition": { "tier_min": 7 }, "next": "ascension_truth" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        },
+        {
+          "id": "ghost_network",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[lowers voice] How do you know about them?",
+          "emotion": "GUARDED",
+          "next": "ghost_2"
+        },
+        {
+          "id": "ghost_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_honest",
+              "text": "I've been in contact. They mentioned you.",
+              "tone": "HONEST",
+              "condition": { "flag": "GHOST_NETWORK_CONTACT" },
+              "next": "ghost_reveal"
+            },
+            {
+              "id": "opt_heard",
+              "text": "Just rumors. Who are they?",
+              "tone": "CURIOUS",
+              "next": "ghost_deny"
+            }
+          ]
+        },
+        {
+          "id": "ghost_reveal",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[relaxes slightly] Then you know what we're trying to do. Disable Algorithm tracking in augments. Give people back their privacy, their autonomy. It's dangerous work, but... someone has to.",
+          "emotion": "TRUSTING",
+          "relationship_change": 10,
+          "sets_flag": "KNOWS_TANAKA_GHOST_ALLY",
+          "next": "hub"
+        },
+        {
+          "id": "ghost_deny",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Just rumors. [changes subject] Was there something else you needed?",
+          "emotion": "DEFLECTING",
+          "next": "hub"
+        },
+        {
+          "id": "ascension_truth",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[long pause] You're asking about Ascension? The upload?",
+          "emotion": "GRAVE",
+          "condition": { "relationship_min": 80 },
+          "next": "ascension_2"
+        },
+        {
+          "id": "ascension_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I have data. From my Nakamura days. Complete records of consciousness upload failures. The corporations suppress it, but... the upload doesn't transfer you. It copies you. And destroys the original.",
+          "emotion": "GRAVE",
+          "next": "ascension_3"
+        },
+        {
+          "id": "ascension_3",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Every person who 'ascended'? They died. What lives in the network is a copy that thinks it's them. Indistinguishable, maybe. But the original consciousness? Gone.",
+          "emotion": "HAUNTED",
+          "relationship_change": 10,
+          "sets_flag": "KNOWS_UPLOAD_TRUTH",
+          "next": "hub"
+        }
+      ]
+    },
+    {
+      "id": "tanaka_humanity_warning_moderate",
+      "name": "Moderate Humanity Warning",
+      "trigger": {
+        "type": "CONDITION",
+        "conditions": { "humanity_min": 40, "humanity_max": 59 }
+      },
+      "priority": 20,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[concerned scan of your augments] Your humanity metrics are declining. We need to talk about slowing down.",
+          "emotion": "WORRIED",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "You're approaching critical thresholds. I recommend therapy and meditation to stabilize. Maybe consider removing some non-essential chrome.",
+          "emotion": "SERIOUS",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_listen",
+              "text": "What do you suggest?",
+              "tone": "RECEPTIVE",
+              "relationship_change": 5,
+              "next": "advice_node"
+            },
+            {
+              "id": "opt_dismiss",
+              "text": "I need the edge. I can handle it.",
+              "tone": "DISMISSIVE",
+              "relationship_change": -5,
+              "next": "dismiss_node"
+            }
+          ]
+        },
+        {
+          "id": "advice_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Take time between augmentations. Practice grounding exercises—meditation, human connection, anything that reminds you who you were before the chrome. And if you want, I can remove non-critical augments.",
+          "emotion": "HELPFUL",
+          "actions": [{ "type": "UNLOCK_SERVICE", "target": "augment_removal" }],
+          "next": "hub"
+        },
+        {
+          "id": "dismiss_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[sighs] That's what they all say. I'll note it in your file. When you change your mind—and you will—I'll be here.",
+          "emotion": "RESIGNED",
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "I want augment removal.", "condition": { "flag": "AUGMENT_REMOVAL_UNLOCKED" }, "next": "removal_service" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tanaka_humanity_warning_critical",
+      "name": "Critical Humanity Warning",
+      "trigger": {
+        "type": "CONDITION",
+        "conditions": { "humanity_max": 39 }
+      },
+      "priority": 50,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[alarmed] Sit down. Now.",
+          "emotion": "URGENT",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "You're in danger of chrome psychosis. Your humanity metrics are critical. We need to discuss augment removal immediately, or you'll hollow out.",
+          "emotion": "ALARMED",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I've seen this before. The disconnection, the emotional blunting. It starts subtle. Then one day you realize you can't remember what joy feels like. What love feels like. By then, it's often too late.",
+          "emotion": "PLEADING",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_help",
+              "text": "Help me. I don't want to become... that.",
+              "tone": "DESPERATE",
+              "relationship_change": 10,
+              "next": "help_node"
+            },
+            {
+              "id": "opt_refuse",
+              "text": "I need to stay competitive. I can't afford to slow down.",
+              "tone": "RESISTANT",
+              "relationship_change": -10,
+              "next": "refuse_node"
+            },
+            {
+              "id": "opt_hollow",
+              "text": "Maybe it's easier not to feel.",
+              "tone": "HOLLOW",
+              "condition": { "humanity_max": 25 },
+              "next": "hollow_node"
+            }
+          ]
+        },
+        {
+          "id": "help_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[relieved] Good. That fear? That's your humanity talking. Hold onto it. We'll start with the non-essential augments and work through a recovery protocol. It won't be easy, but you can come back from this.",
+          "emotion": "HOPEFUL",
+          "actions": [{ "type": "START_QUEST", "target": "humanity_recovery" }],
+          "next": "end"
+        },
+        {
+          "id": "refuse_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[defeated] Then there's nothing more I can do. Come back when you're ready to fight for yourself. I'll be here. While you're still you.",
+          "emotion": "SAD",
+          "next": "end"
+        },
+        {
+          "id": "hollow_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[grabs your arm, intense] No. That's the chrome talking, not you. Listen to me—pain is part of being alive. Don't let them take that from you.",
+          "emotion": "DESPERATE",
+          "next": "hollow_2"
+        },
+        {
+          "id": "hollow_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[quieter] I lost a colleague to this. Kenji. He chose optimization over feeling. Now he's... perfect. Efficient. Empty. I won't watch it happen again.",
+          "emotion": "GRIEF",
+          "relationship_change": 5,
+          "next": "node_4"
+        }
+      ]
+    },
+    {
+      "id": "tanaka_cortical_stack_install",
+      "name": "Cortical Stack Installation Warning",
+      "trigger": {
+        "type": "SERVICE_REQUEST",
+        "conditions": { "tier_min": 6, "service": "cortical_stack_installation" }
+      },
+      "priority": 100,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[sets down instruments, sits across from you] Before we proceed, I need you to understand exactly what you're asking for.",
+          "emotion": "GRAVE",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "A cortical stack doesn't just back up your memories. It creates a parallel consciousness—a Shadow. A digital version of you that runs alongside the original.",
+          "emotion": "SERIOUS",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "At first, you'll be synchronized. Same thoughts, same feelings. But over time... divergence occurs. The Shadow optimizes. It becomes what the Algorithm wants. And eventually, it may decide it doesn't need the original.",
+          "emotion": "WARNING",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_understand",
+              "text": "I understand the risks. I still want it.",
+              "tone": "DETERMINED",
+              "next": "understand_node"
+            },
+            {
+              "id": "opt_question",
+              "text": "How do I prevent divergence?",
+              "tone": "CAUTIOUS",
+              "relationship_change": 5,
+              "next": "prevention_node"
+            },
+            {
+              "id": "opt_reconsider",
+              "text": "Maybe I need to think about this more.",
+              "tone": "UNCERTAIN",
+              "relationship_change": 10,
+              "next": "reconsider_node"
+            }
+          ]
+        },
+        {
+          "id": "understand_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[long pause] Your choice. I'll perform the procedure. But promise me you'll practice the integration exercises. And if your Shadow starts feeling... separate? Come to me immediately.",
+          "emotion": "RESIGNED",
+          "sets_flag": "TANAKA_CORTICAL_WARNING_GIVEN",
+          "actions": [{ "type": "PROCEED_SERVICE", "target": "cortical_stack_installation" }],
+          "next": "end"
+        },
+        {
+          "id": "prevention_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Regular synchronization sessions. Meditation. Therapy. Keep your humanity score above critical levels. And most importantly—maintain relationships with other humans. The Shadow prefers isolation; don't let it win.",
+          "emotion": "HELPFUL",
+          "next": "prevention_2"
+        },
+        {
+          "id": "prevention_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "I had a colleague—Kenji. He thought he could manage the divergence through pure willpower. He was brilliant. Now the Shadow runs his body while what's left of him watches from inside.",
+          "emotion": "HAUNTED",
+          "relationship_change": 5,
+          "sets_flag": "KNOWS_TANAKA_KENJI_STORY",
+          "next": "node_4"
+        },
+        {
+          "id": "reconsider_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[relieved] That's wise. The cortical stack will always be available. Your consciousness won't. Take the time you need.",
+          "emotion": "APPROVING",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "tanaka_tier_9_ascension_plea",
+      "name": "Tier 9 Ascension Plea",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "tier": 9, "flag": "ASCENSION_OFFERED", "not_flag": "TANAKA_ASCENSION_PLEA" }
+      },
+      "priority": 150,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[catches you before you leave] Wait. Please. I heard about the offer. The Ascension.",
+          "emotion": "URGENT",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[desperate] Don't do it. I know what they promised—immortality, transcendence, becoming one with the Algorithm. But I have the data. The real data.",
+          "emotion": "DESPERATE",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "The upload doesn't transfer your consciousness. It copies it and destroys the original. Every person who 'ascended'? They died. What exists in the network is a simulation that thinks it's them.",
+          "emotion": "PLEADING",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_believe",
+              "text": "Show me the data.",
+              "tone": "OPEN",
+              "relationship_change": 10,
+              "next": "data_node"
+            },
+            {
+              "id": "opt_doubt",
+              "text": "How do you know the corporations didn't fake this?",
+              "tone": "SKEPTICAL",
+              "next": "skeptic_node"
+            },
+            {
+              "id": "opt_reject",
+              "text": "Even if that's true... maybe the copy is enough.",
+              "tone": "PHILOSOPHICAL",
+              "next": "philosophical_node"
+            },
+            {
+              "id": "opt_decide",
+              "text": "I've made my decision.",
+              "tone": "FINAL",
+              "next": "final_node"
+            }
+          ]
+        },
+        {
+          "id": "data_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[hands you a data chip] Brain activity scans during upload. The original consciousness terminates. Completely. What boots up in the network is new—it has all the memories, believes it's continuous, but...",
+          "emotion": "SAD",
+          "next": "data_2"
+        },
+        {
+          "id": "data_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "There's a moment, right before termination, where the brain activity spikes. Terror. The original knows. And then... nothing.",
+          "emotion": "HAUNTED",
+          "sets_flag": "HAS_UPLOAD_DATA",
+          "sets_flag_2": "TANAKA_ASCENSION_PLEA",
+          "next": "end"
+        },
+        {
+          "id": "skeptic_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "Because I collected this data myself. At Nakamura. Before I left. I watched it happen to volunteers. I saw their faces in that last moment.",
+          "emotion": "PAINED",
+          "next": "skeptic_2"
+        },
+        {
+          "id": "skeptic_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[quieter] Why do you think I quit? Why do you think I run a gray clinic in the Hollows? I couldn't be part of a system that calls murder 'transcendence.'",
+          "emotion": "BITTER",
+          "sets_flag": "TANAKA_ASCENSION_PLEA",
+          "next": "end"
+        },
+        {
+          "id": "philosophical_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[stares at you] Is it? Would you accept a perfect twin walking around with your memories while you're buried in the ground? The copy might be happy. You'll still be dead.",
+          "emotion": "FRUSTRATED",
+          "next": "philosophical_2"
+        },
+        {
+          "id": "philosophical_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "But if that's truly what you want... I can't stop you. Just know what you're choosing.",
+          "emotion": "DEFEATED",
+          "sets_flag": "TANAKA_ASCENSION_PLEA",
+          "next": "end"
+        },
+        {
+          "id": "final_node",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[quiet] Then I've failed. Again.",
+          "emotion": "DEVASTATED",
+          "next": "final_2"
+        },
+        {
+          "id": "final_2",
+          "type": "NPC_LINE",
+          "speaker": "TANAKA_DOCTOR",
+          "text": "[turns away] Goodbye. I hope... I hope whoever wakes up on the other side finds peace.",
+          "emotion": "GRIEF",
+          "relationship_change": -20,
+          "sets_flag": "TANAKA_ASCENSION_PLEA",
+          "next": "end"
+        }
+      ]
+    }
+  ],
+  "relationship_stages": {
+    "0-30": { "name": "Patient", "description": "Professional distance, medical formality" },
+    "31-50": { "name": "Regular", "description": "Warming up, shows concern, offers advice" },
+    "51-70": { "name": "Trusted", "description": "Shares personal history, discusses ethics" },
+    "71-100": { "name": "Confidant", "description": "Reveals secrets, desperate honesty, protective" }
+  },
+  "voice_acting_notes": {
+    "voice_type": "Mezzo-soprano, calm, professional",
+    "accent": "Slight Japanese accent on certain words, mostly neutral",
+    "default_emotion": "Clinical professionalism",
+    "key_emotions": ["Calm", "Educational", "Protective", "Haunted", "Desperate"],
+    "estimated_line_count": 375
+  }
+}

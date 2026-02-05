@@ -50,6 +50,119 @@ type Bindings = {
 };
 
 // =============================================================================
+// VEHICLE INTEGRATION TYPES
+// =============================================================================
+
+interface ActiveVehicleInfo {
+  id: string;
+  custom_name: string | null;
+  vehicle_class: string;
+  cargo_capacity_kg: number;
+  top_speed_kmh: number;
+  handling_rating: number;
+  current_fuel: number;
+  fuel_capacity: number;
+  current_hull_points: number;
+  is_damaged: number;
+  odometer_km: number;
+  total_deliveries: number;
+}
+
+/**
+ * Get character's active vehicle with definition details.
+ * Returns null if no active vehicle or vehicle is unavailable.
+ */
+async function getActiveVehicle(
+  db: D1Database,
+  characterId: string
+): Promise<ActiveVehicleInfo | null> {
+  return db
+    .prepare(`
+      SELECT cv.id, cv.custom_name, cv.current_fuel, cv.current_hull_points,
+             cv.is_damaged, cv.odometer_km, cv.total_deliveries,
+             vd.vehicle_class, vd.cargo_capacity_kg, vd.top_speed_kmh,
+             vd.handling_rating, vd.fuel_capacity
+      FROM characters c
+      JOIN character_vehicles cv ON c.active_vehicle_id = cv.id
+      JOIN vehicle_definitions vd ON cv.vehicle_definition_id = vd.id
+      WHERE c.id = ? AND cv.character_id = ?
+    `)
+    .bind(characterId, characterId)
+    .first<ActiveVehicleInfo>();
+}
+
+/**
+ * Check if vehicle can handle the mission requirements.
+ * Returns validation result with errors if any.
+ */
+function validateVehicleForMission(
+  vehicle: ActiveVehicleInfo,
+  mission: {
+    cargo_weight_kg: number | null;
+    required_vehicle_class: string | null;
+    mission_type: string;
+  }
+): { valid: boolean; errors: Array<{ code: string; message: string }> } {
+  const errors: Array<{ code: string; message: string }> = [];
+
+  // Check if vehicle is damaged
+  if (vehicle.is_damaged) {
+    errors.push({
+      code: 'VEHICLE_DAMAGED',
+      message: 'Your active vehicle is damaged. Repair it before accepting missions.',
+    });
+  }
+
+  // Check fuel level (at least 10% required)
+  const fuelPercent = (vehicle.current_fuel / vehicle.fuel_capacity) * 100;
+  if (fuelPercent < 10) {
+    errors.push({
+      code: 'VEHICLE_LOW_FUEL',
+      message: 'Your vehicle needs at least 10% fuel to start a mission.',
+    });
+  }
+
+  // Check cargo capacity
+  if (mission.cargo_weight_kg && mission.cargo_weight_kg > vehicle.cargo_capacity_kg) {
+    errors.push({
+      code: 'CARGO_TOO_HEAVY',
+      message: `Mission cargo (${mission.cargo_weight_kg}kg) exceeds vehicle capacity (${vehicle.cargo_capacity_kg}kg).`,
+    });
+  }
+
+  // Check vehicle class requirement
+  if (mission.required_vehicle_class && mission.required_vehicle_class !== vehicle.vehicle_class) {
+    errors.push({
+      code: 'WRONG_VEHICLE_CLASS',
+      message: `This mission requires a ${mission.required_vehicle_class}, but you have a ${vehicle.vehicle_class}.`,
+    });
+  }
+
+  // Special checks for mission types
+  if (mission.mission_type === 'HAZMAT' && !['VAN', 'TRUCK'].includes(vehicle.vehicle_class)) {
+    errors.push({
+      code: 'HAZMAT_VEHICLE_REQUIRED',
+      message: 'HAZMAT missions require a VAN or TRUCK with proper containment.',
+    });
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Calculate time bonus based on vehicle speed.
+ * Faster vehicles get more time buffer.
+ */
+function calculateVehicleTimeBonus(vehicleSpeed: number): number {
+  // Base reference speed is 100 km/h
+  // Faster vehicles get a time bonus (up to 20%)
+  // Slower vehicles get a time penalty (up to -20%)
+  const speedRatio = vehicleSpeed / 100;
+  const timeMultiplier = Math.min(Math.max(speedRatio, 0.8), 1.2);
+  return timeMultiplier;
+}
+
+// =============================================================================
 // VALIDATION SCHEMAS
 // =============================================================================
 
@@ -365,6 +478,36 @@ missionRoutes.post('/:id/accept', async (c) => {
     }, 403);
   }
 
+  // Check vehicle requirements
+  const activeVehicle = await getActiveVehicle(c.env.DB, characterId);
+  if (!activeVehicle) {
+    return c.json({
+      success: false,
+      errors: [{
+        code: 'NO_VEHICLE',
+        message: 'You need an active vehicle to accept delivery missions. Purchase one from the vehicle dealer.',
+      }],
+    }, 422);
+  }
+
+  // Validate vehicle can handle this mission
+  const vehicleValidation = validateVehicleForMission(activeVehicle, {
+    cargo_weight_kg: mission.cargo_weight_kg,
+    required_vehicle_class: mission.required_vehicle_class,
+    mission_type: mission.mission_type,
+  });
+
+  if (!vehicleValidation.valid) {
+    return c.json({
+      success: false,
+      errors: vehicleValidation.errors,
+    }, 422);
+  }
+
+  // Calculate effective time limit with vehicle speed bonus
+  const vehicleTimeBonus = calculateVehicleTimeBonus(activeVehicle.top_speed_kmh);
+  const effectiveTimeLimit = Math.round((mission.time_limit_minutes ?? 60) * vehicleTimeBonus);
+
   // Check mission requirements (skills, items, reputation, etc.)
   const requirements = await c.env.DB
     .prepare('SELECT * FROM mission_requirements WHERE mission_id = ?')
@@ -416,12 +559,22 @@ missionRoutes.post('/:id/accept', async (c) => {
     }
   }
 
-  // Create mission instance
+  // Create mission instance with vehicle-adjusted time limit
   const instanceId = await createMissionInstance(c.env.DB, {
     missionId,
     characterId,
-    timeLimit: mission.time_limit_minutes ?? 60, // Default 60 minutes if not specified
+    timeLimit: effectiveTimeLimit,
   });
+
+  // Store vehicle used for this mission (for tracking and rewards)
+  await c.env.DB
+    .prepare(
+      `UPDATE mission_instances
+       SET current_state = json_set(COALESCE(current_state, '{}'), '$.vehicleId', ?)
+       WHERE id = ?`
+    )
+    .bind(activeVehicle.id, instanceId)
+    .run();
 
   // Initialize mission checkpoints
   const checkpointDefs = await c.env.DB
@@ -462,7 +615,16 @@ missionRoutes.post('/:id/accept', async (c) => {
     data: {
       instance,
       mission,
-      message: 'Mission accepted. Good luck, courier.',
+      vehicle: {
+        id: activeVehicle.id,
+        name: activeVehicle.custom_name || activeVehicle.vehicle_class,
+        class: activeVehicle.vehicle_class,
+        cargoCapacity: activeVehicle.cargo_capacity_kg,
+        speed: activeVehicle.top_speed_kmh,
+        timeBonus: Math.round((vehicleTimeBonus - 1) * 100), // As percentage
+      },
+      effectiveTimeLimit,
+      message: `Mission accepted. Your ${activeVehicle.vehicle_class} is ready. Good luck, courier.`,
     },
   }, 201);
 });
@@ -611,7 +773,7 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
   // Verify mission ownership and status
   const instance = await c.env.DB
     .prepare(
-      `SELECT mi.*, md.base_credits, md.base_xp, md.tier_minimum
+      `SELECT mi.*, md.base_credits, md.base_xp, md.tier_minimum, md.distance_km
        FROM mission_instances mi
        JOIN mission_definitions md ON mi.mission_id = md.id
        WHERE mi.id = ? AND mi.character_id = ? AND mi.status = 'IN_PROGRESS'`
@@ -626,6 +788,8 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
       base_credits: number;
       base_xp: number;
       tier_minimum: number;
+      current_state: string | null;
+      distance_km: number | null;
     }>();
 
   if (!instance) {
@@ -742,6 +906,60 @@ missionRoutes.post('/:id/complete', zValidator('json', missionCompleteSchema), a
     )
     .bind(ratingChange, completion.outcome === 'SUCCESS' ? 1 : 0, characterId)
     .run();
+
+  // Update vehicle stats if mission was completed
+  // Get vehicle ID from mission state
+  const missionState = instance.current_state ? JSON.parse(instance.current_state as string) : {};
+  const vehicleId = missionState.vehicleId;
+
+  if (vehicleId) {
+    // Get mission distance (default to tier * 5 km if not set)
+    const missionDistance = instance.distance_km || (instance.tier_minimum * 5);
+
+    // Update vehicle odometer and delivery count
+    await c.env.DB
+      .prepare(
+        `UPDATE character_vehicles
+         SET odometer_km = odometer_km + ?,
+             total_deliveries = total_deliveries + ?,
+             total_distance_km = total_distance_km + ?,
+             updated_at = datetime('now')
+         WHERE id = ? AND character_id = ?`
+      )
+      .bind(
+        missionDistance,
+        completion.outcome === 'SUCCESS' ? 1 : 0,
+        missionDistance,
+        vehicleId,
+        characterId
+      )
+      .run();
+
+    // Apply minor wear on failure (1% damage chance)
+    if (completion.outcome === 'FAILURE' && Math.random() < 0.3) {
+      await c.env.DB
+        .prepare(
+          `UPDATE character_vehicles
+           SET current_hull_points = MAX(1, current_hull_points - 5),
+               is_damaged = CASE WHEN current_hull_points - 5 < 20 THEN 1 ELSE is_damaged END,
+               accidents = accidents + 1
+           WHERE id = ? AND character_id = ?`
+        )
+        .bind(vehicleId, characterId)
+        .run();
+    }
+
+    // Consume fuel based on distance
+    const fuelConsumed = Math.round(missionDistance * 0.1); // ~10L per 100km average
+    await c.env.DB
+      .prepare(
+        `UPDATE character_vehicles
+         SET current_fuel = MAX(0, current_fuel - ?)
+         WHERE id = ? AND character_id = ?`
+      )
+      .bind(fuelConsumed, vehicleId, characterId)
+      .run();
+  }
 
   // Log completion
   await c.env.DB
@@ -2405,6 +2623,250 @@ async function processWaitAction(
     },
   };
 }
+
+// =============================================================================
+// COMPLICATION DEFINITIONS
+// =============================================================================
+
+/**
+ * GET /missions/complications
+ * List all complication definitions.
+ */
+missionRoutes.get('/complications', async (c) => {
+  const db = c.env.DB;
+  const complicationType = c.req.query('type');
+  const isCombat = c.req.query('combat');
+
+  let query = 'SELECT * FROM complication_definitions WHERE 1=1';
+  const params: unknown[] = [];
+
+  if (complicationType) {
+    query += ' AND complication_type = ?';
+    params.push(complicationType);
+  }
+  if (isCombat === 'true') {
+    query += ' AND is_combat = 1';
+  } else if (isCombat === 'false') {
+    query += ' AND is_combat = 0';
+  }
+
+  query += ' ORDER BY severity DESC, name ASC';
+
+  const result = await db.prepare(query).bind(...params).all();
+
+  const complications = result.results.map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    announcementText: row.announcement_text,
+    complicationType: row.complication_type,
+    severity: row.severity,
+    isCombat: row.is_combat === 1,
+    isTimed: row.is_timed === 1,
+    triggerCondition: row.trigger_condition,
+    triggerChanceBase: row.trigger_chance_base,
+    triggerChanceModifiers: row.trigger_chance_modifiers ? JSON.parse(row.trigger_chance_modifiers as string) : null,
+    minTier: row.min_tier,
+    maxTier: row.max_tier,
+    timeLimitSeconds: row.time_limit_seconds,
+    canBePrevented: row.can_be_prevented === 1,
+  }));
+
+  return c.json({
+    success: true,
+    data: { complications, total: complications.length },
+  });
+});
+
+/**
+ * GET /missions/complications/:code
+ * Get specific complication definition with full details.
+ */
+missionRoutes.get('/complications/:code', async (c) => {
+  const db = c.env.DB;
+  const code = c.req.param('code');
+
+  const result = await db
+    .prepare('SELECT * FROM complication_definitions WHERE code = ? OR id = ?')
+    .bind(code, code)
+    .first();
+
+  if (!result) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Complication not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      complication: {
+        id: result.id,
+        code: result.code,
+        name: result.name,
+        description: result.description,
+        announcementText: result.announcement_text,
+        complicationType: result.complication_type,
+        severity: result.severity,
+        isCombat: result.is_combat === 1,
+        isTimed: result.is_timed === 1,
+        triggerCondition: result.trigger_condition,
+        triggerChanceBase: result.trigger_chance_base,
+        triggerChanceModifiers: result.trigger_chance_modifiers ? JSON.parse(result.trigger_chance_modifiers as string) : null,
+        minTier: result.min_tier,
+        maxTier: result.max_tier,
+        effectsOnTrigger: result.effects_on_trigger ? JSON.parse(result.effects_on_trigger as string) : null,
+        effectsOnResolve: result.effects_on_resolve ? JSON.parse(result.effects_on_resolve as string) : null,
+        effectsOnFail: result.effects_on_fail ? JSON.parse(result.effects_on_fail as string) : null,
+        timeLimitSeconds: result.time_limit_seconds,
+        resolutionOptions: result.resolution_options ? JSON.parse(result.resolution_options as string) : null,
+        canBePrevented: result.can_be_prevented === 1,
+        preventionMethods: result.prevention_methods ? JSON.parse(result.prevention_methods as string) : null,
+      },
+    },
+  });
+});
+
+// =============================================================================
+// MISSION OBJECTIVES
+// =============================================================================
+
+/**
+ * GET /missions/:missionId/objectives
+ * Get all objectives for a mission definition.
+ */
+missionRoutes.get('/:missionId/objectives', async (c) => {
+  const db = c.env.DB;
+  const missionId = c.req.param('missionId');
+
+  // Verify mission exists
+  const mission = await db
+    .prepare('SELECT id, title FROM mission_definitions WHERE id = ?')
+    .bind(missionId)
+    .first();
+
+  if (!mission) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Mission not found' }],
+    }, 404);
+  }
+
+  const result = await db
+    .prepare(
+      `SELECT mo.*, l.name as target_location_name, n.name as target_npc_name, i.name as target_item_name
+       FROM mission_objectives mo
+       LEFT JOIN locations l ON mo.target_location_id = l.id
+       LEFT JOIN npc_definitions n ON mo.target_npc_id = n.id
+       LEFT JOIN item_definitions i ON mo.target_item_id = i.id
+       WHERE mo.mission_definition_id = ?
+       ORDER BY mo.sequence_order ASC`
+    )
+    .bind(missionId)
+    .all();
+
+  const objectives = result.results.map((row) => ({
+    id: row.id,
+    missionDefinitionId: row.mission_definition_id,
+    sequenceOrder: row.sequence_order,
+    title: row.title,
+    description: row.description,
+    hintText: row.hint_text,
+    completionText: row.completion_text,
+    objectiveType: row.objective_type,
+    isOptional: row.is_optional === 1,
+    isHidden: row.is_hidden === 1,
+    isBonus: row.is_bonus === 1,
+    targetLocationId: row.target_location_id,
+    targetLocationName: row.target_location_name,
+    targetNpcId: row.target_npc_id,
+    targetNpcName: row.target_npc_name,
+    targetItemId: row.target_item_id,
+    targetItemName: row.target_item_name,
+    targetCoordinates: row.target_coordinates ? JSON.parse(row.target_coordinates as string) : null,
+    targetQuantity: row.target_quantity,
+    completionConditions: row.completion_conditions ? JSON.parse(row.completion_conditions as string) : null,
+    failureConditions: row.failure_conditions ? JSON.parse(row.failure_conditions as string) : null,
+    timeLimitSeconds: row.time_limit_seconds,
+    completionXp: row.completion_xp,
+  }));
+
+  return c.json({
+    success: true,
+    data: {
+      missionId,
+      missionTitle: mission.title,
+      objectives,
+      total: objectives.length,
+      requiredCount: objectives.filter((o) => !o.isOptional).length,
+      optionalCount: objectives.filter((o) => o.isOptional).length,
+    },
+  });
+});
+
+/**
+ * GET /missions/objectives/:objectiveId
+ * Get specific objective with full details.
+ */
+missionRoutes.get('/objectives/:objectiveId', async (c) => {
+  const db = c.env.DB;
+  const objectiveId = c.req.param('objectiveId');
+
+  const result = await db
+    .prepare(
+      `SELECT mo.*, md.title as mission_title, l.name as target_location_name,
+              n.name as target_npc_name, i.name as target_item_name
+       FROM mission_objectives mo
+       JOIN mission_definitions md ON mo.mission_definition_id = md.id
+       LEFT JOIN locations l ON mo.target_location_id = l.id
+       LEFT JOIN npc_definitions n ON mo.target_npc_id = n.id
+       LEFT JOIN item_definitions i ON mo.target_item_id = i.id
+       WHERE mo.id = ?`
+    )
+    .bind(objectiveId)
+    .first();
+
+  if (!result) {
+    return c.json({
+      success: false,
+      errors: [{ code: 'NOT_FOUND', message: 'Objective not found' }],
+    }, 404);
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      objective: {
+        id: result.id,
+        missionDefinitionId: result.mission_definition_id,
+        missionTitle: result.mission_title,
+        sequenceOrder: result.sequence_order,
+        title: result.title,
+        description: result.description,
+        hintText: result.hint_text,
+        completionText: result.completion_text,
+        objectiveType: result.objective_type,
+        isOptional: result.is_optional === 1,
+        isHidden: result.is_hidden === 1,
+        isBonus: result.is_bonus === 1,
+        targetLocationId: result.target_location_id,
+        targetLocationName: result.target_location_name,
+        targetNpcId: result.target_npc_id,
+        targetNpcName: result.target_npc_name,
+        targetItemId: result.target_item_id,
+        targetItemName: result.target_item_name,
+        targetCoordinates: result.target_coordinates ? JSON.parse(result.target_coordinates as string) : null,
+        targetQuantity: result.target_quantity,
+        completionConditions: result.completion_conditions ? JSON.parse(result.completion_conditions as string) : null,
+        failureConditions: result.failure_conditions ? JSON.parse(result.failure_conditions as string) : null,
+        timeLimitSeconds: result.time_limit_seconds,
+        completionXp: result.completion_xp,
+      },
+    },
+  });
+});
 
 // =============================================================================
 // EXPORTED UTILITIES

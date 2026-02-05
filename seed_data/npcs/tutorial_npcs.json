@@ -1,0 +1,244 @@
+{
+  "$schema": "../schemas/npcs.schema.json",
+  "version": "1.0.0",
+  "description": "Core NPCs from Surge Protocol narrative - Tutorial and Early Game",
+  "npcs": [
+    {
+      "code": "CHEN_DISPATCHER",
+      "name": "Dispatcher Chen",
+      "full_name": "Chen Wei-Ming",
+      "aliases": ["Dispatch", "Old Man Chen"],
+      "age": 47,
+      "gender": "MALE",
+      "pronouns": "he/him",
+      "occupation": "Courier Dispatcher, The Hollows Station",
+      "faction": "COURIERS_GUILD",
+      "tier_appearance": { "min": 0, "max": 10 },
+      "location": "The Hollows - Dispatch Office",
+      "is_quest_giver": true,
+      "is_merchant": false,
+      "is_romance": false,
+      "description": "Tired eyes, graying hair in a tight bun, calloused hands. Wears a faded Guild jacket with patched elbows. Former Tier 7 courier who retired after a knee injury.",
+      "augmentations": ["Basic ocular implant (left eye, amber)", "Outdated comm interface (behind ear)"],
+      "voice_description": "Gravelly, patient but firm. Speaks in clipped sentences. Mandarin accent softened by years in the city.",
+      "personality": {
+        "core_traits": ["Pragmatic", "Protective of rookies", "Cynical about the system"],
+        "motivations": ["Keep the station running", "Help fresh couriers survive"],
+        "fears": ["Losing another rookie", "Algorithm seduction"],
+        "values": ["Honest work", "Guild loyalty", "Harm reduction"]
+      },
+      "background": "Former Tier 7 courier who ran premium routes for corpo clients. Took a dispatcher role after a knee injury. Lost his daughter Ming to cortical stack divergence five years ago.",
+      "relationships": [
+        { "npc": "ROSA_MECHANIC", "type": "friend", "notes": "Old friends, mutual respect" },
+        { "npc": "DR_TANAKA", "type": "professional", "notes": "Refers couriers to her" }
+      ],
+      "story_flags": ["CHEN_MET", "CHEN_DAUGHTER_FATE_KNOWN"],
+      "algorithm_flavor": "DISPATCHER CHEN: LEGACY SYSTEM OPERATOR. EFFICIENCY METRICS SUBOPTIMAL BUT ACCEPTABLE."
+    },
+    {
+      "code": "ROSA_MECHANIC",
+      "name": "Rosa Delgado",
+      "full_name": "Rosa Maria Delgado",
+      "aliases": ["Grease"],
+      "age": 29,
+      "gender": "FEMALE",
+      "pronouns": "she/her",
+      "occupation": "Station Mechanic, The Hollows Courier Station",
+      "faction": "UNION_COLLECTIVE",
+      "tier_appearance": { "min": 0, "max": 10 },
+      "location": "The Hollows - Mechanic Shop",
+      "is_quest_giver": true,
+      "is_merchant": true,
+      "is_romance": true,
+      "romance_requirements": {
+        "min_relationship": 61,
+        "min_humanity": 50,
+        "locked_out_by": ["betrayed_hollows"]
+      },
+      "description": "Athletic build, oil-stained hands, cropped black hair with shaved sides. Burn scar on right forearm. Dark brown eyes. Usually smiling. Wears grandmother's silver cross necklace.",
+      "augmentations": ["Enhanced right eye (diagnostic HUD)", "Basic neural port (vehicle interfacing)"],
+      "voice_description": "Warm contralto, slight Mexican accent (stronger when emotional), quick laugh",
+      "personality": {
+        "core_traits": ["Competent", "Optimistic realist", "Fiercely loyal", "Protective"],
+        "motivations": ["Keep people moving", "Resist corpo exploitation", "Preserve human connection"],
+        "fears": ["Losing herself to chrome", "Hollows gentrification", "Watching people hollow out"],
+        "values": ["Craftsmanship", "Community", "Bodily autonomy", "Human dignity"]
+      },
+      "background": "Third-generation Hollows resident. Grandmother immigrated, parents ran auto shop until corpo squeeze. Runs underground augment removal clinic. Funnels money to Union organizers.",
+      "secrets": ["Augment removal clinic", "Union funding", "Algorithm surveillance blueprints"],
+      "relationships": [
+        { "npc": "CHEN_DISPATCHER", "type": "friend", "notes": "Old friends" },
+        { "npc": "LOPEZ_ORGANIZER", "type": "ally", "notes": "Secret ally, shares resources" },
+        { "npc": "MIGUEL_DELGADO", "type": "family", "notes": "Younger brother, worried about him" }
+      ],
+      "services": ["vehicle_repair", "gear_upgrades", "augment_removal"],
+      "story_flags": ["ROSA_MET", "ROSA_ROMANCE_ACTIVE", "ROSA_BROTHER_SAVED"],
+      "algorithm_flavor": "ROSA DELGADO: MAINTENANCE SPECIALIST. UNION ASSOCIATION SUSPECTED. MONITORING."
+    },
+    {
+      "code": "JIN_RIVAL",
+      "name": "Jin Park",
+      "full_name": "Jin Park",
+      "aliases": ["Speed Demon"],
+      "age": 24,
+      "gender": "NON_BINARY",
+      "pronouns": "they/them",
+      "occupation": "Tier 3 Courier",
+      "faction": "COURIERS_GUILD",
+      "tier_appearance": { "min": 1, "max": 9 },
+      "location": "The Hollows → Red Harbor (advances with tier)",
+      "is_quest_giver": true,
+      "is_merchant": false,
+      "is_romance": false,
+      "description": "Korean-American, lean and wiry. Shaved sides, longer top. Enhanced legs with jump augments, sensory overlay with neon blue HUD glow. Always in motion.",
+      "augmentations": ["Enhanced leg actuators", "HUD overlay", "Threat detection", "Standard courier comms"],
+      "voice_description": "Fast-talking, energetic, slightly breathless. Quick wit. Korean phrases when stressed.",
+      "personality": {
+        "core_traits": ["Competitive", "Ambitious", "Defensive", "Pragmatic", "Loyal (if befriended)"],
+        "motivations": ["Reach Tier 9", "Pay off augment debt", "Prove they're the best"],
+        "fears": ["Augment repossession", "Being exposed as not good enough", "Irrelevance"],
+        "values": ["Meritocracy", "Self-reliance", "Efficiency"]
+      },
+      "background": "Child of immigrants who worked factory jobs. Started courier at 18. Took corpo loan for augments at 20, now trapped in debt spiral. Tier 3 when player is Tier 1.",
+      "relationships": [
+        { "npc": "CHEN_DISPATCHER", "type": "professional", "notes": "Chen worries about their trajectory" }
+      ],
+      "story_flags": ["JIN_MET", "JIN_ALLY", "JIN_ENEMY", "JIN_DEBT_RESOLVED", "JIN_CHROME_SAVED", "JIN_WENT_ROGUE"],
+      "algorithm_flavor": "JIN PARK: TIER 3 COURIER. DEBT STATUS: AT RISK. PERFORMANCE METRICS: ABOVE AVERAGE."
+    },
+    {
+      "code": "DR_TANAKA",
+      "name": "Dr. Yuki Tanaka",
+      "full_name": "Yuki Tanaka, MD",
+      "aliases": ["Doc", "The Surgeon"],
+      "age": 42,
+      "gender": "FEMALE",
+      "pronouns": "she/her",
+      "occupation": "Underground Medical Practitioner",
+      "faction": null,
+      "tier_appearance": { "min": 1, "max": 10 },
+      "location": "The Hollows - Underground Clinic (near Korean enclave)",
+      "is_quest_giver": true,
+      "is_merchant": true,
+      "is_romance": false,
+      "description": "Japanese-American, meticulous appearance despite clinic conditions. Steady hands, calm demeanor. Lab coat over practical clothing.",
+      "augmentations": ["Surgical precision implants (hands)", "Medical diagnostic overlay"],
+      "voice_description": "Calm, precise, clinical but warm. Japanese-American accent.",
+      "personality": {
+        "core_traits": ["Meticulous", "Ethical", "Knowledgeable", "Compassionate"],
+        "motivations": ["Provide ethical medical care", "Oppose corporate chrome exploitation"],
+        "fears": ["Being shut down by corps", "Patients dying from bad chrome"],
+        "values": ["Medical ethics", "Bodily autonomy", "Do no harm"]
+      },
+      "background": "Former corporate medical researcher who defected. Runs underground clinic providing ethical augment installation, repair, and extraction. Works with Ghost Network on chrome removals.",
+      "services": ["augment_installation", "medical_treatment", "augment_repair", "chrome_extraction"],
+      "relationships": [
+        { "npc": "PHANTOM_GHOST", "type": "professional", "notes": "Coordinates on medical extractions" },
+        { "npc": "CHEN_DISPATCHER", "type": "professional", "notes": "Referral network" }
+      ],
+      "story_flags": ["TANAKA_MET", "TANAKA_CORTICAL_WARNING"],
+      "algorithm_flavor": "DR. TANAKA: UNLICENSED MEDICAL PRACTITIONER. LOCATION UNKNOWN. CAPTURE PRIORITY: LOW."
+    },
+    {
+      "code": "DELILAH_FIXER",
+      "name": "Delilah Cross",
+      "full_name": "Delilah Cross",
+      "aliases": ["Dee", "The Broker"],
+      "age": 38,
+      "gender": "FEMALE",
+      "pronouns": "she/her",
+      "occupation": "Information Broker, Fixer",
+      "faction": null,
+      "tier_appearance": { "min": 2, "max": 10 },
+      "location": "Red Harbor (mobile operations)",
+      "is_quest_giver": true,
+      "is_merchant": true,
+      "is_romance": false,
+      "description": "Black woman, tall (5'10), commanding presence. Short natural hair. Professional attire. Cybernetic left eye (amber glow). Slight scar on right cheek.",
+      "augmentations": ["Enhanced cybernetic eye (facial recognition, lie detection)", "Encrypted comms", "Subdermal armor", "NO cochlear Algorithm implant"],
+      "voice_description": "Smooth, measured, deliberate. Every word chosen. Slight Southern accent (suppressed).",
+      "personality": {
+        "core_traits": ["Calculating", "Neutral", "Professional", "Ethical (gray zone)", "Protective of network"],
+        "motivations": ["Maintain independence", "Control information flow", "Help people escape system"],
+        "fears": ["Algorithm integration", "Corpo ownership", "Network exposure"],
+        "values": ["Information is power", "Neutrality is strength", "Discretion is sacred"]
+      },
+      "background": "Former corpo middle management at Apex Security. Exposed corruption, was framed. Went underground. Built city's most extensive information network over 12 years.",
+      "services": ["information_broker", "gray_market_contracts", "introductions", "fencing"],
+      "relationships": [
+        { "npc": "PHANTOM_GHOST", "type": "professional", "notes": "Resource sharing" },
+        { "npc": "LOPEZ_ORGANIZER", "type": "professional", "notes": "Occasional cooperation" }
+      ],
+      "story_flags": ["DELILAH_MET", "DELILAH_TRUST", "DELILAH_FAVOR_OWED", "BLACKMARKET_ACCESS"],
+      "algorithm_flavor": "DELILAH CROSS: INFORMATION BROKER. OFF-GRID STATUS CONFIRMED. HIGH PRIORITY SURVEILLANCE TARGET."
+    },
+    {
+      "code": "LOPEZ_ORGANIZER",
+      "name": "Maria Lopez",
+      "full_name": "Maria Elena Lopez",
+      "aliases": ["The Organizer"],
+      "age": 38,
+      "gender": "FEMALE",
+      "pronouns": "she/her",
+      "occupation": "Union Collective Organizer",
+      "faction": "UNION_COLLECTIVE",
+      "tier_appearance": { "min": 2, "max": 10 },
+      "location": "Union Hall (various locations)",
+      "is_quest_giver": true,
+      "is_merchant": false,
+      "is_romance": false,
+      "description": "Medium height, sturdy build, dark hair in practical bun. Tired eyes that burn with conviction. Wears Union badge proudly. Grandmother's rosary alongside badge.",
+      "augmentations": ["Enhanced musculature", "Union-modified neural interface (Algorithm-restricted)", "Dermal reinforcement"],
+      "voice_description": "Strong contralto, Mexican-American accent (stronger when passionate), commanding but warm.",
+      "personality": {
+        "core_traits": ["Passionate", "Exhausted", "Determined", "Maternal", "Fiercely loyal"],
+        "motivations": ["Protect workers", "Build collective power", "Create alternatives to corpo dominance"],
+        "fears": ["Losing another generation to Ascension", "Union dissolution", "Watching recruits die"],
+        "values": ["Solidarity", "Collective action", "Dignity in labor", "Mutual aid"]
+      },
+      "background": "Former Tier 6 courier who saw too many friends destroyed by the system. Lost partner to Ascension. Now runs Union organizing for courier division. Knows Solomon, researches Third Path.",
+      "secrets": ["Third Path research", "Solomon connection", "Extraction network as sophisticated as Ghost Network"],
+      "relationships": [
+        { "npc": "ROSA_MECHANIC", "type": "ally", "notes": "Secret ally, shares resources" },
+        { "npc": "PHANTOM_GHOST", "type": "ally", "notes": "Extraction cooperation" },
+        { "npc": "SOLOMON_SAGE", "type": "contact", "notes": "Third Path philosophical consultation" }
+      ],
+      "story_flags": ["LOPEZ_MET", "UNION_MEMBER", "THIRD_PATH_HINTED"],
+      "algorithm_flavor": "MARIA LOPEZ: UNION ORGANIZER. THREAT LEVEL: MODERATE. SURVEILLANCE PRIORITY: HIGH."
+    },
+    {
+      "code": "PHANTOM_GHOST",
+      "name": "Phantom",
+      "full_name": "Unknown",
+      "aliases": ["The Extraction Specialist"],
+      "age": null,
+      "gender": "FEMALE",
+      "pronouns": "she/her",
+      "occupation": "Ghost Network Extraction Specialist",
+      "faction": "GHOST_NETWORK",
+      "tier_appearance": { "min": 5, "max": 10 },
+      "location": "Unknown (mobile, off-grid)",
+      "is_quest_giver": true,
+      "is_merchant": false,
+      "is_romance": false,
+      "description": "Ethnically ambiguous (intentional). Average height, average build (forgettable by design). Changes hairstyle frequently. Face hard to remember (neural scrambler).",
+      "augmentations": ["Neural scrambler", "Subdermal armor", "Toxin filters", "Removable chrome", "NO Algorithm implant"],
+      "voice_description": "Calm, quiet, unremarkable. British accent (maybe affected). Speaks softly.",
+      "personality": {
+        "core_traits": ["Professional", "Pragmatic", "Detached", "Efficient", "Trustworthy"],
+        "motivations": ["Help people escape the system", "Maintain Ghost Network reputation"],
+        "fears": ["Exposure", "Network compromise", "Client recapture"],
+        "values": ["Anonymity is survival", "Competence over ego", "Client confidentiality"]
+      },
+      "background": "Unknown origin. Ghost Network tradition: shed identity when joining. 10+ years with Network. 100% extraction success rate. Hundreds extracted safely.",
+      "services": ["extraction_planning", "identity_change", "chrome_removal_coordination", "safe_house_access"],
+      "relationships": [
+        { "npc": "DR_TANAKA", "type": "professional", "notes": "Medical extractions" },
+        { "npc": "DELILAH_FIXER", "type": "professional", "notes": "Safe house coordination" },
+        { "npc": "LOPEZ_ORGANIZER", "type": "ally", "notes": "Extraction cooperation" }
+      ],
+      "story_flags": ["PHANTOM_MET", "GHOST_NETWORK_ACCESS", "GHOST_RECRUITED"],
+      "algorithm_flavor": "ENTITY DESIGNATION: UNKNOWN. CLASSIFICATION: ROGUE. CAPTURE PRIORITY: MAXIMUM."
+    }
+  ]
+}

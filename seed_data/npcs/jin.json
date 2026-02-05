@@ -1,0 +1,302 @@
+{
+  "$schema": "../schemas/npcs.schema.json",
+  "version": "1.0.0",
+  "description": "Jin Park - Rival Courier with branching ally/enemy paths",
+  "npc": {
+    "code": "JIN_RIVAL",
+    "name": "Jin Park",
+    "full_name": "Jin Park",
+    "aliases": [],
+    "callsign": null,
+    "age": 24,
+    "gender": "NON_BINARY",
+    "pronouns": "they/them",
+    "occupation": "Courier (Tier 3 at first meeting)",
+    "faction": null,
+    "faction_notes": "Independent (corporate-aligned, indebted to Nakamura)",
+    "tier_appearance": { "min": 1, "max": 9 },
+    "location": "The Hollows → Red Harbor (as they advance)",
+    "is_quest_giver": true,
+    "is_merchant": false,
+    "is_romance": false,
+    "can_die": true,
+    "death_condition": "Becomes enemy and escalates to violence",
+
+    "physical_description": {
+      "appearance": "Korean-American, lean and wiry build. Shaved sides, longer top (practical for courier work). Always in motion—fidgeting, bouncing, ready to run.",
+      "style_aesthetic": "Courier gear: Lightweight tactical wear, lots of pockets, reflective strips.",
+      "visible_augmentations": [
+        {
+          "type": "enhanced_legs",
+          "location": "legs",
+          "description": "Enhanced leg actuators (jump higher, run faster)",
+          "functional": true
+        },
+        {
+          "type": "sensory_overlay",
+          "location": "eyes",
+          "description": "Neon blue HUD glow in eyes, threat detection",
+          "functional": true
+        },
+        {
+          "type": "courier_comms",
+          "location": "internal",
+          "description": "Standard courier comms (pre-Algorithm)",
+          "functional": true
+        }
+      ],
+      "augmentation_notes": "Moderate (Tier 3 standard). Got augments through corpo loan program (in debt)."
+    },
+
+    "voice_profile": {
+      "type": "Androgynous, mid-20s, energetic",
+      "accent": "American (West Coast), slight Korean inflection",
+      "speech_patterns": [
+        "Fast-talking, sentences run together",
+        "Slang-heavy: 'Yo', 'Nah', 'For real?', 'No cap'",
+        "Korean phrases when stressed: '아이고' (aigo), '화이팅' (hwaiting)",
+        "Humor to deflect vulnerability",
+        "Drops facade when genuinely scared or grateful"
+      ],
+      "emotion_range": {
+        "default": "Cocky, fast-talking, playful mockery",
+        "vulnerable": "Quiet, scared, mask drops",
+        "grateful": "Genuine warmth, sincere",
+        "bitter_enemy": "Cold, angry, resentful"
+      },
+      "line_count_estimate": {
+        "total": 225,
+        "tier_1_fresh_meat": 45,
+        "tier_2_3_interactions": 35,
+        "tier_4_6_debt_quest": 70,
+        "tier_7_9_endgame": 35,
+        "complication_enemy": 25,
+        "ambient": 25
+      }
+    },
+
+    "personality": {
+      "core_traits": ["Competitive", "Ambitious", "Defensive", "Pragmatic", "Loyal (if befriended)"],
+      "motivations": ["Reach Tier 9", "Earn enough to pay off augment debt", "Prove they're the best courier", "Wants respect more than success"],
+      "fears": ["Augment repossession", "Being exposed as 'not good enough'", "Irrelevance—being forgotten"],
+      "values": ["Meritocracy (believes hard work = success)", "Self-reliance", "Efficiency over style"]
+    },
+
+    "background": {
+      "origin_story": "Grew up in The Hollows, child of immigrants who worked factory jobs. Decided early: 'I won't be trapped like them.' Became courier at 18, took corpo loan for augments at 20, jumped from Tier 0 to Tier 2 in six months.",
+      "current_situation": "Now 24, Tier 3, and starting to realize the corpo loan was a trap. Minimum payments barely cover interest. Working twice as hard just to stay afloat. But won't admit it—keeps up the confident facade.",
+      "connection_to_player": "Sees player as competition. Rivalry develops: competitive respect or bitter resentment depending on player choices.",
+      "debt_situation": {
+        "creditor": "Nakamura augment division",
+        "amount": 20000,
+        "status": "Struggling to pay minimum"
+      }
+    },
+
+    "secrets": [
+      {
+        "id": "debt_amount",
+        "description": "Owes 20,000 credits to Nakamura, facing repossession",
+        "unlock_relationship": 50,
+        "unlock_tier": 4
+      },
+      {
+        "id": "fear_of_repo",
+        "description": "Terrified of repo teams taking their chrome",
+        "unlock_relationship": 40,
+        "unlock_condition": "ally_path"
+      }
+    ],
+
+    "relationships": {
+      "allies": [],
+      "enemies": [],
+      "dynamic_relationships": {
+        "with_player": {
+          "possible_states": ["rival", "ally", "enemy", "neutral"],
+          "initial_state": "rival"
+        }
+      },
+      "npc_relationships": [
+        {
+          "npc_code": "CHEN_DISPATCHER",
+          "relationship": "Chen knows Jin, sees potential but worries about corpo loan",
+          "chen_quote": "That kid's gonna burn out or go broke. Hope they figure it out in time."
+        }
+      ]
+    },
+
+    "story_role": {
+      "narrative_function": ["Rival/Ally (branching)", "Corpo Debt Cautionary Tale", "Competition vs. Community Theme"],
+      "arc_summary": "From cocky rival to grateful ally or bitter enemy. Their corpo debt crisis demonstrates system cruelty and tests player's values.",
+      "key_story_beats": [
+        { "tier": 1, "quest": "Fresh Meat", "description": "Initial meeting, race, crash—branching point" },
+        { "tier": "2-3", "description": "Rival or ally interactions based on Tier 1 choice" },
+        { "tier": "4-6", "quest": "Jin's Debt", "description": "Debt crisis—player's help defines future" },
+        { "tier": "7-9", "description": "Endgame presence based on all previous choices" }
+      ],
+      "possible_outcomes": [
+        { "condition": "chrome_saved", "outcome": "Appears at Tier 9 Gathering, loyal ally" },
+        { "condition": "went_rogue", "outcome": "Found in Interstitial, happy off-grid" },
+        { "condition": "chrome_repossessed", "outcome": "Cautionary tale, broken at Tier 2" },
+        { "condition": "enemy_path", "outcome": "Dangerous rival, may ambush player" }
+      ]
+    },
+
+    "branching_paths": {
+      "tier_1_choices": [
+        {
+          "id": "player_helps",
+          "description": "Player helps Jin after crash",
+          "flags_set": ["JIN_ALLY"],
+          "relationship_change": 20,
+          "dialogue": "You helped me. Why? We're competing. You should've left me. But... thanks. Seriously. I owe you."
+        },
+        {
+          "id": "player_abandons",
+          "description": "Player leaves Jin after crash",
+          "flags_set": ["JIN_ENEMY"],
+          "relationship_change": -15,
+          "dialogue": "I won't forget you left me there."
+        },
+        {
+          "id": "player_wins_race",
+          "description": "Player wins race, no crash involvement",
+          "flags_set": ["JIN_NEUTRAL"],
+          "relationship_change": 5,
+          "dialogue": "You're good. I'll give you that."
+        }
+      ],
+      "debt_crisis_paths": [
+        {
+          "id": "loan_money",
+          "requirement": "5000 credits",
+          "outcome": "Jin keeps chrome, deepest loyalty",
+          "flags_set": ["JIN_DEBT_RESOLVED", "JIN_CHROME_SAVED"],
+          "relationship_change": 30
+        },
+        {
+          "id": "negotiate",
+          "requirement": "Charisma check",
+          "outcome": "Debt restructured, Jin keeps chrome",
+          "flags_set": ["JIN_DEBT_RESOLVED", "JIN_CHROME_SAVED"]
+        },
+        {
+          "id": "help_rogue",
+          "requirement": "Ghost Network contact",
+          "outcome": "Jin disappears, safe but gone",
+          "flags_set": ["JIN_WENT_ROGUE"],
+          "relationship_change": 25
+        },
+        {
+          "id": "refuse_help",
+          "outcome": "Jin's chrome repossessed, broken",
+          "flags_set": ["JIN_CHROME_REPOSSESSED"],
+          "relationship_change": -30
+        }
+      ]
+    },
+
+    "story_flags": {
+      "jin_specific": [
+        "JIN_ALLY",
+        "JIN_ENEMY",
+        "JIN_NEUTRAL",
+        "JIN_RELATIONSHIP",
+        "JIN_DEBT_RESOLVED",
+        "JIN_CHROME_SAVED",
+        "JIN_CHROME_REPOSSESSED",
+        "JIN_WENT_ROGUE"
+      ],
+      "player_flags": [
+        "HELPED_JIN",
+        "ABANDONED_JIN",
+        "SAVED_JIN_DEBT"
+      ],
+      "gated_content": [
+        { "content": "Side Quest 'Jin's Debt'", "requires": ["JIN_ALLY", "TIER >= 4"] },
+        { "content": "Jin's Gathering Appearance", "requires": ["JIN_ALLY", "JIN_CHROME_SAVED"] },
+        { "content": "Jin in Interstitial", "requires": ["JIN_WENT_ROGUE", "TIER >= 7"] }
+      ]
+    },
+
+    "gameplay_integration": {
+      "if_ally": {
+        "combat_role": "Fast striker, mobility-focused",
+        "can_assist": ["chase_sequences", "distraction", "enemy_escape"],
+        "intel_provided": ["courier_routes", "shortcuts", "rival_info", "gang_info"]
+      },
+      "if_enemy": {
+        "triggers_complication": "HE-02: Rival Courier Sabotage",
+        "actions": ["sabotage_deliveries", "spread_rumors", "ambush_in_territory"]
+      }
+    }
+  },
+
+  "greetings": [
+    {
+      "id": "first_meeting",
+      "tier_range": [1, 1],
+      "relationship_range": [0, 100],
+      "text": "Yo, you're the new meat? Cute. You got no chrome, no speed, no chance. This is my route. Stay in your lane, fresh."
+    },
+    {
+      "id": "after_crash_helped",
+      "tier_range": [1, 3],
+      "relationship_range": [20, 100],
+      "condition": "JIN_ALLY",
+      "text": "Hey, it's you. Look, about before... I owe you. For real. What do you need?"
+    },
+    {
+      "id": "after_crash_abandoned",
+      "tier_range": [1, 3],
+      "relationship_range": [-50, 0],
+      "condition": "JIN_ENEMY",
+      "text": "You. I remember what you did. Or didn't do. Watch your back."
+    },
+    {
+      "id": "ally_casual",
+      "tier_range": [2, 6],
+      "relationship_range": [30, 100],
+      "condition": "JIN_ALLY",
+      "text": "Yo! Good timing. I was just about to hit this route. Wanna race? For old times' sake?"
+    },
+    {
+      "id": "debt_crisis",
+      "tier_range": [4, 6],
+      "relationship_range": [30, 100],
+      "condition": "debt_crisis_active",
+      "text": "I... I need to talk. In person. It's urgent. Meet me at the Red Harbor docks. Please."
+    },
+    {
+      "id": "post_save",
+      "tier_range": [5, 9],
+      "relationship_range": [60, 100],
+      "condition": "JIN_CHROME_SAVED",
+      "text": "You saved my life. Twice. First the crash, now this. I don't know how to repay that. But I won't forget. Ever."
+    }
+  ],
+
+  "key_dialogue": [
+    {
+      "id": "crash_vulnerable",
+      "context": "After crash, injured",
+      "text": "I... I can't move my leg. Augment's fried. If you leave me here... repo team might find me first. Please. Just help me up."
+    },
+    {
+      "id": "debt_desperate",
+      "context": "Debt crisis reveal",
+      "text": "They're coming for my chrome. All of it. I'll be back to baseline. Back to Tier 0. Six years of work, gone. I can't... I can't do this. Help me. Please."
+    },
+    {
+      "id": "enemy_bitter",
+      "context": "If enemy path, player needs help",
+      "text": "You left me in that crash. I remember. Now you need my help? Funny how that works. Karma's real, and it's coming for you."
+    },
+    {
+      "id": "corpo_loan_warning",
+      "context": "Ally path, advising player",
+      "text": "Don't do what I did. Stay independent. The corpo loan looks good at first, but the interest... it never stops. You're never free."
+    }
+  ]
+}

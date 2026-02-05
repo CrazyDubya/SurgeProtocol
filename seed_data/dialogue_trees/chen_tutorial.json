@@ -1,0 +1,762 @@
+{
+  "$schema": "../schemas/dialogue_tree.schema.json",
+  "version": "1.0.0",
+  "description": "Dispatcher Chen dialogue trees - Tutorial and key story moments",
+  "npc_code": "CHEN_DISPATCHER",
+  "dialogue_trees": [
+    {
+      "id": "chen_first_meeting",
+      "name": "First Meeting",
+      "trigger": {
+        "type": "FIRST_INTERACTION",
+        "conditions": { "tier_max": 0, "relationship_max": 5 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "You got the look. Desperate, hungry, like you'd run through fire for a hundred credits. Good. You'll need that out there.",
+          "emotion": "EVALUATING",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_neutral",
+              "text": "I just need work.",
+              "tone": "NEUTRAL",
+              "relationship_change": 2,
+              "next": "node_3"
+            },
+            {
+              "id": "opt_defensive",
+              "text": "I'm not desperate.",
+              "tone": "DEFENSIVE",
+              "relationship_change": 0,
+              "next": "node_4"
+            },
+            {
+              "id": "opt_professional",
+              "text": "Tell me about the job.",
+              "tone": "PROFESSIONAL",
+              "relationship_change": 3,
+              "next": "node_5"
+            }
+          ]
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Don't we all.",
+          "emotion": "KNOWING",
+          "next": "node_3b"
+        },
+        {
+          "id": "node_3b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[taps terminal] Got a starter run. Medical supplies to the Night Market. Simple. Try not to die.",
+          "emotion": "BUSINESSLIKE",
+          "actions": [{ "type": "UNLOCK_QUEST", "target": "tutorial_first_delivery" }],
+          "next": "end"
+        },
+        {
+          "id": "node_4",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Sure you're not. [beat] Everyone in this line is desperate. That's why we're here. Now, you want work or not?",
+          "emotion": "KNOWING",
+          "next": "node_2"
+        },
+        {
+          "id": "node_5",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Smart. Ask questions, learn the game. Courier work is simple: package A to location B, get paid, don't get killed. The Algorithm handles routing. You just run.",
+          "emotion": "APPROVING",
+          "next": "node_6"
+        },
+        {
+          "id": "node_6",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_algorithm",
+              "text": "What's the Algorithm?",
+              "tone": "CURIOUS",
+              "next": "node_7"
+            },
+            {
+              "id": "opt_dangers",
+              "text": "What are the dangers?",
+              "tone": "CAUTIOUS",
+              "next": "node_8"
+            },
+            {
+              "id": "opt_ready",
+              "text": "I'm ready. Give me a job.",
+              "tone": "EAGER",
+              "next": "node_3b"
+            }
+          ]
+        },
+        {
+          "id": "node_7",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "The Algorithm? It's... everything. The city's operating system. Routes your packages, tracks your rating, decides what jobs you qualify for. Knows you better than you know yourself, eventually.",
+          "emotion": "CAUTIOUS",
+          "next": "node_7b"
+        },
+        {
+          "id": "node_7b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[quieter] Some couriers think of it as a god. Others think of it as a cage. You'll figure out which one you believe soon enough.",
+          "emotion": "PHILOSOPHICAL",
+          "next": "node_6"
+        },
+        {
+          "id": "node_8",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Gangs, mostly. The Hollows isn't corporate territory—Chrome Saints in the southwest, Razor Collective in the northeast. They let couriers through, mostly. Mostly.",
+          "emotion": "SERIOUS",
+          "next": "node_8b"
+        },
+        {
+          "id": "node_8b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Then there's the chrome. The more augments you get, the faster you run, the higher you climb. But every upgrade costs something. Not just credits. Remember that.",
+          "emotion": "WARNING",
+          "next": "node_6"
+        }
+      ]
+    },
+    {
+      "id": "chen_greeting_friendly",
+      "name": "Friendly Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "relationship_min": 41 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "There's the kid. How's the road treating you?",
+          "emotion": "WARM",
+          "variants": [
+            { "text": "Back in one piece. That's what I like to see.", "weight": 50 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "Got any work?", "next": "work_hub" },
+            { "text": "Just checking in.", "next": "checkin" },
+            { "text": "Tell me about yourself.", "next": "personal_hub" },
+            { "text": "Any rumors?", "next": "rumors_hub" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chen_greeting_neutral",
+      "name": "Neutral Greeting",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "relationship_min": 20, "relationship_max": 40 }
+      },
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Back already? Good turnaround time.",
+          "emotion": "NEUTRAL",
+          "variants": [
+            { "text": "Need another run? Check the board.", "weight": 50 }
+          ],
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "Got any work?", "next": "work_hub" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chen_greeting_concerned",
+      "name": "Concerned Greeting (Low Humanity)",
+      "trigger": {
+        "type": "GREETING",
+        "conditions": { "humanity_max": 59 }
+      },
+      "priority": 10,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "You okay, kid? You seem... different.",
+          "emotion": "CONCERNED",
+          "variants": [
+            { "text": "When's the last time you slept? Real sleep, not stim crash.", "weight": 50 },
+            { "text": "How much chrome you running now? Don't answer. Just... pace yourself.", "condition": { "humanity_max": 70 }, "weight": 30 }
+          ],
+          "next": "hub_concerned"
+        },
+        {
+          "id": "hub_concerned",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_fine",
+              "text": "I'm fine.",
+              "tone": "DISMISSIVE",
+              "next": "response_fine"
+            },
+            {
+              "id": "opt_honest",
+              "text": "It's been rough.",
+              "tone": "HONEST",
+              "relationship_change": 5,
+              "next": "response_honest"
+            },
+            {
+              "id": "opt_work",
+              "text": "Just need more work.",
+              "tone": "AVOIDANT",
+              "next": "response_work"
+            }
+          ]
+        },
+        {
+          "id": "response_fine",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[long look] Sure you are. Just... watch yourself out there.",
+          "emotion": "UNCONVINCED",
+          "next": "hub"
+        },
+        {
+          "id": "response_honest",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "I know, kid. This job takes pieces of you. Just make sure there's something left when you're done.",
+          "emotion": "SYMPATHETIC",
+          "next": "hub"
+        },
+        {
+          "id": "response_work",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[sighs] Work won't fix what's wrong. But sure, board's got jobs.",
+          "emotion": "RESIGNED",
+          "next": "hub"
+        },
+        {
+          "id": "hub",
+          "type": "DIALOGUE_HUB",
+          "options": [
+            { "text": "Got any work?", "next": "work_hub" },
+            { "text": "Any advice?", "next": "advice_humanity" },
+            { "text": "[Leave]", "next": "end" }
+          ]
+        },
+        {
+          "id": "advice_humanity",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Every upgrade, you lose a little. Make sure it's worth it. The Algorithm will tell you efficiency is everything. Don't believe it.",
+          "emotion": "EARNEST",
+          "next": "hub"
+        }
+      ]
+    },
+    {
+      "id": "chen_cortical_stack_warning",
+      "name": "Tier 6 Cortical Stack Warning",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": {
+          "tier_min": 6,
+          "flag": "CORTICAL_STACK_AVAILABLE",
+          "not_flag": "CHEN_CORTICAL_WARNING_GIVEN"
+        }
+      },
+      "priority": 100,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[sees the quest on your HUD] A cortical stack. That's the big one, kid.",
+          "emotion": "GRAVE",
+          "next": "node_1b"
+        },
+        {
+          "id": "node_1b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[long pause] You ever wonder who wakes up after that surgery? 'Cause it might not be you.",
+          "emotion": "WARNING",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_confident",
+              "text": "I'll still be me.",
+              "tone": "CONFIDENT",
+              "condition": { "humanity_min": 60 },
+              "relationship_change": 10,
+              "sets_flag": "CHEN_HEARD_CONFIDENCE",
+              "next": "node_3"
+            },
+            {
+              "id": "opt_resigned",
+              "text": "I don't have a choice. I need the edge.",
+              "tone": "RESIGNED",
+              "relationship_change": 5,
+              "sets_flag": "CHEN_KNOWS_PLAYER_DESPERATE",
+              "next": "node_4"
+            },
+            {
+              "id": "opt_dismissive",
+              "text": "It's just tech. Augments don't change who I am.",
+              "tone": "DISMISSIVE",
+              "condition": { "humanity_max": 59 },
+              "relationship_change": -5,
+              "sets_flag": "CHEN_DISAPPOINTED",
+              "next": "node_5"
+            },
+            {
+              "id": "opt_empathy",
+              "text": "Did someone you know get one?",
+              "tone": "EMPATHETIC",
+              "skill_check": { "skill": "EMPATHY", "difficulty": 9 },
+              "next_success": "node_6",
+              "next_failure": "node_7"
+            }
+          ]
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[long look] That's what my daughter said.",
+          "emotion": "PAINED",
+          "next": "node_3b"
+        },
+        {
+          "id": "node_3b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[pause] Ming. She was Tier 8. Best courier I ever saw, me included. Got the cortical stack, thought she could handle it.",
+          "emotion": "GRIEF",
+          "next": "node_8"
+        },
+        {
+          "id": "node_4",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "There's always a choice. Just not always good ones.",
+          "emotion": "SAD",
+          "next": "node_4b"
+        },
+        {
+          "id": "node_4b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[sighs] You're going to do it anyway, aren't you? Just... try to stay you. The Shadow will whisper. Don't listen.",
+          "emotion": "RESIGNED",
+          "sets_flag": "CHEN_CORTICAL_WARNING_GIVEN",
+          "next": "end"
+        },
+        {
+          "id": "node_5",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[turns away] Yeah. That's what they all say.",
+          "emotion": "DISAPPOINTED",
+          "next": "node_5b"
+        },
+        {
+          "id": "node_5b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[quiet] Good luck, kid.",
+          "emotion": "COLD",
+          "relationship_change": -5,
+          "sets_flag": "CHEN_CORTICAL_WARNING_GIVEN",
+          "next": "end"
+        },
+        {
+          "id": "node_6",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[surprised you picked up on it] Yeah. My daughter. Ming.",
+          "emotion": "SURPRISED",
+          "next": "node_6b"
+        },
+        {
+          "id": "node_6b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[exhales] She was better than me. Tier 8, incredible ratings, corpo clients fighting for her contracts. Cortical stack seemed like the next step. Natural progression.",
+          "emotion": "GRIEF",
+          "next": "node_8"
+        },
+        {
+          "id": "node_7",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Just... be careful. That's all I'm saying.",
+          "emotion": "GUARDED",
+          "sets_flag": "CHEN_CORTICAL_WARNING_GIVEN",
+          "next": "end"
+        },
+        {
+          "id": "node_8",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "The surgery went fine. She integrated the stack, created her Shadow. For a while, it worked. Two of her, running simultaneous contracts, doubling income.",
+          "emotion": "REMEMBERING",
+          "next": "node_8b"
+        },
+        {
+          "id": "node_8b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[voice cracks] Then the divergence started.",
+          "emotion": "PAINED",
+          "next": "node_9"
+        },
+        {
+          "id": "node_9",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_silent",
+              "text": "[Stay silent, let him continue]",
+              "tone": "RESPECTFUL",
+              "next": "node_10"
+            },
+            {
+              "id": "opt_gentle",
+              "text": "What happened?",
+              "tone": "GENTLE",
+              "next": "node_10"
+            },
+            {
+              "id": "opt_technical",
+              "text": "Divergence can be managed with therapy.",
+              "tone": "TECHNICAL",
+              "relationship_change": -10,
+              "next": "node_11"
+            }
+          ]
+        },
+        {
+          "id": "node_10",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "She started fighting herself. Prime Ming wanted to slow down, reconnect with family. Shadow Ming wanted optimization, efficiency, more chrome. The Shadow won.",
+          "emotion": "GRIEF",
+          "next": "node_10b"
+        },
+        {
+          "id": "node_10b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[long pause] I visit her sometimes. The body's still alive, working contracts, ratings perfect. But she's... not there anymore. Just the Shadow, optimized, perfect, empty.",
+          "emotion": "DEVASTATED",
+          "relationship_change": 20,
+          "sets_flag": "KNOWS_CHEN_DAUGHTER_FATE",
+          "sets_flag_2": "CHEN_CORTICAL_WARNING_GIVEN",
+          "next": "end"
+        },
+        {
+          "id": "node_11",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[anger] You think we didn't try therapy? Meditation? Neural balancing?",
+          "emotion": "ANGRY",
+          "next": "node_11b"
+        },
+        {
+          "id": "node_11b",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[bitter] She's gone, kid. The tech won. It always wins.",
+          "emotion": "BITTER",
+          "sets_flag": "CHEN_CORTICAL_WARNING_GIVEN",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "chen_daughter_memory_quest",
+      "name": "Memory Run Quest Start",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": {
+          "tier_min": 4,
+          "relationship_min": 60,
+          "flag": "KNOWS_CHEN_DAUGHTER_FATE",
+          "not_flag": "MEMORY_RUN_OFFERED"
+        }
+      },
+      "priority": 50,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[hesitant] Kid, I... got a favor to ask. Off the books.",
+          "emotion": "VULNERABLE",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_anything",
+              "text": "Anything you need.",
+              "tone": "LOYAL",
+              "relationship_change": 5,
+              "next": "node_3"
+            },
+            {
+              "id": "opt_depends",
+              "text": "Depends what it is.",
+              "tone": "CAUTIOUS",
+              "next": "node_3"
+            }
+          ]
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "There's a place in the Interstitial. A memorial garden. Off-grid, hidden. It's where I go to remember Ming. The real Ming.",
+          "emotion": "SAD",
+          "next": "node_4"
+        },
+        {
+          "id": "node_4",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[holds out a small package] Her favorite flowers. Synth-orchids that bloom in the dark. I can't make the trip anymore—my knee, the route's gotten dangerous.",
+          "emotion": "ASKING",
+          "next": "node_5"
+        },
+        {
+          "id": "node_5",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "Would you take them there for me? No pay, no rating. Just... a favor for an old man.",
+          "emotion": "HOPEFUL",
+          "next": "node_6"
+        },
+        {
+          "id": "node_6",
+          "type": "PLAYER_CHOICE",
+          "options": [
+            {
+              "id": "opt_accept",
+              "text": "I'll do it.",
+              "tone": "COMPASSIONATE",
+              "relationship_change": 10,
+              "sets_flag": "MEMORY_RUN_OFFERED",
+              "actions": [{ "type": "START_QUEST", "target": "memory_run" }],
+              "next": "node_accept"
+            },
+            {
+              "id": "opt_decline",
+              "text": "I can't right now. Too many contracts.",
+              "tone": "APOLOGETIC",
+              "sets_flag": "MEMORY_RUN_OFFERED",
+              "next": "node_decline"
+            }
+          ]
+        },
+        {
+          "id": "node_accept",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[grateful] Thank you, kid. Means more than you know. The coordinates are in the package. Be careful out there—the Interstitial's not mapped.",
+          "emotion": "GRATEFUL",
+          "next": "end"
+        },
+        {
+          "id": "node_decline",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[nods, understanding] I get it. The job comes first. If you change your mind, I'll be here.",
+          "emotion": "UNDERSTANDING",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "chen_epilogue_ascension",
+      "name": "Epilogue - Ascension Path",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "tier": 10, "flag": "CHOSE_ASCENSION" }
+      },
+      "priority": 200,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[staring at the terminal where your last message came from] I hope... wherever you are now... I hope it's peaceful. I hope you're happy.",
+          "emotion": "GRIEVING",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[quiet] I'll miss you, kid. You reminded me of her. Before.",
+          "emotion": "SAD",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "STAGE_DIRECTION",
+          "text": "[Turns back to work, older, more tired]",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "chen_epilogue_rogue",
+      "name": "Epilogue - Rogue Path",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "tier": 10, "flag": "CHOSE_ROGUE" }
+      },
+      "priority": 200,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[receives encrypted message, reads it, small smile] Heard you went dark. Can't say I'm surprised. You always had that look—like you wouldn't bend.",
+          "emotion": "PROUD",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[to empty room] Stay safe out there. You'll always have a place here if you need it.",
+          "emotion": "HOPEFUL",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "chen_epilogue_third_path",
+      "name": "Epilogue - Third Path",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "tier": 10, "flag": "CHOSE_THIRD_PATH" }
+      },
+      "priority": 200,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "They say you found another way. Something between human and Algorithm.",
+          "emotion": "WONDER",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[shakes head in wonder] I don't know what that means, but... you always were different. In a good way.",
+          "emotion": "PROUD",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[proud] Ming would have liked you.",
+          "emotion": "BITTERSWEET",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "id": "chen_epilogue_hollowed",
+      "name": "Epilogue - Hollowed Out",
+      "trigger": {
+        "type": "STORY_FLAG",
+        "conditions": { "humanity": 0 }
+      },
+      "priority": 200,
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[sees you enter, hollow-eyed, efficient, emotionless] You're still running packages. That's good. That's... something.",
+          "emotion": "DEVASTATED",
+          "next": "node_2"
+        },
+        {
+          "id": "node_2",
+          "type": "NPC_LINE",
+          "speaker": "CHEN_DISPATCHER",
+          "text": "[can't meet your eyes] I couldn't save her. I couldn't save you either.",
+          "emotion": "BROKEN",
+          "next": "node_3"
+        },
+        {
+          "id": "node_3",
+          "type": "STAGE_DIRECTION",
+          "text": "[turns away]",
+          "next": "end"
+        }
+      ]
+    }
+  ],
+  "relationship_stages": {
+    "0-20": { "name": "Stranger", "description": "Professional distance, transactional" },
+    "21-50": { "name": "Acquaintance", "description": "Warming up, protective, small talk" },
+    "51-80": { "name": "Trusted", "description": "Mentor, shares personal stories, genuine concern" },
+    "81-100": { "name": "Father Figure", "description": "Deeply invested in your survival, emotional reactions to your choices" }
+  },
+  "voice_acting_notes": {
+    "voice_type": "Baritone, aged, warm but weary",
+    "accent": "Slight Mandarin influence, mostly neutral urban American",
+    "default_emotion": "Tired patience",
+    "key_emotions": ["Protective", "Regretful", "Cynical", "Warm"],
+    "estimated_line_count": 250
+  }
+}

@@ -1,0 +1,551 @@
+{
+  "$schema": "../schemas/items.schema.json",
+  "version": "1.0.0",
+  "description": "Tier 1-3 armor for early game progression",
+  "armor": [
+    {
+      "item": {
+        "code": "ARMOR_JACKET_LEATHER",
+        "name": "Courier Leather Jacket",
+        "description": "Standard leather jacket with reinforced panels. Offers minimal protection but doesn't slow you down.",
+        "flavor_text": "The unofficial uniform of the Hollows. Worn, beaten, but still riding.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "LIGHT_ARMOR",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 1.5,
+        "size_category": "MEDIUM",
+        "required_tier": 1,
+        "equipment_slot": "TORSO",
+        "base_price": 100,
+        "sell_price_modifier": 0.35
+      },
+      "armor": {
+        "armor_value": 4,
+        "damage_reduction_flat": 1,
+        "damage_reduction_percent": 0,
+        "body_locations_covered": ["TORSO", "ARMS"],
+        "coverage_percentage": 70,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 8,
+        "fashion_rating": 4
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_JACKET_ARMORED",
+        "name": "Armored Synth-Leather Jacket",
+        "description": "Synthetic leather with hidden ballistic weave. Looks casual, stops bullets.",
+        "flavor_text": "The smart courier's choice. Nobody knows you're protected until they try something.",
+        "manufacturer": "Jin-Tao Apparel",
+        "item_type": "ARMOR",
+        "item_subtype": "LIGHT_ARMOR",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 2.0,
+        "size_category": "MEDIUM",
+        "required_tier": 2,
+        "equipment_slot": "TORSO",
+        "base_price": 350,
+        "sell_price_modifier": 0.45
+      },
+      "armor": {
+        "armor_value": 8,
+        "damage_reduction_flat": 2,
+        "damage_reduction_percent": 0.05,
+        "body_locations_covered": ["TORSO", "ARMS"],
+        "coverage_percentage": 75,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 9,
+        "fashion_rating": 6
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_VEST_BALLISTIC",
+        "name": "Concealable Ballistic Vest",
+        "description": "Lightweight ballistic vest worn under clothing. Basic protection for everyday carry.",
+        "flavor_text": "You don't leave home without it in this city.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "VEST",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 2.5,
+        "size_category": "MEDIUM",
+        "required_tier": 1,
+        "equipment_slot": "TORSO",
+        "base_price": 200,
+        "sell_price_modifier": 0.4
+      },
+      "armor": {
+        "armor_value": 6,
+        "damage_reduction_flat": 2,
+        "damage_reduction_percent": 0,
+        "damage_type_resistances": { "KINETIC": 0.1 },
+        "body_locations_covered": ["TORSO"],
+        "coverage_percentage": 50,
+        "vital_protection": true,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 0,
+        "concealment": 10,
+        "fashion_rating": 0
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_VEST_TACTICAL",
+        "name": "Tactical Assault Vest",
+        "description": "Heavy-duty tactical vest with ceramic plate inserts. Serious protection for serious situations.",
+        "flavor_text": "When the job requires walking into gunfire, this is what you wear.",
+        "manufacturer": "Militech Clone",
+        "item_type": "ARMOR",
+        "item_subtype": "MEDIUM_ARMOR",
+        "rarity": "RARE",
+        "quality_tier": 3,
+        "weight_kg": 6.0,
+        "size_category": "LARGE",
+        "required_tier": 3,
+        "equipment_slot": "TORSO",
+        "base_price": 900,
+        "sell_price_modifier": 0.5
+      },
+      "armor": {
+        "armor_value": 14,
+        "damage_reduction_flat": 4,
+        "damage_reduction_percent": 0.1,
+        "damage_type_resistances": { "KINETIC": 0.15, "BLEED": 0.2 },
+        "body_locations_covered": ["TORSO", "WAIST"],
+        "coverage_percentage": 65,
+        "vital_protection": true,
+        "speed_penalty": 0.05,
+        "agility_penalty": 1,
+        "noise_level": 2,
+        "concealment": 2,
+        "intimidation_bonus": 1,
+        "fashion_rating": 2
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_HELMET_COURIER",
+        "name": "Courier Helmet",
+        "description": "Lightweight helmet with built-in HUD compatibility. Standard protection for fast riders.",
+        "flavor_text": "The Algorithm loves helmet cams. Smile for the surveillance.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "HELMET",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 0.8,
+        "size_category": "SMALL",
+        "required_tier": 1,
+        "equipment_slot": "HEAD",
+        "base_price": 75,
+        "sell_price_modifier": 0.35
+      },
+      "armor": {
+        "armor_value": 3,
+        "damage_reduction_flat": 1,
+        "body_locations_covered": ["HEAD"],
+        "coverage_percentage": 80,
+        "vital_protection": true,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 0,
+        "concealment": 5,
+        "fashion_rating": 3,
+        "special_properties": {
+          "hud_compatible": true
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_HELMET_TACTICAL",
+        "name": "Tactical Combat Helmet",
+        "description": "Military-grade helmet with ballistic protection and mounting rails for accessories.",
+        "flavor_text": "Rated for small arms fire. Don't test the rating.",
+        "manufacturer": "Militech Clone",
+        "item_type": "ARMOR",
+        "item_subtype": "HELMET",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 1.4,
+        "size_category": "SMALL",
+        "required_tier": 2,
+        "equipment_slot": "HEAD",
+        "base_price": 350,
+        "sell_price_modifier": 0.45
+      },
+      "armor": {
+        "armor_value": 6,
+        "damage_reduction_flat": 2,
+        "damage_type_resistances": { "KINETIC": 0.1 },
+        "body_locations_covered": ["HEAD"],
+        "coverage_percentage": 90,
+        "vital_protection": true,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 2,
+        "intimidation_bonus": 1,
+        "fashion_rating": 1,
+        "special_properties": {
+          "hud_compatible": true,
+          "accessory_rails": 2
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_GLOVES_PADDED",
+        "name": "Padded Riding Gloves",
+        "description": "Reinforced gloves for courier work. Protect your hands during falls and fights.",
+        "flavor_text": "Your hands are your livelihood. Keep them safe.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "GLOVES",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 0.2,
+        "size_category": "TINY",
+        "required_tier": 1,
+        "equipment_slot": "HANDS",
+        "base_price": 40,
+        "sell_price_modifier": 0.3
+      },
+      "armor": {
+        "armor_value": 2,
+        "damage_reduction_flat": 0,
+        "body_locations_covered": ["HANDS"],
+        "coverage_percentage": 100,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 0,
+        "concealment": 10,
+        "fashion_rating": 3,
+        "special_properties": {
+          "grip_bonus": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_GLOVES_COMBAT",
+        "name": "Armored Combat Gloves",
+        "description": "Hardened knuckle guards and ballistic fabric. Built for fighting.",
+        "flavor_text": "For when diplomacy fails and fists start flying.",
+        "manufacturer": "Jin-Tao Apparel",
+        "item_type": "ARMOR",
+        "item_subtype": "GLOVES",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 0.4,
+        "size_category": "TINY",
+        "required_tier": 2,
+        "equipment_slot": "HANDS",
+        "base_price": 150,
+        "sell_price_modifier": 0.4
+      },
+      "armor": {
+        "armor_value": 3,
+        "damage_reduction_flat": 1,
+        "body_locations_covered": ["HANDS"],
+        "coverage_percentage": 100,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 0,
+        "concealment": 8,
+        "fashion_rating": 4,
+        "special_properties": {
+          "unarmed_damage_bonus": 2,
+          "grip_bonus": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_BOOTS_RUNNER",
+        "name": "Runner's Boots",
+        "description": "Lightweight boots with reinforced soles. Built for speed and parkour.",
+        "flavor_text": "In the Hollows, sometimes running is the only option.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "BOOTS",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 0.8,
+        "size_category": "SMALL",
+        "required_tier": 1,
+        "equipment_slot": "FEET",
+        "base_price": 80,
+        "sell_price_modifier": 0.35
+      },
+      "armor": {
+        "armor_value": 2,
+        "damage_reduction_flat": 0,
+        "body_locations_covered": ["FEET"],
+        "coverage_percentage": 100,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 10,
+        "fashion_rating": 5,
+        "special_properties": {
+          "movement_bonus": 0.05,
+          "fall_damage_reduction": 0.1
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_BOOTS_TACTICAL",
+        "name": "Tactical Combat Boots",
+        "description": "Steel-toed boots with ankle support and reinforced construction. Combat-ready.",
+        "flavor_text": "When you need to kick down doors and keep walking.",
+        "manufacturer": "Militech Clone",
+        "item_type": "ARMOR",
+        "item_subtype": "BOOTS",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 1.4,
+        "size_category": "SMALL",
+        "required_tier": 2,
+        "equipment_slot": "FEET",
+        "base_price": 250,
+        "sell_price_modifier": 0.4
+      },
+      "armor": {
+        "armor_value": 4,
+        "damage_reduction_flat": 1,
+        "body_locations_covered": ["FEET"],
+        "coverage_percentage": 100,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 2,
+        "concealment": 7,
+        "fashion_rating": 3,
+        "special_properties": {
+          "kick_damage_bonus": 2,
+          "fall_damage_reduction": 0.15
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_PANTS_CARGO",
+        "name": "Reinforced Cargo Pants",
+        "description": "Heavy-duty pants with extra pockets and knee padding. Practical and durable.",
+        "flavor_text": "The pockets alone are worth the price.",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "PANTS",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 0.8,
+        "size_category": "MEDIUM",
+        "required_tier": 1,
+        "equipment_slot": "LEGS",
+        "base_price": 60,
+        "sell_price_modifier": 0.3
+      },
+      "armor": {
+        "armor_value": 2,
+        "damage_reduction_flat": 0,
+        "body_locations_covered": ["LEGS"],
+        "coverage_percentage": 90,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 9,
+        "fashion_rating": 3,
+        "special_properties": {
+          "extra_inventory_slots": 2
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_PANTS_TACTICAL",
+        "name": "Tactical Combat Pants",
+        "description": "Military-style pants with integrated knee protection and reinforced stitching.",
+        "flavor_text": "Designed for combat, built to last.",
+        "manufacturer": "Jin-Tao Apparel",
+        "item_type": "ARMOR",
+        "item_subtype": "PANTS",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 1.2,
+        "size_category": "MEDIUM",
+        "required_tier": 2,
+        "equipment_slot": "LEGS",
+        "base_price": 200,
+        "sell_price_modifier": 0.4
+      },
+      "armor": {
+        "armor_value": 5,
+        "damage_reduction_flat": 1,
+        "body_locations_covered": ["LEGS"],
+        "coverage_percentage": 95,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 7,
+        "fashion_rating": 4,
+        "special_properties": {
+          "extra_inventory_slots": 3,
+          "knee_protection": true
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_MASK_BASIC",
+        "name": "Breather Mask",
+        "description": "Basic respirator mask that filters airborne toxins. Essential for the Hollows' industrial areas.",
+        "flavor_text": "The air quality index says 'hazardous.' This says 'problem solved.'",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "MASK",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 0.2,
+        "size_category": "TINY",
+        "required_tier": 1,
+        "equipment_slot": "FACE",
+        "base_price": 50,
+        "sell_price_modifier": 0.3
+      },
+      "armor": {
+        "armor_value": 1,
+        "damage_reduction_flat": 0,
+        "body_locations_covered": ["FACE"],
+        "coverage_percentage": 60,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 4,
+        "fashion_rating": 2,
+        "environmental_protection": {
+          "toxin_resistance": 0.5,
+          "gas_immunity": true
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_MASK_TACTICAL",
+        "name": "Tactical Half-Mask",
+        "description": "Armored face guard with integrated filters. Protects your identity and your lungs.",
+        "flavor_text": "Nobody needs to know who you are.",
+        "manufacturer": "Underground Custom",
+        "item_type": "ARMOR",
+        "item_subtype": "MASK",
+        "rarity": "UNCOMMON",
+        "quality_tier": 2,
+        "weight_kg": 0.4,
+        "size_category": "SMALL",
+        "required_tier": 2,
+        "equipment_slot": "FACE",
+        "base_price": 180,
+        "sell_price_modifier": 0.4
+      },
+      "armor": {
+        "armor_value": 3,
+        "damage_reduction_flat": 1,
+        "body_locations_covered": ["FACE"],
+        "coverage_percentage": 70,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 1,
+        "intimidation_bonus": 2,
+        "fashion_rating": 5,
+        "environmental_protection": {
+          "toxin_resistance": 0.7,
+          "gas_immunity": true
+        },
+        "special_properties": {
+          "voice_modulator": true
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_SET_COURIER_STARTER",
+        "name": "Courier Starter Kit",
+        "description": "Basic protective gear bundle for new couriers. Includes jacket, helmet, gloves, and boots.",
+        "flavor_text": "Everything you need to survive your first month. Emphasis on 'first.'",
+        "manufacturer": "Generic",
+        "item_type": "ARMOR",
+        "item_subtype": "ARMOR_SET",
+        "rarity": "COMMON",
+        "quality_tier": 1,
+        "weight_kg": 3.3,
+        "size_category": "LARGE",
+        "required_tier": 1,
+        "base_price": 275,
+        "sell_price_modifier": 0.35
+      },
+      "armor": {
+        "armor_value": 11,
+        "damage_reduction_flat": 2,
+        "body_locations_covered": ["HEAD", "TORSO", "ARMS", "HANDS", "FEET"],
+        "coverage_percentage": 65,
+        "speed_penalty": 0,
+        "agility_penalty": 0,
+        "noise_level": 1,
+        "concealment": 7,
+        "fashion_rating": 4,
+        "special_properties": {
+          "set_bonus": "Speed +5% when all pieces equipped"
+        }
+      }
+    },
+    {
+      "item": {
+        "code": "ARMOR_SET_SECURITY",
+        "name": "Corporate Security Uniform",
+        "description": "Full security loadout including vest, helmet, and accessories. Identifies you as corpo security.",
+        "flavor_text": "Wearing this gets you access to some places. And gets you shot in others.",
+        "manufacturer": "Nakamura Cybernetics",
+        "item_type": "ARMOR",
+        "item_subtype": "ARMOR_SET",
+        "rarity": "RARE",
+        "quality_tier": 3,
+        "weight_kg": 9.5,
+        "size_category": "LARGE",
+        "required_tier": 3,
+        "base_price": 1800,
+        "sell_price_modifier": 0.5
+      },
+      "armor": {
+        "armor_value": 22,
+        "damage_reduction_flat": 5,
+        "damage_reduction_percent": 0.1,
+        "damage_type_resistances": { "KINETIC": 0.15, "ENERGY": 0.05 },
+        "body_locations_covered": ["HEAD", "TORSO", "ARMS", "HANDS", "LEGS", "FEET"],
+        "coverage_percentage": 85,
+        "vital_protection": true,
+        "speed_penalty": 0.1,
+        "agility_penalty": 1,
+        "noise_level": 3,
+        "concealment": 0,
+        "intimidation_bonus": 2,
+        "fashion_rating": 3,
+        "special_properties": {
+          "corpo_identification": "NAKAMURA",
+          "comms_integrated": true,
+          "set_bonus": "Intimidation +2 when all pieces equipped"
+        }
+      }
+    }
+  ]
+}

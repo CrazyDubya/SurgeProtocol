@@ -1,0 +1,760 @@
+{
+  "complications": [
+    {
+      "id": "COMP_HE01_GANG_TERRITORY",
+      "code": "GANG_TERRITORY",
+      "category": "HOSTILE_ENCOUNTER",
+      "name": "Gang Territory Incursion",
+      "description": "Delivery route passes through gang-controlled territory. Player is stopped at checkpoint.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MODERATE",
+      "trigger": {
+        "type": "LOCATION",
+        "condition": "enters_gang_territory",
+        "gangs": ["razor_collective", "chrome_saints", "street_wolves"]
+      },
+      "npcDialogue": {
+        "enforcer": "Stop right there, courier. This is our territory. You want to pass? Pay the toll. Or turn around.",
+        "packageNotice": "Nice package you got. Corporate? We could take it. Resell it. Or... you could pay. Your choice."
+      },
+      "options": [
+        {
+          "id": "PAY_TOLL",
+          "label": "Pay Toll",
+          "description": "Pay for safe passage",
+          "cost": {
+            "type": "CREDITS",
+            "amount": 100,
+            "percentage": 10,
+            "usePercentage": true
+          },
+          "outcome": "Safe passage, quick resolution",
+          "humanityChange": 0,
+          "storyFlags": {
+            "sets": ["GANG_PAID_TOLL"],
+            "relationshipChange": {
+              "gang": 5
+            }
+          },
+          "timeCost": 60
+        },
+        {
+          "id": "FIGHT",
+          "label": "Fight",
+          "description": "Combat encounter with enforcers",
+          "combatEncounter": {
+            "enemies": 2,
+            "difficulty": "EASY"
+          },
+          "outcome": "Defeat enforcers, hostile gang relationship, possible injury/delay",
+          "humanityChange": -2,
+          "storyFlags": {
+            "sets": ["GANG_FOUGHT"],
+            "relationshipChange": {
+              "gang": -20
+            }
+          },
+          "risks": ["package_damage", "injury", "time_delay"],
+          "timeCost": 300
+        },
+        {
+          "id": "TALK_THROUGH",
+          "label": "Talk Your Way Through",
+          "description": "Negotiate passage using charisma or reputation",
+          "skillCheck": {
+            "skill": "CHARISMA",
+            "difficulty": 12,
+            "alternateSkill": "STREETWISE"
+          },
+          "successDialogue": "I run routes through here regular. Let's make a deal—I pass free, I don't report your checkpoint to corpo.",
+          "successOutcome": "Safe passage, establish recurring relationship",
+          "successHumanity": 1,
+          "successFlags": {
+            "sets": ["GANG_NEGOTIATED"],
+            "relationshipChange": {
+              "gang": 10
+            },
+            "unlocks": ["GANG_CONTACT"]
+          },
+          "failureOutcome": "Gang doesn't buy it, forced to pay or fight",
+          "timeCost": 120
+        },
+        {
+          "id": "ALTERNATE_ROUTE",
+          "label": "Alternate Route",
+          "description": "Find another way around gang territory",
+          "outcome": "Avoid confrontation, lose time",
+          "humanityChange": 0,
+          "timeCost": 600,
+          "ratingImpact": -0.1
+        }
+      ],
+      "scalingNotes": {
+        "tier0-2": "Gang demands 100-500 credits, 2 enforcers, easy combat",
+        "tier3-5": "Gang demands 500-1500 credits, 3-4 enforcers, moderate combat",
+        "tier6-9": "Gang demands 1500+ credits, 5+ enforcers, hard combat, possible gang boss"
+      }
+    },
+    {
+      "id": "COMP_HE02_RIVAL_SABOTAGE",
+      "code": "RIVAL_SABOTAGE",
+      "category": "HOSTILE_ENCOUNTER",
+      "name": "Rival Courier Sabotage",
+      "description": "A rival courier attempts to sabotage your delivery to steal your client or boost their own rating.",
+      "tier": {
+        "min": 1,
+        "max": 2
+      },
+      "severity": "MODERATE",
+      "trigger": {
+        "type": "MID_DELIVERY",
+        "condition": "valuable_package",
+        "rivalId": "jin"
+      },
+      "npcDialogue": {
+        "rival": "Hey, [player]. Nice package. Shame if something... happened to it. We're competing for the same clients, you know. Maybe you should slow down. Let me take this one."
+      },
+      "options": [
+        {
+          "id": "RACE_THEM",
+          "label": "Race Them",
+          "description": "Speed/Navigation challenge",
+          "skillCheck": {
+            "skill": "VELOCITY",
+            "difficulty": 10
+          },
+          "successOutcome": "Deliver on time, gain rating",
+          "failureOutcome": "Rival damages package or delays you",
+          "humanityChange": 0,
+          "storyFlags": {
+            "relationshipChange": {
+              "rival": -10
+            }
+          }
+        },
+        {
+          "id": "FIGHT_RIVAL",
+          "label": "Fight",
+          "description": "Physical confrontation",
+          "combatEncounter": {
+            "enemies": 1,
+            "difficulty": "MODERATE"
+          },
+          "outcome": "Possible injury, rating/reputation consequences",
+          "humanityChange": -3,
+          "storyFlags": {
+            "sets": ["RIVAL_FOUGHT"],
+            "relationshipChange": {
+              "rival": -25
+            }
+          },
+          "risks": ["corpo_security_fine", "both_fined"]
+        },
+        {
+          "id": "NEGOTIATE_SPLIT",
+          "label": "Negotiate Split",
+          "description": "Propose splitting the delivery reward",
+          "playerDialogue": "How about we both deliver parts? Split the fee. No fighting, no sabotage.",
+          "outcome": "Both deliver, split payment/rating",
+          "humanityChange": 2,
+          "storyFlags": {
+            "sets": ["RIVAL_COOPERATED"],
+            "relationshipChange": {
+              "rival": 15
+            }
+          },
+          "rewardModifier": 0.5
+        },
+        {
+          "id": "CALL_CHEN",
+          "label": "Call Dispatcher Chen",
+          "description": "Get Chen to intervene",
+          "outcome": "Chen assigns rival different route, you proceed but lose time",
+          "humanityChange": 1,
+          "storyFlags": {
+            "relationshipChange": {
+              "chen": 5
+            }
+          },
+          "timeCost": 300
+        },
+        {
+          "id": "INTIMIDATE",
+          "label": "Intimidate",
+          "description": "Use reputation or augments to scare rival off",
+          "playerDialogue": "Back off. You know who I am. You know my rating. You don't want this fight.",
+          "skillCheck": {
+            "skill": "INTIMIDATION",
+            "difficulty": 14,
+            "bonusFromRating": true
+          },
+          "successOutcome": "Rival backs down, reputation reinforced",
+          "failureOutcome": "Rival calls your bluff, forced to fight or flee",
+          "humanityChange": -1
+        }
+      ]
+    },
+    {
+      "id": "COMP_ENV01_WEATHER",
+      "code": "SEVERE_WEATHER",
+      "category": "ENVIRONMENTAL",
+      "name": "Severe Weather Event",
+      "description": "Sudden storm/environmental hazard makes navigation dangerous.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MINOR",
+      "trigger": {
+        "type": "RANDOM",
+        "probability": 0.15,
+        "weatherTypes": ["rain", "fog", "wind"]
+      },
+      "environmentalEffects": [
+        "reduced_visibility",
+        "balance_affected",
+        "some_routes_flooded"
+      ],
+      "options": [
+        {
+          "id": "PUSH_THROUGH",
+          "label": "Push Through",
+          "description": "Risk injury/package damage for speed",
+          "outcome": "Arrive on time but risk injury/package damage",
+          "humanityChange": 0,
+          "skillCheck": {
+            "skill": "VELOCITY",
+            "difficulty": 10
+          },
+          "failureRisks": ["injury", "package_damage"],
+          "successFlags": {
+            "sets": ["DELIVERY_HERO"]
+          }
+        },
+        {
+          "id": "WAIT_OUT",
+          "label": "Wait Out Storm",
+          "description": "Stay safe but delay delivery",
+          "outcome": "Safe, but delivery delayed, rating penalty",
+          "humanityChange": 1,
+          "timeCost": 600,
+          "ratingImpact": -0.2,
+          "storyFlags": {
+            "sets": ["LATE_DELIVERY"]
+          }
+        },
+        {
+          "id": "ALTERNATE_ROUTE_WEATHER",
+          "label": "Find Alternate Route",
+          "description": "Use underground tunnels or indoor routes",
+          "outcome": "Avoid weather, minor delay, discover new routes",
+          "humanityChange": 2,
+          "skillCheck": {
+            "skill": "NAVIGATION",
+            "difficulty": 12
+          },
+          "successFlags": {
+            "unlocks": ["ALTERNATE_ROUTE_KNOWN"]
+          },
+          "timeCost": 180
+        }
+      ],
+      "scalingNotes": {
+        "tier0-2": "Light rain/fog, minor penalties",
+        "tier3-5": "Heavy storm, moderate penalties",
+        "tier6-9": "Severe storm/toxic rain, major penalties"
+      }
+    },
+    {
+      "id": "COMP_ENV02_INFRASTRUCTURE",
+      "code": "INFRASTRUCTURE_FAILURE",
+      "category": "ENVIRONMENTAL",
+      "name": "Infrastructure Failure",
+      "description": "Key infrastructure (bridge, elevator, transit line) fails during delivery.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MODERATE",
+      "trigger": {
+        "type": "ROUTE_CRITICAL",
+        "condition": "at_infrastructure_point",
+        "infrastructureTypes": ["bridge", "elevator", "transit", "road"]
+      },
+      "systemAnnouncement": "Attention: [Infrastructure element] is experiencing technical failure. Estimated repair time: 2-4 hours. Seek alternate routes.",
+      "options": [
+        {
+          "id": "PARKOUR_CLIMB",
+          "label": "Parkour/Climb",
+          "description": "Bypass using physical skills",
+          "skillCheck": {
+            "skill": "AGILITY",
+            "difficulty": 12
+          },
+          "outcome": "Bypass broken infrastructure",
+          "humanityChange": 0,
+          "successFlags": {
+            "sets": ["PARKOUR_EXPERT"]
+          },
+          "failureRisks": ["injury"]
+        },
+        {
+          "id": "BRIBE_WORKER",
+          "label": "Bribe Maintenance Worker",
+          "description": "Pay for access to maintenance route",
+          "playerDialogue": "I'll pay you 200 credits to let me through the maintenance access.",
+          "cost": {
+            "type": "CREDITS",
+            "amount": 200
+          },
+          "outcome": "Worker gives access to restricted route",
+          "humanityChange": -1,
+          "storyFlags": {
+            "sets": ["MAINTENANCE_ACCESS"]
+          },
+          "timeCost": 120
+        },
+        {
+          "id": "HELP_REPAIR",
+          "label": "Help Repair",
+          "description": "Assist with repairs for goodwill",
+          "outcome": "Major delay, but gain relationship with workers",
+          "humanityChange": 3,
+          "storyFlags": {
+            "relationshipChange": {
+              "union": 10
+            }
+          },
+          "timeCost": 900,
+          "ratingImpact": -0.3
+        },
+        {
+          "id": "LONG_ALTERNATE",
+          "label": "Long Alternate Route",
+          "description": "Take the safe but slow detour",
+          "outcome": "Safe but slow, rating penalty",
+          "humanityChange": 0,
+          "timeCost": 600,
+          "ratingImpact": -0.2
+        }
+      ]
+    },
+    {
+      "id": "COMP_SOC01_REPUTATION_CHECK",
+      "code": "REPUTATION_CHECK",
+      "category": "SOCIAL",
+      "name": "Reputation Check",
+      "description": "Client/NPC recognizes player and reacts based on reputation and past choices.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MINOR",
+      "trigger": {
+        "type": "DESTINATION_ARRIVAL",
+        "condition": "npc_recognizes_player"
+      },
+      "outcomes": {
+        "highReputation": {
+          "threshold": 4.0,
+          "clientDialogue": "Oh, you're [player]! I requested you specifically. Your rating is excellent. I trust this delivery is in good hands.",
+          "effects": [
+            "more_patient_with_delays",
+            "tips_well",
+            "offers_future_contracts"
+          ],
+          "bonusCredits": 50
+        },
+        "lowReputation": {
+          "threshold": 3.0,
+          "clientDialogue": "You're [player]? I've heard about you. Late deliveries. Damaged packages. I'm watching you. Don't screw this up.",
+          "effects": [
+            "suspicious",
+            "thorough_inspection",
+            "complains_if_anything_wrong"
+          ],
+          "ratingPenalty": 0.1
+        },
+        "mixedReputation": {
+          "requiresFlag": true,
+          "clientDialogue": "You're the courier who [past action]. Interesting. Let's see if you've changed."
+        }
+      },
+      "mixedReputationOptions": [
+        {
+          "id": "OWN_IT",
+          "label": "Own It",
+          "description": "Stand by your past choices",
+          "playerDialogue": "That was me. I stand by my choices.",
+          "humanityChange": 1,
+          "outcome": "Respect or hostility depending on client's values"
+        },
+        {
+          "id": "DEFLECT",
+          "label": "Deflect",
+          "description": "Redirect conversation to current delivery",
+          "playerDialogue": "That was a complicated situation. Let's focus on this delivery.",
+          "humanityChange": 0,
+          "outcome": "Neutral, proceed with delivery"
+        },
+        {
+          "id": "LIE",
+          "label": "Lie",
+          "description": "Deny your past actions",
+          "playerDialogue": "That wasn't me. Must be thinking of someone else.",
+          "humanityChange": -2,
+          "skillCheck": {
+            "skill": "DECEPTION",
+            "difficulty": 14
+          },
+          "successOutcome": "Proceed without confrontation",
+          "failureOutcome": "Caught lying, relationship destroyed"
+        }
+      ]
+    },
+    {
+      "id": "COMP_SOC02_MORAL_DILEMMA",
+      "code": "MORAL_DILEMMA_WITNESS",
+      "category": "SOCIAL",
+      "name": "Moral Dilemma Witness",
+      "description": "Player witnesses injustice/crime/suffering during delivery. Must choose to intervene or ignore.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MODERATE",
+      "trigger": {
+        "type": "ROUTE_RANDOM",
+        "probability": 0.1
+      },
+      "scenarios": [
+        {
+          "id": "CORPO_REPOSSESSION",
+          "name": "Corpo Repossession",
+          "description": "Augment repossession team forcibly removing someone's chrome",
+          "victimDialogue": "Please! I need these to work! I'll pay! Just give me more time!",
+          "aggressorDialogue": "Contract's clear. Payment overdue. Augments are corporate property. Extraction proceeding."
+        },
+        {
+          "id": "GANG_SHAKEDOWN",
+          "name": "Gang Shakedown",
+          "description": "Gang members extorting small business owner",
+          "victimDialogue": "I already paid this month! I don't have more!",
+          "aggressorDialogue": "Rates went up. Pay or we trash your place."
+        },
+        {
+          "id": "MEDICAL_EMERGENCY",
+          "name": "Medical Emergency",
+          "description": "Someone collapsed in medical distress, people walking past",
+          "victimDescription": "Unconscious, augments malfunctioning, bleeding"
+        }
+      ],
+      "options": [
+        {
+          "id": "INTERVENE",
+          "label": "Intervene",
+          "description": "Stop injustice, help victim",
+          "outcome": "Help victim, delay delivery",
+          "humanityChange": 4,
+          "storyFlags": {
+            "sets": ["INTERVENED_INJUSTICE"]
+          },
+          "risks": ["violence", "legal_trouble", "significant_delay"],
+          "timeCost": 600
+        },
+        {
+          "id": "IGNORE",
+          "label": "Ignore and Proceed",
+          "description": "Complete delivery, ignore suffering",
+          "outcome": "Complete delivery on time, ignore suffering",
+          "humanityChange": -3,
+          "storyFlags": {
+            "sets": ["IGNORED_SUFFERING"]
+          }
+        },
+        {
+          "id": "CALL_AUTHORITIES",
+          "label": "Call Authorities",
+          "description": "Report situation, continue delivery",
+          "outcome": "Report situation, authorities may or may not respond",
+          "humanityChange": 1,
+          "note": "Authorities often slow or don't come in low-income areas"
+        },
+        {
+          "id": "ANONYMOUS_HELP",
+          "label": "Anonymous Help",
+          "description": "Help indirectly without confrontation",
+          "examples": ["pay_debt_anonymously", "send_medical_alert", "leave_resources"],
+          "outcome": "Help without direct confrontation",
+          "humanityChange": 2,
+          "cost": {
+            "type": "CREDITS",
+            "amount": 100
+          },
+          "timeCost": 120
+        }
+      ]
+    },
+    {
+      "id": "COMP_TECH01_VEHICLE_WARNING",
+      "code": "VEHICLE_WARNING",
+      "category": "TECHNICAL",
+      "name": "Vehicle Warning",
+      "description": "Vehicle experiences minor technical issue during delivery.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MINOR",
+      "trigger": {
+        "type": "RANDOM",
+        "probability": 0.1,
+        "vehicleConditionModifier": true
+      },
+      "warningTypes": [
+        {
+          "id": "ENGINE_OVERHEAT",
+          "name": "Engine Overheating",
+          "alert": "Warning: Engine temperature rising",
+          "effect": "reduced_speed_if_ignored"
+        },
+        {
+          "id": "LOW_FUEL",
+          "name": "Low Fuel",
+          "alert": "Warning: Fuel level critical",
+          "effect": "vehicle_stops_if_ignored"
+        },
+        {
+          "id": "TIRE_PRESSURE",
+          "name": "Tire Pressure",
+          "alert": "Warning: Tire pressure low",
+          "effect": "handling_reduced"
+        }
+      ],
+      "options": [
+        {
+          "id": "PULL_OVER",
+          "label": "Pull Over and Address",
+          "description": "Stop briefly to handle the issue",
+          "outcome": "Issue resolved, minor time loss",
+          "timeCost": 120
+        },
+        {
+          "id": "IGNORE_WARNING",
+          "label": "Ignore and Push Through",
+          "description": "Risk breakdown for speed",
+          "outcome": "May complete delivery or may break down",
+          "skillCheck": {
+            "skill": "LUCK",
+            "difficulty": 10
+          },
+          "failureOutcome": "Vehicle breaks down, major delay, repair costs"
+        },
+        {
+          "id": "QUICK_FIX",
+          "label": "Attempt Quick Fix",
+          "description": "Try to fix while moving",
+          "skillCheck": {
+            "skill": "TECH",
+            "difficulty": 12
+          },
+          "successOutcome": "Issue resolved with minimal delay",
+          "failureOutcome": "Issue worsens, must pull over",
+          "timeCost": 60
+        }
+      ]
+    },
+    {
+      "id": "COMP_TIME01_TRAFFIC_SLOWDOWN",
+      "code": "TRAFFIC_SLOWDOWN",
+      "category": "TIME_PRESSURE",
+      "name": "Traffic Slowdown",
+      "description": "Construction zone or traffic forces detour.",
+      "tier": {
+        "min": 0,
+        "max": 2
+      },
+      "severity": "MINOR",
+      "trigger": {
+        "type": "ROUTE",
+        "probability": 0.2
+      },
+      "description": "Construction zone ahead, must detour",
+      "options": [
+        {
+          "id": "FOLLOW_DETOUR",
+          "label": "Follow HUD Reroute",
+          "description": "Take the suggested detour",
+          "outcome": "Safe passage, minor delay",
+          "timeCost": 120
+        },
+        {
+          "id": "FIND_SHORTCUT",
+          "label": "Find Your Own Shortcut",
+          "description": "Navigate independently",
+          "skillCheck": {
+            "skill": "NAVIGATION",
+            "difficulty": 10
+          },
+          "successOutcome": "Save time, discover new route",
+          "failureOutcome": "Get lost, extra delay",
+          "successTimeCost": 60,
+          "failureTimeCost": 300
+        },
+        {
+          "id": "WAIT_IT_OUT",
+          "label": "Wait for Traffic to Clear",
+          "description": "Patient approach",
+          "outcome": "Eventually clears, significant delay",
+          "timeCost": 300
+        }
+      ],
+      "tutorialNote": "This complication teaches players about navigation and rerouting."
+    },
+    {
+      "id": "COMP_TIME02_MULTIPLE_DELIVERIES",
+      "code": "MULTIPLE_DELIVERIES",
+      "category": "TIME_PRESSURE",
+      "name": "Multiple Simultaneous Deliveries",
+      "description": "Player has 2-3 deliveries with overlapping deadlines. Can't complete all on time.",
+      "tier": {
+        "min": 1,
+        "max": 2
+      },
+      "severity": "HIGH",
+      "trigger": {
+        "type": "DISPATCHER",
+        "condition": "busy_period"
+      },
+      "chenDialogue": "You've got three deliveries. All flagged urgent. I know it's tight. Do your best.",
+      "deliveryExample": {
+        "deliveryA": {
+          "destination": "Uptown",
+          "deadline": "3:00"
+        },
+        "deliveryB": {
+          "destination": "Red Harbor",
+          "deadline": "3:15"
+        },
+        "deliveryC": {
+          "destination": "Nakamura Tower",
+          "deadline": "3:20"
+        },
+        "currentTime": "2:50",
+        "note": "Physically impossible to complete all three on time"
+      },
+      "options": [
+        {
+          "id": "PRIORITIZE_PAYMENT",
+          "label": "Prioritize by Payment",
+          "description": "Deliver highest-paying first",
+          "outcome": "High-paying delivered, others late",
+          "humanityChange": -1,
+          "storyFlags": {
+            "sets": ["MONEY_FOCUSED"]
+          }
+        },
+        {
+          "id": "PRIORITIZE_RELATIONSHIP",
+          "label": "Prioritize by Relationship",
+          "description": "Deliver to NPCs you care about first",
+          "outcome": "Important relationships maintained, others damaged",
+          "humanityChange": 2,
+          "storyFlags": {
+            "sets": ["LOYAL_COURIER"]
+          }
+        },
+        {
+          "id": "PRIORITIZE_URGENCY",
+          "label": "Prioritize by Urgency",
+          "description": "Deliver life-saving items first",
+          "outcome": "Critical items delivered, less urgent late",
+          "humanityChange": 4,
+          "storyFlags": {
+            "sets": ["ETHICAL_COURIER"]
+          }
+        },
+        {
+          "id": "ATTEMPT_ALL",
+          "label": "Attempt All",
+          "description": "Rush all three, best effort",
+          "outcome": "Probably deliver 2/3 on time, 1 late",
+          "humanityChange": 0
+        },
+        {
+          "id": "ASK_FOR_HELP",
+          "label": "Ask for Help",
+          "description": "Call another courier to take one delivery",
+          "outcome": "Split load, all succeed, share payment",
+          "humanityChange": 3,
+          "storyFlags": {
+            "sets": ["COOPERATIVE_COURIER"]
+          },
+          "rewardModifier": 0.7
+        }
+      ]
+    }
+  ],
+  "categories": {
+    "HOSTILE_ENCOUNTER": {
+      "description": "Confrontations with NPCs that may turn violent",
+      "baseTimeCost": 300,
+      "combatPossible": true
+    },
+    "ENVIRONMENTAL": {
+      "description": "Weather, infrastructure, or terrain hazards",
+      "baseTimeCost": 180,
+      "combatPossible": false
+    },
+    "SOCIAL": {
+      "description": "Reputation, relationships, and moral choices",
+      "baseTimeCost": 120,
+      "combatPossible": false
+    },
+    "TECHNICAL": {
+      "description": "Vehicle, augment, or system failures",
+      "baseTimeCost": 120,
+      "combatPossible": false
+    },
+    "TIME_PRESSURE": {
+      "description": "Deadlines, multiple objectives, or chase sequences",
+      "baseTimeCost": 0,
+      "combatPossible": true
+    }
+  },
+  "scalingGuidelines": {
+    "tier0-2": {
+      "description": "Tutorial and early game - low stakes, clear solutions",
+      "maxSeverity": "MODERATE",
+      "combatDifficulty": "EASY",
+      "consequenceWeight": "LOW"
+    }
+  },
+  "storyFlagImpact": {
+    "relationshipFlags": [
+      "GANG_[NAME]_RELATIONSHIP",
+      "RIVAL_[NAME]_RELATIONSHIP",
+      "CHEN_RELATIONSHIP"
+    ],
+    "reputationFlags": [
+      "DELIVERY_HERO",
+      "PARKOUR_EXPERT",
+      "COOPERATIVE_COURIER"
+    ],
+    "moralFlags": [
+      "INTERVENED_INJUSTICE",
+      "IGNORED_SUFFERING",
+      "ETHICAL_COURIER"
+    ]
+  },
+  "metadata": {
+    "version": "1.0",
+    "totalComplications": 9,
+    "tierCoverage": [0, 1, 2],
+    "categories": 5,
+    "lastUpdated": "2026-01-20"
+  }
+}

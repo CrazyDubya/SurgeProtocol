@@ -1,0 +1,460 @@
+{
+  "$schema": "../schemas/locations.schema.json",
+  "version": "1.0.0",
+  "description": "Detailed location file for The Hollows - Tier 0-2 Starting District",
+  "location": {
+    "code": "THE_HOLLOWS",
+    "name": "The Hollows",
+    "location_type": "DISTRICT",
+    "tier_range": { "min": 0, "max": 2 },
+
+    "geographic_context": {
+      "position": "Lower City, eastern industrial zone",
+      "elevation": "Sea level + basement levels (flood-prone)",
+      "size_km2": 8,
+      "population_official": 250000,
+      "population_estimated": 300000,
+      "borders": {
+        "north": "Red Harbor industrial corridor",
+        "south": "Flooded districts (abandoned after sea rise)",
+        "east": "City perimeter wall, ocean beyond",
+        "west": "Mid-tier residential (gentrification buffer zone)"
+      }
+    },
+
+    "architecture": {
+      "building_types": [
+        {
+          "type": "Old Factories (converted)",
+          "description": "Massive brick structures, 4-8 stories, broken windows patched with plastic sheeting, walls covered in graffiti and rust"
+        },
+        {
+          "type": "Tenement Blocks",
+          "description": "Brutalist concrete, narrow corridors, flickering fluorescent lights, mold climbing walls"
+        },
+        {
+          "type": "Shipping Containers",
+          "description": "Stacked and welded into makeshift apartments, corrugated metal walls, condensation dripping, no insulation"
+        },
+        {
+          "type": "Street-Level Shops",
+          "description": "Cramped storefronts, security grates (always down), neon signs (half broken), awnings patched with tarp"
+        }
+      ],
+      "infrastructure_condition": {
+        "roads": "Cracked asphalt, potholes filled with toxic rainwater, trash accumulation in gutters",
+        "lighting": "Sodium vapor streetlights (60% functional), flickering neon, illegal LED strips, darkness pools between lights",
+        "utilities": "Spotty power (rolling blackouts 2-3x daily), contaminated water (boil advisory permanent), sewage backup frequent",
+        "transit": "One functional subway line (overcrowded, unreliable), bus stops (vandalized, schedules meaningless)"
+      }
+    },
+
+    "atmosphere": {
+      "visual": {
+        "color_palette": ["Gray concrete", "Rust orange", "Industrial yellow", "Sickly fluorescent green", "Neon pink/blue"],
+        "skyline": "Low-rise (no towers), dominated by factory smokestacks, distant corpo towers visible (mocking reminder)",
+        "ground_level": "Trash drifts against walls, steam rising from grates, puddles reflect broken neon, cables crisscross overhead",
+        "fog": "Rolls in from ocean (morning, evening), mixes with industrial smog"
+      },
+      "sensory": {
+        "sight": [
+          "Fog mixing with industrial smog",
+          "Graffiti everywhere: tags, political slogans ('THE SYSTEM CONSUMES'), memorial murals",
+          "People in worn clothing, visible cheap chrome, faces tired/wary",
+          "Courier runners darting through crowds, parkour across rooftops",
+          "Repo trucks prowling (everyone tenses when they appear)"
+        ],
+        "sound": [
+          "Factory machinery (constant low hum/clang)",
+          "Sirens (corpo security, ambulances, never for residents)",
+          "Multilingual conversations (Korean, Spanish, Mandarin, English)",
+          "Street vendors shouting deals",
+          "Children playing (rare laughter in grim environment)",
+          "Hovercraft overhead (corpo traffic, doesn't land here)"
+        ],
+        "smell": [
+          "Salt air from ocean (base note)",
+          "Industrial chemicals (acrid, burning)",
+          "Cooking food (street vendors - synthetic protein, spices masking flavor)",
+          "Garbage (rotting, ever-present)",
+          "Ozone (electrical equipment, poorly maintained)",
+          "Sweat and bodies (overcrowding, inadequate ventilation)"
+        ],
+        "touch_feel": [
+          "Humid (ocean proximity + industrial heat)",
+          "Grimy surfaces (everything coated in pollutant residue)",
+          "Uneven ground (watch your step, broken pavement)",
+          "Crowded (personal space nonexistent in markets/transit)",
+          "Cold in winter (no heating), sweltering in summer (no AC)"
+        ],
+        "taste_ambient": [
+          "Air tastes metallic, chemical",
+          "Public water tastes like rust and chlorine",
+          "Food tastes of synthetic protein and desperation"
+        ]
+      },
+      "lighting_mood": {
+        "dawn": { "description": "Gray, foggy, trudging to work", "mood": "heavy" },
+        "day": { "description": "Harsh industrial light, no escape from reality", "mood": "oppressive" },
+        "dusk": { "description": "Neon begins, colors soften edges, brief beauty", "mood": "deceptive" },
+        "night": { "description": "Darkness with neon pools, shadows dangerous", "mood": "threatening" }
+      },
+      "weather": {
+        "rain": "Frequent, toxic (don't let it touch skin long), floods low streets",
+        "fog": "Ocean fog + industrial smog = thick soup (hard to see, easy to hide)",
+        "summer": "Sweltering, humidity oppressive, no AC, people on rooftops to breathe",
+        "winter": "Biting cold, no heating, people huddle, share warmth"
+      },
+      "soundscape": {
+        "base_layer": "Factory machinery hum (omnipresent, you stop noticing)",
+        "mid_layer": "Crowd noise, multilingual chatter, vendors, arguments",
+        "top_layer": "Sirens, courier shouts, occasional violence",
+        "silence": "Rare, unsettling when it happens (blackout, evacuation, death)"
+      }
+    },
+
+    "demographics": {
+      "population_breakdown": [
+        { "category": "Workers", "percentage": 60, "description": "Factory workers, service industry, gig economy" },
+        { "category": "Couriers", "percentage": 20, "description": "Tier 0-2 couriers (The Hollows is training ground)" },
+        { "category": "Elderly/Disabled", "percentage": 10, "description": "Unable to work, no corpo support" },
+        { "category": "Children", "percentage": 10, "description": "Growing up in poverty, futures limited" }
+      ],
+      "ethnic_diversity": "Extremely diverse (immigrants, refugees, displaced climate migrants)",
+      "enclaves": [
+        { "name": "Korean enclave", "sector": "northeast" },
+        { "name": "Spanish-speaking community", "sector": "southwest" },
+        { "name": "Pan-Asian markets", "sector": "central" }
+      ],
+      "language": "Everyone speaks multilingual pidgin (survival necessity)",
+      "augmentation_levels": {
+        "description": "Low to moderate",
+        "notes": [
+          "Most have basic work augments (survival necessity)",
+          "Many in augment debt (can't afford payments)",
+          "Repo teams frequent (predatory lending targets Hollows)",
+          "Visible chrome = mix of necessity and aspiration"
+        ]
+      }
+    },
+
+    "power_dynamics": {
+      "controllers": [
+        {
+          "entity": "Corporations",
+          "type": "distant_control",
+          "description": "Own factories, housing blocks. Extract labor, provide minimal services. Don't police directly (too expensive). Repo teams when profits threatened."
+        },
+        {
+          "entity": "RAZOR_COLLECTIVE",
+          "type": "street_control",
+          "sector": "northeast",
+          "description": "Protection racket, violent but somewhat predictable"
+        },
+        {
+          "entity": "CHROME_SAINTS",
+          "type": "street_control",
+          "sector": "southwest",
+          "description": "Augment black market, fill power vacuum corps leave"
+        },
+        {
+          "entity": "UNION_COLLECTIVE",
+          "type": "grassroots",
+          "description": "Attempting to organize workers, corpo-suppressed but persistent. Mutual aid networks. Lopez's early organizing happens here."
+        },
+        {
+          "entity": "Courier Dispatch",
+          "type": "economic_hub",
+          "description": "Chen's dispatch office (central Hollows). Only reliable employment for unskilled. Rating system as meritocracy myth. Gateway to climbing tiers."
+        }
+      ],
+      "social_hierarchy": [
+        { "rank": 1, "group": "Elderly, disabled, children", "description": "No economic value" },
+        { "rank": 2, "group": "Factory workers", "description": "Replaceable, exploited" },
+        { "rank": 3, "group": "Couriers", "description": "Respect (they're climbing, they're mobile)" },
+        { "rank": 4, "group": "Shop owners", "description": "Small stability (barely)" },
+        { "rank": 5, "group": "Tier 2 couriers about to leave", "description": "Aspirational (top for Hollows)" }
+      ]
+    },
+
+    "daily_life": {
+      "morning": {
+        "time": "6 AM - 10 AM",
+        "activities": [
+          "Factory shifts change (crowds flooding streets)",
+          "Couriers collect morning deliveries (Tier 0-1 couriers rush to Chen's dispatch)",
+          "Street vendors set up (breakfast: synthetic eggs, instant noodles)",
+          "Children go to crumbling public schools (if they go at all)"
+        ]
+      },
+      "day": {
+        "time": "10 AM - 6 PM",
+        "activities": [
+          "Factory hum (constant background)",
+          "Markets bustling (haggling, trading, bartering)",
+          "Couriers running deliveries (crisscross district constantly)",
+          "Elderly sitting on stoops (watching, remembering better times)",
+          "Repo teams prowl (people hide when they appear)"
+        ]
+      },
+      "evening": {
+        "time": "6 PM - 10 PM",
+        "activities": [
+          "Second factory shift (night workers trudge in)",
+          "Street food peak (people eat standing, cheap and fast)",
+          "Couriers return to dispatch (turn in packages, count credits)",
+          "Bars fill (cheap alcohol, escape for a few hours)",
+          "Gangs emerge (protection collections, territory marking)"
+        ]
+      },
+      "night": {
+        "time": "10 PM - 6 AM",
+        "activities": [
+          "Most retreat indoors (not safe)",
+          "Night shift workers only people on streets",
+          "Illegal chrome surgeries (back-alley clinics)",
+          "Drug trade (synth-opiates, augment stims)",
+          "Occasional violence (gangs, desperate people)",
+          "Couriers rarely work nights (too dangerous)"
+        ]
+      }
+    },
+
+    "cultural_norms": {
+      "survival_code": [
+        "Don't snitch to corpo: Community before authority",
+        "Help your neighbors: Mutual aid is survival",
+        "Respect the couriers: They might help you someday",
+        "Avoid gangs but pay protection: Resistance gets you hurt",
+        "Watch for repo trucks: Warn others if you see them"
+      ],
+      "unspoken_rules": [
+        "Don't ask about chrome debt (everyone has it, it's shameful)",
+        "Share food if you have extra (you might need help tomorrow)",
+        "Don't trust corpo promises (everyone learned this lesson)",
+        "Celebrate small victories (Tier advancement, successful delivery)",
+        "Mourn the fallen (memorial murals for dead couriers)"
+      ]
+    },
+
+    "key_locations": [
+      {
+        "code": "CHEN_DISPATCH",
+        "name": "Chen's Dispatch Office",
+        "location_type": "quest_hub",
+        "sector": "Central Hollows",
+        "description": "Basement of converted factory. Holographic job board (flickering). Chen's office (cluttered, coffee-stained).",
+        "npc": "CHEN_DISPATCHER",
+        "services": ["job_board", "quest_giver", "tutorial"],
+        "narrative_role": "Player's primary quest giver location (Tier 0-2)"
+      },
+      {
+        "code": "TANAKA_CLINIC",
+        "name": "Tanaka's Clinic",
+        "location_type": "medical",
+        "sector": "Northeast, near Korean enclave",
+        "description": "Underground medical facility. Clean despite surroundings (Tanaka's obsession). Ethical practitioner.",
+        "npc": "DR_TANAKA",
+        "services": ["augment_installation", "augment_repair", "augment_extraction", "medical"],
+        "narrative_role": "Player's augment upgrades early game"
+      },
+      {
+        "code": "ROSA_SHOP",
+        "name": "Rosa's Mechanic Shop",
+        "location_type": "vendor",
+        "sector": "Southwest",
+        "description": "Garage specializing in courier gear. Rosa's apartment above shop. Romance scenes location.",
+        "npc": "ROSA_MECHANIC",
+        "services": ["gear_upgrades", "vehicle_repair", "augment_removal"],
+        "narrative_role": "Romance option, gear vendor"
+      },
+      {
+        "code": "HOLLOWS_MARKET",
+        "name": "Hollows Market",
+        "location_type": "market",
+        "sector": "Central plaza",
+        "description": "Open-air bazaar. Street vendors, food stalls, chrome dealers. Crowds, noise, sensory overload. Pickpockets, scammers, genuine traders mixed.",
+        "npc": null,
+        "services": ["shopping", "food", "black_market_chrome"],
+        "narrative_role": "Ambient interactions, side quest hooks"
+      },
+      {
+        "code": "THE_GUTTERS",
+        "name": "The Gutters",
+        "location_type": "residential",
+        "sector": "Eastern edge, near flood zone",
+        "description": "Lowest income area (shipping container housing). Where player's starting apartment is located. Dangerous but community tight-knit. Visible chrome repossessions happen here.",
+        "npc": null,
+        "services": [],
+        "narrative_role": "Player starting location, chrome repo scenes"
+      },
+      {
+        "code": "OLD_FACTORY_7",
+        "name": "Old Factory #7",
+        "location_type": "industrial",
+        "sector": "Northern industrial",
+        "description": "Active factory, exploitative conditions. Union organizing attempts. Background for worker struggle theme.",
+        "npc": null,
+        "services": [],
+        "narrative_role": "Potential side quest location, union storyline"
+      }
+    ],
+
+    "gameplay": {
+      "navigation": {
+        "ground_routes": "Crowded, slow, lots of obstacles (people, trash, broken pavement)",
+        "rooftop_routes": "Faster, risky (gaps, unstable structures), requires mobility augments",
+        "alley_shortcuts": "Dangerous (gangs, ambushes), fast if you know them",
+        "subway": "Unreliable, crowded, pickpockets, but covers distance"
+      },
+      "hazards": [
+        { "type": "environmental", "examples": ["Toxic puddles", "Unstable structures", "Exposed electrical wires"] },
+        { "type": "social", "examples": ["Gang checkpoints (pay toll or fight)", "Corpo security (harass couriers)", "Pickpockets"] },
+        { "type": "economic", "examples": ["Everything costs (even charging stations)", "Predatory pricing"] }
+      ],
+      "resources": [
+        { "type": "augments", "quality": "cheap", "notes": "Available but dangerous (back-alley installs, no warranty)" },
+        { "type": "street_food", "effect": "Restores health, cheap, tastes bad" },
+        { "type": "information", "sources": "Gossip, tips, warnings (talk to NPCs for intel)" },
+        { "type": "community", "notes": "Neighbors will help (if you've helped them)" }
+      ],
+      "danger_level": 3,
+      "surveillance_level": 1
+    },
+
+    "environmental_storytelling": {
+      "corpo_exploitation_visible": [
+        "Nakamura logo on factory walls (owners displayed proudly)",
+        "Broken safety equipment (profits > safety)",
+        "Time clocks with impossible quotas",
+        "Pay stubs on ground (wages barely subsistence)"
+      ],
+      "community_resistance": [
+        "Mutual aid boxes (food sharing)",
+        "Union pamphlets (hastily printed, distributed secretly)",
+        "Graffiti counter-narratives ('THEY LIE - WE DIE')",
+        "Courier solidarity symbols (painted on walls)"
+      ],
+      "chrome_culture": [
+        "Black market augment shops (illegal, necessary)",
+        "Repo scars (people with chrome extraction marks)",
+        "Makeshift charging stations (share power, community support)",
+        "Augment graveyards (discarded chrome in alleys)"
+      ],
+      "failed_dreams": [
+        "'Ascension is Your Future!' posters (defaced, mocked)",
+        "Abandoned storefronts (small businesses failed)",
+        "Boarded buildings (people displaced, nowhere to go)",
+        "Children playing courier (mimicking, aspirational)"
+      ]
+    },
+
+    "ambient_npcs": [
+      {
+        "type": "Street Vendor",
+        "location": "food stall",
+        "dialogue": "Synthetic protein bowls! Hot and filling! Only 5 credits! Real spices—well, almost real!"
+      },
+      {
+        "type": "Elderly Woman",
+        "location": "sitting on stoop",
+        "dialogue": "Used to be factories made things people needed. Now they make profits. We just happen to work there."
+      },
+      {
+        "type": "Factory Worker",
+        "location": "shift change, exhausted",
+        "dialogue": "Another day. Another dollar. Another step closer to the chrome I can't afford. Then they'll repo it anyway. What's the point?"
+      },
+      {
+        "type": "Courier",
+        "location": "Tier 1, cocky",
+        "dialogue": "I'm getting out of here. Tier 2 next month, guaranteed. Then Red Harbor. Then Uptown. Then... anywhere but here."
+      },
+      {
+        "type": "Mother",
+        "location": "to child",
+        "dialogue": "Stay away from the repo trucks. And don't talk to strangers offering easy chrome. Those debts will eat you alive."
+      },
+      {
+        "type": "Union Organizer",
+        "location": "whispering",
+        "dialogue": "Meeting tonight. Basement of Factory 7. We're organizing a work stoppage. Tell who you trust. Only who you trust."
+      }
+    ],
+
+    "quests": {
+      "main_story": [
+        { "tier": 0, "name": "Tutorial", "description": "First delivery through Hollows streets" },
+        { "tier": 1, "name": "Fresh Meat", "description": "Race with Jin, crash scene" },
+        { "tier": 2, "name": "Provisional", "description": "Meet Delilah, moral choice with package" }
+      ],
+      "side_quests": [
+        { "name": "Jin's early encounters", "description": "Rivalry develops" },
+        { "name": "Rosa's introduction", "description": "Romance option begins" },
+        { "name": "Union organizing missions", "description": "Help Lopez early efforts" },
+        { "name": "Repo resistance", "description": "Warn neighbors, help hide chrome" }
+      ]
+    },
+
+    "emotional_tone": {
+      "themes": [
+        { "name": "Grinding Desperation", "description": "Everyone is tired, trapped, surviving day-to-day" },
+        { "name": "Fragile Community", "description": "People help each other because they must" },
+        { "name": "Bitter Hope", "description": "Some still believe escape is possible (mostly young couriers)" },
+        { "name": "Resignation", "description": "Most have accepted this is their life" },
+        { "name": "Quiet Anger", "description": "System exploitation visible, revolution suppressed but simmering" }
+      ],
+      "player_emotional_arc": [
+        { "phase": "early_game", "emotion": "Trapped", "description": "This is suffocating, I need out" },
+        { "phase": "mid_quest", "emotion": "Determined", "description": "I'll escape, I'll climb, I'll prove I can" },
+        { "phase": "later_tiers", "emotion": "Guilty", "description": "I made it out, they didn't, system's still crushing them" },
+        { "phase": "endgame", "emotion": "Nostalgic", "description": "This is where I started, where I learned, where I survived" }
+      ]
+    },
+
+    "transition": {
+      "leaving_tier": 3,
+      "chen_dialogue": "You're ready for Red Harbor. More money, more danger. The Hollows will always be here if you fail. Try not to fail.",
+      "npc_acknowledgement": "You're leaving. Good. Get out while you can.",
+      "return_reactions": [
+        "Look who's back. Too good for us now? (joking, proud)",
+        "Visible deterioration (it's gotten worse)",
+        "New couriers at Chen's (Tier 0s, where you started)",
+        "Bittersweet: You escaped, they're still trapped"
+      ]
+    },
+
+    "design_philosophy": {
+      "poverty_is_expensive": [
+        "Everything costs, nothing lasts",
+        "Cheap augments break, expensive to repair",
+        "Can't afford good gear, die more, lose money",
+        "Debt trap visible at ground level"
+      ],
+      "community_is_survival": [
+        "People help because they must",
+        "No one escapes alone (even player needs Chen, Rosa, Tanaka)",
+        "Mutual aid networks keep people alive",
+        "But community can't fix structural problems"
+      ],
+      "the_system_grinds": [
+        "Exploitation visible everywhere",
+        "Corps extract, workers suffer",
+        "Rating system creates false hope",
+        "Some escape (couriers), most don't (workers)"
+      ]
+    },
+
+    "narrative_role": "Tutorial zone, emotional baseline, thematic foundation",
+    "thematic_weight": "Heavy (establishes system exploitation, community survival, escape motivation)",
+
+    "algorithm_flavor": "DISTRICT: THE HOLLOWS. EFFICIENCY INDEX: LOW. MONITORING PRIORITY: MINIMAL.",
+
+    "related_content": [
+      "/seed_data/npcs/tutorial_npcs.json",
+      "/seed_data/npcs/chen.json",
+      "/seed_data/dialogue_trees/chen_tutorial.json",
+      "/surge-narrative/05_WORLD_TEXT/locations/districts/the_hollows.md"
+    ]
+  }
+}

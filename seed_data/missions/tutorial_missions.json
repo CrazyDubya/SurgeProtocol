@@ -1,0 +1,481 @@
+{
+  "missions": [
+    {
+      "id": "MISSION_T0_FIRST_DELIVERY",
+      "code": "FIRST_DELIVERY",
+      "name": "First Delivery",
+      "description": "Deliver medical supplies to Dr. Tanaka's clinic in the Night Market",
+      "type": "DELIVERY",
+      "tier": 0,
+      "difficulty": "EASY",
+      "isTutorial": true,
+      "tutorialPhase": 1,
+      "questId": "MAIN_T0_FIRST_RUN",
+      "client": {
+        "id": "tanaka",
+        "name": "Dr. Yuki Tanaka",
+        "type": "NPC",
+        "location": "tanaka_clinic"
+      },
+      "origin": {
+        "locationId": "hollows_courier_station",
+        "name": "The Hollows Courier Station",
+        "district": "the_hollows"
+      },
+      "destination": {
+        "locationId": "tanaka_clinic",
+        "name": "Dr. Tanaka's Clinic",
+        "district": "night_market"
+      },
+      "package": {
+        "id": "PKG_MEDICAL_SUPPLIES_001",
+        "type": "MEDICAL",
+        "contents": "Medical supplies",
+        "weight": 5,
+        "fragility": "HIGH",
+        "value": 500,
+        "isFragile": true,
+        "requiresTemperatureControl": false
+      },
+      "timeLimit": {
+        "minutes": 20,
+        "seconds": 1200,
+        "display": "20:00"
+      },
+      "rewards": {
+        "credits": 150,
+        "xp": 50,
+        "ratingImpact": {
+          "success": {
+            "min": 4.0,
+            "max": 4.5
+          },
+          "failure": {
+            "min": -0.5,
+            "max": -0.2
+          }
+        },
+        "bonuses": [
+          {
+            "condition": "package_integrity >= 95",
+            "credits": 25,
+            "description": "Perfect condition bonus"
+          },
+          {
+            "condition": "early_delivery",
+            "credits": 15,
+            "description": "Early delivery bonus"
+          }
+        ]
+      },
+      "requirements": {
+        "minTier": 0,
+        "minRating": 0,
+        "vehicleRequired": true,
+        "augmentsRequired": []
+      },
+      "complications": {
+        "possible": ["TRAFFIC_SLOWDOWN", "VEHICLE_WARNING", "FRIENDLY_NPC_HAIL"],
+        "guaranteed": [],
+        "probability": 0.3
+      },
+      "tutorialElements": {
+        "teaches": [
+          "navigation",
+          "time_management",
+          "package_handling",
+          "vehicle_basics",
+          "rating_system"
+        ],
+        "tooltips": [
+          {
+            "trigger": "mission_start",
+            "content": "Follow the waypoint on your HUD to reach the destination."
+          },
+          {
+            "trigger": "package_pickup",
+            "content": "Handle packages carefully. Damage reduces your rating."
+          },
+          {
+            "trigger": "timer_warning",
+            "content": "Watch your timer. Late deliveries hurt your rating."
+          },
+          {
+            "trigger": "mission_complete",
+            "content": "Delivery complete! Check your rating to see how you did."
+          }
+        ],
+        "canSkip": false,
+        "handHolding": true
+      },
+      "narrativeContext": {
+        "briefing": "Chen hands you a small package. 'Medical supplies for a clinic in Night Market. Dr. Tanaka's expecting it. Don't be late, and don't break it.'",
+        "success": "Dr. Tanaka inspects the package. 'Everything's intact. Good work.' She pays you, then adds: 'Chrome is a trap. It feels like power, but it's a leash. Be careful how much you take.'",
+        "failure": "The package is damaged or late. Dr. Tanaka sighs. 'I needed these. Someone might suffer because of this.' Chen's going to hear about this."
+      },
+      "storyFlags": {
+        "sets": ["FIRST_DELIVERY_COMPLETE"],
+        "requires": []
+      },
+      "metadata": {
+        "estimatedDuration": "10-15 minutes",
+        "routeDanger": "LOW",
+        "routeComplexity": "SIMPLE",
+        "isRepeatable": false
+      }
+    },
+    {
+      "id": "MISSION_T0_VEHICLE_CHECK",
+      "code": "VEHICLE_CHECK",
+      "name": "Vehicle Diagnostic",
+      "description": "Get your vehicle checked by Rosa at the station garage",
+      "type": "INTERACTION",
+      "tier": 0,
+      "difficulty": "TRIVIAL",
+      "isTutorial": true,
+      "tutorialPhase": 0,
+      "questId": "MAIN_T0_FIRST_RUN",
+      "isOptional": true,
+      "client": {
+        "id": "rosa",
+        "name": "Mechanic Rosa",
+        "type": "NPC",
+        "location": "hollows_garage"
+      },
+      "origin": {
+        "locationId": "hollows_courier_station",
+        "name": "The Hollows Courier Station",
+        "district": "the_hollows"
+      },
+      "destination": {
+        "locationId": "hollows_garage",
+        "name": "Station Garage",
+        "district": "the_hollows"
+      },
+      "package": null,
+      "timeLimit": null,
+      "rewards": {
+        "credits": 0,
+        "xp": 10,
+        "ratingImpact": null,
+        "unlocks": ["CONTACT_ROSA", "VEHICLE_MAINTENANCE_TUTORIAL"]
+      },
+      "requirements": {
+        "minTier": 0,
+        "minRating": 0,
+        "vehicleRequired": true,
+        "augmentsRequired": []
+      },
+      "complications": {
+        "possible": [],
+        "guaranteed": [],
+        "probability": 0
+      },
+      "tutorialElements": {
+        "teaches": [
+          "vehicle_maintenance",
+          "npc_interaction",
+          "optional_objectives"
+        ],
+        "tooltips": [
+          {
+            "trigger": "approach_garage",
+            "content": "Optional objectives can unlock new contacts and abilities."
+          },
+          {
+            "trigger": "rosa_dialogue",
+            "content": "Building relationships with NPCs opens new opportunities."
+          }
+        ],
+        "canSkip": true,
+        "handHolding": false
+      },
+      "narrativeContext": {
+        "briefing": "Your vehicle's seen better days. Rosa at the garage might be able to help.",
+        "success": "Rosa looks over your ride. 'Vehicle's in rough shape, but I got her running. Don't push her too hard, yeah?' She wipes her hands and smiles. You've made a friend."
+      },
+      "storyFlags": {
+        "sets": ["MET_ROSA", "VEHICLE_DIAGNOSED"],
+        "requires": []
+      },
+      "metadata": {
+        "estimatedDuration": "3-5 minutes",
+        "routeDanger": "NONE",
+        "routeComplexity": "TRIVIAL",
+        "isRepeatable": false
+      }
+    },
+    {
+      "id": "MISSION_T1_TEST_RACE",
+      "code": "TEST_RACE",
+      "name": "Test Race",
+      "description": "Race against Jin to prove you deserve the premium contract",
+      "type": "RACE",
+      "tier": 1,
+      "difficulty": "MODERATE",
+      "isTutorial": false,
+      "questId": "MAIN_T1_FRESH_MEAT",
+      "client": {
+        "id": "chen",
+        "name": "Dispatcher Chen",
+        "type": "NPC",
+        "location": "hollows_courier_station"
+      },
+      "origin": {
+        "locationId": "hollows_courier_station",
+        "name": "The Hollows Courier Station",
+        "district": "the_hollows"
+      },
+      "destination": {
+        "locationId": "night_market_dropoff",
+        "name": "Night Market Drop Point",
+        "district": "night_market"
+      },
+      "package": {
+        "id": "PKG_TEST_DELIVERY",
+        "type": "STANDARD",
+        "contents": "Test delivery package",
+        "weight": 3,
+        "fragility": "MEDIUM",
+        "value": 200,
+        "isFragile": false,
+        "requiresTemperatureControl": false
+      },
+      "competitor": {
+        "id": "jin",
+        "name": "Jin",
+        "type": "RIVAL_COURIER",
+        "augments": ["reflex_boosters", "enhanced_eyes"],
+        "baseSpeed": 1.15,
+        "riskTolerance": "HIGH"
+      },
+      "timeLimit": {
+        "minutes": 15,
+        "seconds": 900,
+        "display": "15:00"
+      },
+      "rewards": {
+        "credits": 200,
+        "xp": 100,
+        "ratingImpact": {
+          "success": {
+            "min": 0.2,
+            "max": 0.4
+          },
+          "failure": {
+            "min": -0.3,
+            "max": -0.1
+          }
+        },
+        "unlocks": ["PREMIUM_CONTRACT_MERIDIAN"]
+      },
+      "requirements": {
+        "minTier": 1,
+        "minRating": 0,
+        "vehicleRequired": true,
+        "augmentsRequired": []
+      },
+      "complications": {
+        "possible": ["TRAFFIC_JAM", "POLICE_CHECKPOINT", "PACKAGE_DAMAGE"],
+        "guaranteed": ["JIN_CRASH"],
+        "probability": 0.5
+      },
+      "scriptedEvents": [
+        {
+          "id": "JIN_CRASH",
+          "trigger": "race_midpoint",
+          "location": "race_route_midpoint",
+          "description": "Jin crashes their vehicle",
+          "playerChoice": true,
+          "choices": ["HELP_JIN", "KEEP_GOING", "CALL_ROSA"]
+        }
+      ],
+      "narrativeContext": {
+        "briefing": "Chen lays it out: 'Both of you take the same package type to the same destination. Whoever arrives first with package intact gets the contract. Simple. Fair.' Jin smirks. 'See you at the finish line, meat-only.'",
+        "jinCrash": "You see smoke ahead. Jin's vehicle is wrecked against a barrier. They're on the ground, hurt, their package scattered. You could stop. You could keep going. Time's ticking.",
+        "success": "You made it. Whether you won clean, won dirty, or won by helping—you've got the contract.",
+        "failure": "Jin beat you. Or neither of you finished. Chen's disappointed, but there will be other opportunities."
+      },
+      "storyFlags": {
+        "sets": ["TEST_RACE_COMPLETE"],
+        "requires": ["FIRST_DELIVERY_COMPLETE"],
+        "conditional": {
+          "JIN_SAVED": {
+            "condition": "chose_HELP_JIN"
+          },
+          "JIN_ABANDONED": {
+            "condition": "chose_KEEP_GOING"
+          },
+          "JIN_PRAGMATIC_HELP": {
+            "condition": "chose_CALL_ROSA"
+          }
+        }
+      },
+      "metadata": {
+        "estimatedDuration": "15-20 minutes",
+        "routeDanger": "MODERATE",
+        "routeComplexity": "MODERATE",
+        "isRepeatable": false,
+        "hasBranchingOutcomes": true
+      }
+    },
+    {
+      "id": "MISSION_T1_PREMIUM_FIRST",
+      "code": "MERIDIAN_FIRST",
+      "name": "First Premium Run",
+      "description": "Your first delivery for Meridian Medical - prove you can handle premium contracts",
+      "type": "DELIVERY",
+      "tier": 1,
+      "difficulty": "MODERATE",
+      "isTutorial": false,
+      "questId": null,
+      "client": {
+        "id": "meridian_medical",
+        "name": "Meridian Medical",
+        "type": "CORPORATION",
+        "subType": "corpo_subsidiary"
+      },
+      "origin": {
+        "locationId": "meridian_warehouse",
+        "name": "Meridian Medical Warehouse",
+        "district": "industrial"
+      },
+      "destination": {
+        "locationId": "meridian_clinic_uptown",
+        "name": "Meridian Clinic Uptown",
+        "district": "uptown"
+      },
+      "package": {
+        "id": "PKG_MEDICAL_PREMIUM_001",
+        "type": "MEDICAL",
+        "contents": "High-value medical supplies",
+        "weight": 8,
+        "fragility": "HIGH",
+        "value": 1500,
+        "isFragile": true,
+        "requiresTemperatureControl": true
+      },
+      "timeLimit": {
+        "minutes": 25,
+        "seconds": 1500,
+        "display": "25:00"
+      },
+      "rewards": {
+        "credits": 300,
+        "xp": 75,
+        "ratingImpact": {
+          "success": {
+            "min": 0.3,
+            "max": 0.5
+          },
+          "failure": {
+            "min": -0.8,
+            "max": -0.5
+          }
+        },
+        "bonuses": [
+          {
+            "condition": "package_integrity >= 98",
+            "credits": 50,
+            "description": "Premium handling bonus"
+          },
+          {
+            "condition": "early_delivery >= 5_minutes",
+            "credits": 30,
+            "description": "Efficiency bonus"
+          }
+        ]
+      },
+      "requirements": {
+        "minTier": 1,
+        "minRating": 3.5,
+        "vehicleRequired": true,
+        "augmentsRequired": [],
+        "prerequisiteMission": "MISSION_T1_TEST_RACE",
+        "requiredFlags": ["TEST_RACE_COMPLETE"]
+      },
+      "complications": {
+        "possible": ["TRAFFIC_JAM", "CORPO_CHECKPOINT", "WEATHER_RAIN"],
+        "guaranteed": [],
+        "probability": 0.4
+      },
+      "narrativeContext": {
+        "briefing": "Your first Meridian run. These supplies need to get to the uptown clinic in perfect condition. Temperature controlled, time sensitive. No screw-ups.",
+        "success": "The clinic accepts the delivery. Everything's perfect. You've proven you can handle premium work.",
+        "failure": "The package is compromised. Meridian isn't happy. One more failure and you lose the contract."
+      },
+      "storyFlags": {
+        "sets": ["MERIDIAN_FIRST_COMPLETE"],
+        "requires": ["TEST_RACE_COMPLETE"]
+      },
+      "metadata": {
+        "estimatedDuration": "20-25 minutes",
+        "routeDanger": "LOW",
+        "routeComplexity": "MODERATE",
+        "isRepeatable": false,
+        "isContractMission": true,
+        "contractId": "CONTRACT_MERIDIAN_WEEKLY"
+      }
+    }
+  ],
+  "missionTypes": {
+    "DELIVERY": {
+      "description": "Standard package delivery from point A to point B",
+      "baseXP": 50,
+      "basePay": 100
+    },
+    "RACE": {
+      "description": "Competitive delivery against another courier",
+      "baseXP": 100,
+      "basePay": 200
+    },
+    "INTERACTION": {
+      "description": "Non-delivery mission focused on NPC interaction",
+      "baseXP": 10,
+      "basePay": 0
+    },
+    "ESCORT": {
+      "description": "Transport and protect a passenger",
+      "baseXP": 75,
+      "basePay": 150
+    },
+    "RETRIEVAL": {
+      "description": "Pickup an item from a location and return it",
+      "baseXP": 60,
+      "basePay": 120
+    }
+  },
+  "difficultyModifiers": {
+    "TRIVIAL": {
+      "xpMultiplier": 0.5,
+      "payMultiplier": 0.5,
+      "complicationChance": 0
+    },
+    "EASY": {
+      "xpMultiplier": 0.75,
+      "payMultiplier": 0.75,
+      "complicationChance": 0.2
+    },
+    "MODERATE": {
+      "xpMultiplier": 1.0,
+      "payMultiplier": 1.0,
+      "complicationChance": 0.4
+    },
+    "HARD": {
+      "xpMultiplier": 1.5,
+      "payMultiplier": 1.5,
+      "complicationChance": 0.6
+    },
+    "EXTREME": {
+      "xpMultiplier": 2.0,
+      "payMultiplier": 2.0,
+      "complicationChance": 0.8
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "totalMissions": 4,
+    "tierCoverage": [0, 1],
+    "lastUpdated": "2026-01-20"
+  }
+}
