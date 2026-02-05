@@ -1,0 +1,437 @@
+{
+  "conversation_id": "example_skill_check_conversation",
+  "conversation_title": "Example Skill Check Dialogue",
+  "participants": ["player", "example_npc"],
+  "starting_node": "NODE_001",
+  
+  "nodes": [
+    {
+      "node_id": "NODE_001",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "I've got a problem. You look like someone who can handle... delicate situations.",
+      "emotion": "conspiratorial",
+      "next": "HUB_001",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "HUB_001",
+      "node_type": "PLAYER_HUB",
+      "options": [
+        {
+          "text": "What kind of problem?",
+          "tone": "neutral",
+          "next": "NODE_002",
+          "effects": {
+            "relationship_change": 0
+          }
+        },
+        {
+          "text": "[Intimidation] I don't do 'delicate.' Tell me straight.",
+          "tone": "aggressive",
+          "next": "INTIMIDATE_CHECK_001",
+          "requirements": {
+            "VIOLENCE": 10
+          },
+          "effects": {}
+        },
+        {
+          "text": "[Empathy] You seem worried. What's going on?",
+          "tone": "empathetic",
+          "next": "EMPATHY_CHECK_001",
+          "requirements": {
+            "EMPATHY": 10
+          },
+          "effects": {}
+        },
+        {
+          "text": "Not interested.",
+          "tone": "dismissive",
+          "next": "END_REJECT",
+          "effects": {
+            "relationship_change": -10
+          }
+        }
+      ]
+    },
+    
+    {
+      "node_id": "NODE_002",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "The kind that requires someone who can keep their mouth shut. And maybe their eyes open.",
+      "emotion": "cautious",
+      "next": "HUB_002",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "HUB_002",
+      "node_type": "PLAYER_HUB",
+      "options": [
+        {
+          "text": "I'm listening.",
+          "tone": "professional",
+          "next": "NODE_003",
+          "effects": {
+            "relationship_change": 5
+          }
+        },
+        {
+          "text": "[Street Smarts] This sounds like Guild business.",
+          "tone": "knowing",
+          "next": "STREET_SMARTS_CHECK_001",
+          "requirements": {},
+          "effects": {}
+        }
+      ]
+    },
+    
+    {
+      "node_id": "INTIMIDATE_CHECK_001",
+      "node_type": "SKILL_CHECK",
+      "check_type": "INTIMIDATION",
+      "difficulty": 8,
+      "text": "You try to push them for information...",
+      "success_node": "INTIMIDATE_SUCCESS",
+      "failure_node": "INTIMIDATE_FAILURE",
+      "critical_success": "INTIMIDATE_CRITICAL",
+      "critical_failure": "INTIMIDATE_BOTCH",
+      "effects_on_success": {
+        "relationship_change": 5,
+        "unlock_flag": "INTIMIDATED_NPC"
+      },
+      "effects_on_failure": {
+        "relationship_change": -5
+      }
+    },
+    
+    {
+      "node_id": "INTIMIDATE_SUCCESS",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Alright, alright! It's a package. Needs to disappear from a corpo vault.",
+      "emotion": "fearful_compliance",
+      "next": "NODE_003",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "INTIMIDATE_FAILURE",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Whoa, easy there. I don't respond well to threats. Maybe you're not the right person for this.",
+      "emotion": "defensive_angry",
+      "next": "HUB_RECOVER",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "INTIMIDATE_CRITICAL",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Jesus! Okay! It's a data chip from Nakamura Corp. They can't know it's missing. Here's double payment, just... don't hurt me.",
+      "emotion": "terrified",
+      "next": "NODE_004_BONUS",
+      "conditions": {},
+      "effects": {
+        "relationship_change": -10,
+        "credits_bonus": 500,
+        "unlock_flag": "INTIMIDATE_BONUS_INFO"
+      }
+    },
+    
+    {
+      "node_id": "INTIMIDATE_BOTCH",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "You know what? Forget it. I'll find someone who knows how to conduct business.",
+      "emotion": "angry_dismissive",
+      "next": "END_FAILED",
+      "conditions": {},
+      "effects": {
+        "relationship_change": -25,
+        "flag": "BOTCHED_INTIMIDATION"
+      }
+    },
+    
+    {
+      "node_id": "EMPATHY_CHECK_001",
+      "node_type": "SKILL_CHECK",
+      "check_type": "EMPATHY",
+      "difficulty": 7,
+      "text": "You try to understand their emotional state...",
+      "success_node": "EMPATHY_SUCCESS",
+      "failure_node": "EMPATHY_FAILURE",
+      "effects_on_success": {
+        "relationship_change": 15,
+        "unlock_flag": "EMPATHY_CONNECTION"
+      },
+      "effects_on_failure": {
+        "relationship_change": 0
+      }
+    },
+    
+    {
+      "node_id": "EMPATHY_SUCCESS",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Thank you. I... I don't usually do this. It's my daughter. She's in debt to the wrong people. This job could clear it.",
+      "emotion": "vulnerable_relieved",
+      "next": "NODE_005_PERSONAL",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "EMPATHY_FAILURE",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "I appreciate the concern, but let's keep this professional.",
+      "emotion": "guarded",
+      "next": "NODE_002",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "STREET_SMARTS_CHECK_001",
+      "node_type": "SKILL_CHECK",
+      "check_type": "STREET_SMARTS",
+      "difficulty": 9,
+      "text": "You try to read between the lines...",
+      "success_node": "STREET_SUCCESS",
+      "failure_node": "NODE_003",
+      "effects_on_success": {
+        "unlock_flag": "KNOWS_GUILD_CONNECTION"
+      }
+    },
+    
+    {
+      "node_id": "STREET_SUCCESS",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "You're sharp. Yeah, the Guild's involved. Which means this is off-books. You in?",
+      "emotion": "impressed",
+      "next": "NODE_004_GUILD",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "HUB_RECOVER",
+      "node_type": "PLAYER_HUB",
+      "options": [
+        {
+          "text": "Sorry. Let's start over.",
+          "tone": "apologetic",
+          "next": "NODE_002",
+          "effects": {
+            "relationship_change": 5
+          }
+        },
+        {
+          "text": "Fine. Your loss.",
+          "tone": "dismissive",
+          "next": "END_FAILED",
+          "effects": {
+            "relationship_change": -5
+          }
+        }
+      ]
+    },
+    
+    {
+      "node_id": "NODE_003",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Good. There's a package in a secure location. I need it retrieved. Quietly.",
+      "emotion": "businesslike",
+      "next": "ACCEPT_HUB",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "NODE_004_BONUS",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "The vault's on Level 47, maintenance access. Code is 4-7-2-9. Get in, get the chip, get out.",
+      "emotion": "rushed_fearful",
+      "next": "ACCEPT_HUB",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "NODE_004_GUILD",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "The Guild wants deniability. This package is... insurance. Against corpo overreach.",
+      "emotion": "conspiratorial",
+      "next": "ACCEPT_HUB",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "NODE_005_PERSONAL",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "If you help me, I'll owe you. More than just credits. A real favor.",
+      "emotion": "earnest",
+      "next": "ACCEPT_HUB",
+      "conditions": {},
+      "effects": {
+        "unlock_flag": "NPC_OWES_FAVOR"
+      }
+    },
+    
+    {
+      "node_id": "ACCEPT_HUB",
+      "node_type": "PLAYER_HUB",
+      "options": [
+        {
+          "text": "I'll do it.",
+          "tone": "professional",
+          "next": "QUEST_ACCEPTED",
+          "effects": {
+            "relationship_change": 10,
+            "start_quest": "EXAMPLE_QUEST"
+          }
+        },
+        {
+          "text": "What's the pay?",
+          "tone": "mercenary",
+          "next": "DISCUSS_PAY",
+          "effects": {}
+        },
+        {
+          "text": "This sounds too risky.",
+          "tone": "cautious",
+          "next": "END_DECLINE",
+          "effects": {
+            "relationship_change": -5
+          }
+        }
+      ]
+    },
+    
+    {
+      "node_id": "DISCUSS_PAY",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Two thousand credits. Half now, half on delivery.",
+      "emotion": "businesslike",
+      "next": "PAY_HUB",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "PAY_HUB",
+      "node_type": "PLAYER_HUB",
+      "options": [
+        {
+          "text": "Deal.",
+          "tone": "professional",
+          "next": "QUEST_ACCEPTED",
+          "effects": {
+            "relationship_change": 5,
+            "start_quest": "EXAMPLE_QUEST",
+            "credits_advance": 1000
+          }
+        },
+        {
+          "text": "[Deception] I'll need three thousand. This is high-risk.",
+          "tone": "manipulative",
+          "next": "DECEPTION_NEGOTIATE",
+          "requirements": {},
+          "effects": {}
+        }
+      ]
+    },
+    
+    {
+      "node_id": "DECEPTION_NEGOTIATE",
+      "node_type": "SKILL_CHECK",
+      "check_type": "DECEPTION",
+      "difficulty": 8,
+      "text": "You try to convince them the job is worth more...",
+      "success_node": "NEGOTIATE_SUCCESS",
+      "failure_node": "NEGOTIATE_FAILURE",
+      "effects_on_success": {
+        "credits_bonus": 1000
+      }
+    },
+    
+    {
+      "node_id": "NEGOTIATE_SUCCESS",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Fine. Three thousand. But you better deliver.",
+      "emotion": "reluctant",
+      "next": "QUEST_ACCEPTED",
+      "conditions": {},
+      "effects": {
+        "start_quest": "EXAMPLE_QUEST",
+        "credits_advance": 1500
+      }
+    },
+    
+    {
+      "node_id": "NEGOTIATE_FAILURE",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Nice try. Two thousand, take it or leave it.",
+      "emotion": "amused",
+      "next": "PAY_HUB",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "QUEST_ACCEPTED",
+      "node_type": "NPC_LINE",
+      "speaker": "example_npc",
+      "text": "Good. I'll send you the details. And courier? Be careful.",
+      "emotion": "relieved",
+      "next": "END_ACCEPTED",
+      "conditions": {}
+    },
+    
+    {
+      "node_id": "END_ACCEPTED",
+      "node_type": "END_CONVERSATION",
+      "speaker": "example_npc",
+      "farewell_text": "Good luck out there.",
+      "effects": {
+        "relationship_change": 5
+      }
+    },
+    
+    {
+      "node_id": "END_DECLINE",
+      "node_type": "END_CONVERSATION",
+      "speaker": "example_npc",
+      "farewell_text": "Suit yourself. I'll find someone else.",
+      "effects": {
+        "relationship_change": -10
+      }
+    },
+    
+    {
+      "node_id": "END_REJECT",
+      "node_type": "END_CONVERSATION",
+      "speaker": "example_npc",
+      "farewell_text": "Your loss.",
+      "effects": {
+        "relationship_change": -15
+      }
+    },
+    
+    {
+      "node_id": "END_FAILED",
+      "node_type": "END_CONVERSATION",
+      "speaker": "example_npc",
+      "farewell_text": "Don't contact me again.",
+      "effects": {
+        "relationship_change": -30,
+        "flag": "BURNED_BRIDGE"
+      }
+    }
+  ]
+}
