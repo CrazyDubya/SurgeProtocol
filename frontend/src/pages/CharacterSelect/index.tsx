@@ -61,9 +61,7 @@ export function CharacterSelect() {
   };
 
   const handleCreateCharacter = () => {
-    // TODO: Navigate to character creation page
-    // For now, just show a placeholder
-    alert('Character creation coming soon!');
+    setLocation('/create-character');
   };
 
   const handleLogout = async () => {

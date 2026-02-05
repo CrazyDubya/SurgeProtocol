@@ -14,6 +14,101 @@
 @media (max-width: 1024px) {
   .algorithm {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .algorithm {
+    gap: var(--space-3);
+  }
+
+  .main {
+    min-height: 400px;
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .tabs {
+    margin-bottom: var(--space-3);
+  }
+
+  .tab {
+    padding: var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .quickStats {
+    gap: var(--space-2);
+  }
+
+  .quickStat {
+    padding: var(--space-2);
+  }
+
+  .quickStatLabel {
+    font-size: 8px;
+  }
+
+  .quickStatValue {
+    font-size: var(--text-md);
+  }
+}
+
+/* Phone */
+@media (max-width: 480px) {
+  .algorithm {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .main {
+    min-height: 350px;
+  }
+
+  .sectionTitle {
+    font-size: var(--text-xs);
+  }
+
+  .tabs {
+    padding: 0;
+    gap: 0;
+    border-radius: var(--radius-xs);
+  }
+
+  .tab {
+    padding: var(--space-2) var(--space-2);
+    font-size: 10px;
+    letter-spacing: 0;
+    border-radius: var(--radius-xs);
+  }
+
+  .quickStats {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .quickStat {
+    padding: var(--space-2);
+    gap: 0;
+  }
+
+  .directive {
+    padding: var(--space-2);
+  }
+
+  .directiveText {
+    font-size: 11px;
   }
 }
 
@@ -173,4 +268,41 @@
 
 .directive.priority .directiveText {
   color: var(--text-primary);
+}
+
+/* ===========================================
+   LOADING & LOAD MORE
+   =========================================== */
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.loadMore {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  margin-top: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.loadMore:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.loadMore:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

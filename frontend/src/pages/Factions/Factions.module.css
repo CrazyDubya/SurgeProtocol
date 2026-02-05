@@ -1,0 +1,554 @@
+/**
+ * Factions Page Styles
+ */
+
+.factions {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-5);
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1024px) {
+  .factions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   MAIN CONTENT
+   =========================================== */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ===========================================
+   HEADER
+   =========================================== */
+
+.header {
+  padding: var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===========================================
+   BACK BUTTON
+   =========================================== */
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.backButton:hover {
+  border-color: var(--accent-algorithm);
+  color: var(--accent-algorithm);
+}
+
+.backIcon {
+  font-size: var(--text-lg);
+}
+
+/* ===========================================
+   FACTION GRID
+   =========================================== */
+
+.factionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===========================================
+   FACTION CARD
+   =========================================== */
+
+.factionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.factionCard:hover {
+  border-color: var(--accent-algorithm);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.factionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xl);
+  color: var(--accent-algorithm);
+  flex-shrink: 0;
+}
+
+.factionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.factionName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.factionType {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-dim);
+}
+
+.cardStanding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.standingBar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.standingFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width var(--duration-normal);
+}
+
+.standingFill.revered { background: var(--accent-success); }
+.standingFill.allied { background: var(--accent-algorithm); }
+.standingFill.friendly { background: var(--accent-warning); }
+.standingFill.neutral { background: var(--text-dim); }
+.standingFill.unfriendly { background: var(--accent-danger); }
+.standingFill.hostile { background: var(--accent-danger); }
+
+.standingMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tierBadge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.tierBadge.revered { background: var(--accent-success); color: var(--bg-primary); }
+.tierBadge.allied { background: var(--accent-algorithm); color: var(--bg-primary); }
+.tierBadge.friendly { background: var(--accent-warning); color: var(--bg-primary); }
+.tierBadge.neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+.tierBadge.unfriendly { background: var(--accent-danger); color: var(--bg-primary); }
+.tierBadge.hostile { background: var(--accent-danger); color: var(--bg-primary); }
+
+.repValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.warIndicator {
+  margin-top: var(--space-1);
+}
+
+.cardFooter {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-default);
+}
+
+.viewDetails {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent-algorithm);
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sidebarTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* ===========================================
+   STANDINGS LIST
+   =========================================== */
+
+.standingsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.standingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.standingName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.standingInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.standingTier {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.standingTier.revered { color: var(--accent-success); }
+.standingTier.allied { color: var(--accent-algorithm); }
+.standingTier.friendly { color: var(--accent-warning); }
+.standingTier.neutral { color: var(--text-dim); }
+.standingTier.unfriendly { color: var(--accent-danger); }
+.standingTier.hostile { color: var(--accent-danger); }
+
+/* ===========================================
+   WARS LIST
+   =========================================== */
+
+.warsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.warItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--radius-sm);
+}
+
+.warFactions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.warFaction {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.warVs {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.warScore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--accent-danger);
+}
+
+.scoreDivider {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   TIER LEGEND
+   =========================================== */
+
+.tierLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.legendTier {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  min-width: 80px;
+}
+
+.legendTier.revered { color: var(--accent-success); }
+.legendTier.allied { color: var(--accent-algorithm); }
+.legendTier.friendly { color: var(--accent-warning); }
+.legendTier.neutral { color: var(--text-dim); }
+.legendTier.unfriendly { color: var(--accent-danger); }
+.legendTier.hostile { color: var(--accent-danger); }
+
+.legendDesc {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ===========================================
+   DETAIL VIEW
+   =========================================== */
+
+.detailView {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.detailIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-algorithm);
+  border-radius: var(--radius-md);
+  font-size: var(--text-3xl);
+  color: var(--accent-algorithm);
+  flex-shrink: 0;
+}
+
+.detailInfo {
+  flex: 1;
+}
+
+.detailName {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.detailType {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent-algorithm);
+  margin-bottom: var(--space-2);
+}
+
+.detailHq {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.description {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.standingDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.standingProgress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.standingLabels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rankInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.rankLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.rankValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--accent-algorithm);
+}
+
+.territoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.territoryTag {
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.detailActions {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+
+/* ===========================================
+   EMPTY & ERROR STATES
+   =========================================== */
+
+.emptyText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  text-align: center;
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.errorText {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-danger);
+  margin: 0 0 var(--space-3) 0;
+}

@@ -146,8 +146,13 @@ export function Dashboard() {
     },
   ];
 
-  const handleAcknowledge = (_messageId: string) => {
-    // TODO: Mark message as acknowledged
+  const handleAcknowledge = (messageId: string) => {
+    // Mark message as acknowledged in local state
+    // In a full implementation, this would sync with the backend
+    const message = algorithmMessages.find((m) => m.id === messageId);
+    if (message) {
+      message.acknowledged = true;
+    }
   };
 
   const handleAcceptMission = async (missionId: string) => {

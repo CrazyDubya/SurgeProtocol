@@ -10,6 +10,8 @@ const THEME_COLORS: Record<ThemeName, string[]> = {
   'algorithm-vision': ['#0a0f14', '#00e5ff', '#1a237e', '#ff6d00'],
   'brutalist-cargo': ['#1a1a1a', '#ffab00', '#263238', '#ff5722'],
   'worn-chrome': ['#1e1e1e', '#90a4ae', '#455a64', '#ff7043'],
+  'blood-circuit': ['#080404', '#ff2244', '#ff6644', '#44ff66'],
+  'ghost-protocol': ['#0a0c10', '#88ccff', '#cc88ff', '#88ffcc'],
 };
 
 export function ThemeSwitcher() {

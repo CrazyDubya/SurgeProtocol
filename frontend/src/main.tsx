@@ -7,6 +7,8 @@ import '@styles/themes/terminal-noir.css';
 import '@styles/themes/algorithm-vision.css';
 import '@styles/themes/brutalist-cargo.css';
 import '@styles/themes/worn-chrome.css';
+import '@styles/themes/blood-circuit.css';
+import '@styles/themes/ghost-protocol.css';
 import './index.css';
 
 // Mount the app

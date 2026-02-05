@@ -282,3 +282,135 @@ export {
   type StorageOptions,
   type StorageKey,
 } from './persistence';
+
+// =============================================================================
+// WORLD CLOCK STORE
+// =============================================================================
+
+export {
+  worldClockStore,
+  // State
+  gameTimeMinutes,
+  weather,
+  paused,
+  // connected (already exported from other stores with same name)
+  lastSync,
+  // Computed
+  gameDay,
+  gameHour,
+  gameMinute,
+  formattedTime,
+  formattedDate,
+  timeOfDay,
+  weatherDescription,
+  weatherIcon,
+  isNight,
+  isDangerousWeather,
+  // Actions
+  setGameTime,
+  setWeather,
+  setPaused,
+  // setConnected (already exported)
+  handleWorldClockMessage,
+  // Types
+  type TimeOfDay,
+  type WeatherType,
+  type WorldClockState,
+} from './worldClockStore';
+
+// =============================================================================
+// COMBAT STORE
+// =============================================================================
+
+export {
+  combatStore,
+  // State
+  combatId,
+  phase,
+  round,
+  combatants,
+  currentTurnId,
+  actionLog,
+  endReason,
+  rewards,
+  // connected (already exported)
+  pendingAction,
+  // Computed
+  isInCombat,
+  currentCombatant,
+  isPlayerTurn,
+  playerCombatant,
+  enemyCombatants,
+  allyCombatants,
+  turnOrder,
+  activeCombatants,
+  recentActions,
+  isVictory,
+  isDefeat,
+  // Actions
+  startCombat,
+  setCombatState,
+  updateCombatant,
+  addActionLog,
+  // setConnected (already exported)
+  setPendingAction,
+  endCombat,
+  handleCombatMessage,
+  // Types
+  type CombatPhase,
+  type CombatEndReason,
+  type CombatActionType,
+  type Combatant,
+  type ActionLogEntry,
+  type CombatState,
+} from './combatStore';
+
+// =============================================================================
+// WAR THEATER STORE
+// =============================================================================
+
+export {
+  warTheaterStore,
+  // State
+  factions as warFactions,
+  territories,
+  wars,
+  events,
+  playerContribution,
+  // connected (already exported)
+  selectedTerritory,
+  selectedWar,
+  // Computed
+  activeWars,
+  brewingWars,
+  contestedTerritories,
+  territoriesByFaction,
+  factionRankings,
+  recentEvents,
+  criticalEvents,
+  selectedTerritoryDetails,
+  selectedWarDetails,
+  // Helpers
+  getFaction,
+  // Actions
+  setFactions as setWarFactions,
+  setTerritories,
+  setWars,
+  addEvent,
+  updateTerritory,
+  updateFaction,
+  updateWar,
+  setPlayerContribution,
+  // setConnected (already exported)
+  selectTerritory,
+  selectWar,
+  handleWarTheaterMessage,
+  // Types
+  type WarStatus,
+  type TerritoryType,
+  type Faction,
+  type Territory,
+  type War,
+  type WarEvent,
+  type PlayerContribution,
+} from './warTheaterStore';

@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Surge Protocol Data Schema",
+  "version": "1.0.0",
+  "description": "Schema definitions for Surge Protocol narrative content API consumption",
+
+  "modules": {
+    "characters": {
+      "description": "Character data including NPCs, relationships, and dialogue pools",
+      "path": "/data/characters/",
+      "file_pattern": "{character_id}.json",
+      "required_fields": ["id", "type", "display_name", "tier_range", "location", "dialogue_pools"],
+      "types": ["main_cast", "general_npc", "procedural_archetype", "ambient"]
+    },
+    "dialogue": {
+      "pools": {
+        "description": "Pooled dialogue lines with conditions",
+        "path": "/data/dialogue/pools/",
+        "file_pattern": "{character_id}_dialogue.json"
+      },
+      "conversations": {
+        "description": "Branching dialogue trees",
+        "path": "/data/dialogue/conversations/",
+        "file_pattern": "{conversation_id}.json"
+      }
+    },
+    "procedural": {
+      "encounters": {
+        "description": "Random encounter templates",
+        "path": "/data/procedural/encounters/",
+        "categories": ["positive", "negative", "neutral"]
+      },
+      "jobs": {
+        "description": "Procedural job templates",
+        "path": "/data/procedural/jobs/",
+        "tier_organized": true
+      }
+    }
+  },
+
+  "type_definitions": {
+    "Character": {
+      "id": "string (unique identifier, snake_case)",
+      "type": "enum: main_cast | general_npc | procedural_archetype | ambient",
+      "display_name": "string (display name)",
+      "tier_range": {"min": "integer 0-10", "max": "integer 0-10"},
+      "location": {"primary": "string (location_id)", "district": "string"},
+      "dialogue_pools": "object (pool_id -> line_id array)",
+      "relationships": {"allied": "array", "opposed": "array"},
+      "flags_set_on_meet": "array of flag strings",
+      "flags_tracked": "array of flag strings"
+    },
+
+    "DialoguePool": {
+      "pool_id": "string (unique identifier)",
+      "conditions": {
+        "relationship_stage": "optional enum",
+        "relationship_range": "optional [min, max]",
+        "humanity_range": "optional [min, max]",
+        "tier_range": "optional [min, max]",
+        "flags_required": "optional array of flags"
+      },
+      "lines": "array of DialogueLine"
+    },
+
+    "DialogueLine": {
+      "id": "string (unique line identifier)",
+      "text": "string (the actual dialogue)",
+      "voice_file": "string (audio file reference)",
+      "emotion": "string (voice direction)",
+      "weight": "float (selection probability, default 1.0)",
+      "conditions": "optional additional conditions"
+    },
+
+    "Conversation": {
+      "conversation_id": "string (unique identifier)",
+      "trigger_conditions": "object",
+      "participants": "array of character_ids",
+      "nodes": "array of ConversationNode"
+    },
+
+    "ConversationNode": {
+      "id": "string (node identifier)",
+      "type": "enum: npc_line | player_response_hub | end_conversation",
+      "speaker": "string (character_id, for npc_line)",
+      "text": "string (dialogue text)",
+      "responses": "array of PlayerResponse (for player_response_hub)",
+      "next": "string (next node_id)",
+      "effects": "optional object (flags, relationship mods)",
+      "sets_flag": "optional string",
+      "triggers_quest": "optional string"
+    },
+
+    "PlayerResponse": {
+      "id": "string",
+      "text": "string (response text)",
+      "tone": "string (emotional tone)",
+      "effects": {"relationship_mod": "object", "flags_set": "array"},
+      "conditions": "optional requirements to show this option",
+      "next": "string (next node_id)"
+    },
+
+    "Encounter": {
+      "encounter_id": "string (unique identifier)",
+      "category": "enum: positive | negative | neutral",
+      "subcategory": "string",
+      "tier_range": {"min": "integer", "max": "integer"},
+      "trigger": {"type": "string", "base_frequency": "float 0-1"},
+      "frequency_modifiers": "array of modifier objects",
+      "setup": {"description": "string", "atmosphere": "string"},
+      "player_options": "array of PlayerOption",
+      "outcomes": "object (outcome_id -> Outcome)"
+    },
+
+    "PlayerOption": {
+      "id": "string",
+      "text": "string (displayed option)",
+      "type": "enum: action | skill_check | combat | compliance",
+      "skill": "optional string (for skill_check)",
+      "difficulty": "optional integer (for skill_check)",
+      "outcome": "string (outcome_id)",
+      "success_outcome": "optional string (for skill_check)",
+      "failure_outcome": "optional string (for skill_check)"
+    },
+
+    "Outcome": {
+      "description": "string",
+      "effects": "array of Effect",
+      "dialogue": "optional string (NPC response)",
+      "returns_to": "optional string (node/options to return to)",
+      "chain_hook": "optional object (quest triggering)"
+    },
+
+    "Effect": {
+      "type": "enum: set_flag | gain_credits | lose_credits | reputation_mod | health_damage | karma_mod | learn_location | unlock_quest | relationship_mod",
+      "additional_properties": "varies by type"
+    }
+  },
+
+  "runtime_state": {
+    "description": "Player state tracked during gameplay",
+    "player": {
+      "tier": "integer 0-10",
+      "credits": "integer",
+      "humanity": "integer 0-100",
+      "reputation": {"general": "integer", "factions": "object"},
+      "chrome": "array of chrome_ids",
+      "integration_status": "enum: unintegrated | partial | full"
+    },
+    "flags": "object (flag_name -> boolean | integer | string)",
+    "relationships": "object (character_id -> integer)",
+    "active_quests": "array of quest_ids",
+    "completed_quests": "array of quest_ids",
+    "encounter_cooldowns": "object (encounter_id -> timestamp)"
+  },
+
+  "api_endpoints": {
+    "characters": {
+      "GET /characters": "List all characters",
+      "GET /characters/{id}": "Get specific character",
+      "GET /characters?tier={n}": "Characters available at tier",
+      "GET /characters?location={loc}": "Characters at location"
+    },
+    "dialogue": {
+      "GET /dialogue/pool/{character_id}/{pool_type}": "Get dialogue pool",
+      "GET /dialogue/line/{character_id}": "Get appropriate line based on state",
+      "GET /dialogue/conversation/{id}": "Get conversation tree"
+    },
+    "procedural": {
+      "GET /encounters/roll": "Roll for random encounter based on state",
+      "GET /encounters/{category}": "List encounters by category",
+      "GET /jobs/available": "Get available jobs for player tier"
+    },
+    "state": {
+      "POST /state/flag": "Set a flag",
+      "POST /state/relationship": "Modify relationship",
+      "GET /state/check": "Check conditions against state"
+    }
+  },
+
+  "conversion_notes": {
+    "source_format": "Markdown files in surge-narrative/",
+    "target_format": "JSON files in surge-narrative/data/",
+    "priority_order": [
+      "1. Characters (relationship system core)",
+      "2. Dialogue pools (most frequently accessed)",
+      "3. Job templates (procedural engine)",
+      "4. Quests (story progression)",
+      "5. World/systems (runtime state)"
+    ],
+    "validation": "JSON Schema validation required before production use"
+  }
+}

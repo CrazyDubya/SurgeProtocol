@@ -6,6 +6,7 @@
 
 import { useEffect, useCallback } from 'preact/hooks';
 import { characterService } from '@/api';
+import { api } from '@/api/client';
 import {
   items,
   setItems,
@@ -115,20 +116,35 @@ export function useInventoryData() {
   /**
    * Use a consumable item
    */
-  const useItem = useCallback(async (_itemId: string) => {
-    // TODO: Implement when backend supports it
-    toast.info('Item use not yet implemented');
-    return false;
-  }, []);
+  const useItem = useCallback(async (inventoryId: string) => {
+    const result = await api.post<{
+      itemUsed: string;
+      effects: string[];
+      remainingQuantity: number;
+      message: string;
+    }>(`/items/inventory/${inventoryId}/use`);
+
+    // Refresh inventory to reflect changes
+    loadInventory();
+
+    return result;
+  }, [loadInventory]);
 
   /**
    * Drop/discard an item
    */
-  const discardItem = useCallback(async (_itemId: string, _quantity: number = 1) => {
-    // TODO: Implement when backend supports it
-    toast.info('Item discard not yet implemented');
-    return false;
-  }, []);
+  const discardItem = useCallback(async (inventoryId: string, quantity: number = 1) => {
+    const result = await api.delete<{
+      discarded: { inventoryId: string; name: string; quantity: number };
+      remainingQuantity: number;
+      message: string;
+    }>(`/items/inventory/${inventoryId}?quantity=${quantity}`);
+
+    // Refresh inventory to reflect changes
+    loadInventory();
+
+    return result;
+  }, [loadInventory]);
 
   /**
    * Refresh inventory data
