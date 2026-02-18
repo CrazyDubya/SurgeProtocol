@@ -52,34 +52,34 @@ export function CombatPanel({
   };
 
   // Combat ended state
-  if (phase.value === 'COMBAT_END') {
+  if (phase === 'COMBAT_END') {
     return (
       <Card variant="default" padding="lg" class={classes}>
         <div class={styles.endScreen}>
-          <h2 class={`${styles.endTitle} ${isVictory.value ? styles.victory : styles.defeat}`}>
-            {isVictory.value ? 'VICTORY' : isDefeat.value ? 'DEFEAT' : endReason.value}
+          <h2 class={`${styles.endTitle} ${isVictory ? styles.victory : styles.defeat}`}>
+            {isVictory ? 'VICTORY' : isDefeat ? 'DEFEAT' : endReason}
           </h2>
 
-          {rewards.value && (
+          {rewards && (
             <div class={styles.rewards}>
               <h3>Rewards</h3>
               <div class={styles.rewardList}>
-                {rewards.value.xp > 0 && (
+                {rewards.xp > 0 && (
                   <div class={styles.reward}>
                     <span class={styles.rewardLabel}>XP</span>
-                    <span class={styles.rewardValue}>+{rewards.value.xp}</span>
+                    <span class={styles.rewardValue}>+{rewards.xp}</span>
                   </div>
                 )}
-                {rewards.value.credits > 0 && (
+                {rewards.credits > 0 && (
                   <div class={styles.reward}>
                     <span class={styles.rewardLabel}>Credits</span>
-                    <span class={styles.rewardValue}>+{rewards.value.credits}</span>
+                    <span class={styles.rewardValue}>+{rewards.credits}</span>
                   </div>
                 )}
-                {rewards.value.items.length > 0 && (
+                {rewards.items.length > 0 && (
                   <div class={styles.reward}>
                     <span class={styles.rewardLabel}>Items</span>
-                    <span class={styles.rewardValue}>{rewards.value.items.join(', ')}</span>
+                    <span class={styles.rewardValue}>{rewards.items.join(', ')}</span>
                   </div>
                 )}
               </div>
@@ -100,11 +100,11 @@ export function CombatPanel({
       <div class={styles.header}>
         <div class={styles.roundInfo}>
           <span class={styles.roundLabel}>ROUND</span>
-          <span class={styles.roundValue}>{round.value}</span>
+          <span class={styles.roundValue}>{round}</span>
         </div>
         <div class={styles.phaseInfo}>
-          <Badge variant={phase.value === 'ACTIVE' ? 'success' : 'default'}>
-            {phase.value.replace('_', ' ')}
+          <Badge variant={phase === 'ACTIVE' ? 'success' : 'default'}>
+            {phase.replace('_', ' ')}
           </Badge>
           {!isConnected && <Badge variant="danger">DISCONNECTED</Badge>}
         </div>
@@ -114,11 +114,11 @@ export function CombatPanel({
       <div class={styles.turnOrder}>
         <h3 class={styles.sectionTitle}>Initiative</h3>
         <div class={styles.combatantList}>
-          {turnOrder.value.map((combatant) => (
+          {turnOrder.map((combatant) => (
             <CombatantCard
               key={combatant.id}
               combatant={combatant}
-              isActive={combatant.id === currentTurnId.value}
+              isActive={combatant.id === currentTurnId}
               isPlayer={combatant.isPlayer}
             />
           ))}
@@ -126,15 +126,15 @@ export function CombatPanel({
       </div>
 
       {/* Action Bar - only show on player turn */}
-      {isPlayerTurn.value && playerCombatant.value && (
+      {isPlayerTurn && playerCombatant && (
         <div class={styles.actionBar}>
           <h3 class={styles.sectionTitle}>Actions</h3>
           <div class={styles.actions}>
             <Button
               variant="danger"
               size="sm"
-              onClick={() => attack(turnOrder.value.find((c) => !c.isPlayer && !c.isAlly)?.id ?? '')}
-              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
+              onClick={() => attack(turnOrder.find((c) => !c.isPlayer && !c.isAlly)?.id ?? '')}
+              disabled={pendingAction || (playerCombatant.actionsRemaining ?? 1) <= 0}
             >
               Attack
             </Button>
@@ -142,7 +142,7 @@ export function CombatPanel({
               variant="secondary"
               size="sm"
               onClick={() => defend()}
-              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
+              disabled={pendingAction || (playerCombatant.actionsRemaining ?? 1) <= 0}
             >
               Defend
             </Button>
@@ -150,7 +150,7 @@ export function CombatPanel({
               variant="secondary"
               size="sm"
               onClick={() => overwatch()}
-              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
+              disabled={pendingAction || (playerCombatant.actionsRemaining ?? 1) <= 0}
             >
               Overwatch
             </Button>
@@ -158,7 +158,7 @@ export function CombatPanel({
               variant="secondary"
               size="sm"
               onClick={() => useItem('healing_stim')}
-              disabled={pendingAction.value || (playerCombatant.value.actionsRemaining ?? 1) <= 0}
+              disabled={pendingAction || (playerCombatant.actionsRemaining ?? 1) <= 0}
             >
               Use Item
             </Button>
@@ -166,7 +166,7 @@ export function CombatPanel({
               variant="warning"
               size="sm"
               onClick={() => disengage()}
-              disabled={pendingAction.value}
+              disabled={pendingAction}
             >
               Disengage
             </Button>
@@ -174,15 +174,15 @@ export function CombatPanel({
               variant="primary"
               size="sm"
               onClick={() => endTurn()}
-              disabled={pendingAction.value}
+              disabled={pendingAction}
             >
               End Turn
             </Button>
           </div>
 
           <div class={styles.playerResources}>
-            <span>Actions: {playerCombatant.value.actionsRemaining ?? 1}</span>
-            <span>Movement: {playerCombatant.value.movementRemaining ?? 1}</span>
+            <span>Actions: {playerCombatant.actionsRemaining ?? 1}</span>
+            <span>Movement: {playerCombatant.movementRemaining ?? 1}</span>
           </div>
         </div>
       )}
@@ -191,10 +191,10 @@ export function CombatPanel({
       <div class={styles.combatLog}>
         <h3 class={styles.sectionTitle}>Combat Log</h3>
         <div class={styles.logEntries}>
-          {recentActions.value.length === 0 ? (
+          {recentActions.length === 0 ? (
             <div class={styles.logEmpty}>Combat begins...</div>
           ) : (
-            recentActions.value.map((entry) => (
+            recentActions.map((entry) => (
               <LogEntry key={entry.id} entry={entry} />
             ))
           )}
@@ -219,9 +219,8 @@ function CombatantCard({
 
   return (
     <div
-      class={`${styles.combatantCard} ${isActive ? styles.active : ''} ${
-        isPlayer ? styles.player : combatant.isAlly ? styles.ally : styles.enemy
-      } ${status === 'defeated' ? styles.defeated : ''}`}
+      class={`${styles.combatantCard} ${isActive ? styles.active : ''} ${isPlayer ? styles.player : combatant.isAlly ? styles.ally : styles.enemy
+        } ${status === 'defeated' ? styles.defeated : ''}`}
     >
       <div class={styles.combatantInfo}>
         <span class={styles.combatantName}>{combatant.name}</span>
