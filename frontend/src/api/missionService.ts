@@ -31,7 +31,9 @@ export type MissionStatus =
   | 'PENDING'
   | 'ACTIVE'
   | 'IN_PROGRESS'
-  | 'COMPLETED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED_SUCCESS'
+  | 'COMPLETED_PARTIAL'
   | 'FAILED'
   | 'ABANDONED'
   | 'EXPIRED';
@@ -148,6 +150,7 @@ export interface MissionActionResponse {
     success: boolean;
     outcome: string;
     description?: string;
+    details?: Record<string, any>;
   };
   remainingObjectives: number;
   checkpointUpdates?: MissionCheckpoint[];
@@ -255,3 +258,4 @@ export const missionService = {
 };
 
 export default missionService;
+

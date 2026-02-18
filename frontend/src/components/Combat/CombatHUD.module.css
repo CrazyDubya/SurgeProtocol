@@ -1,0 +1,297 @@
+.turnOrder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.hudTitle {
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.combatantRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.activeRow {
+    background: rgba(0, 255, 255, 0.15);
+    border-left-color: #00ffff;
+    transform: translateX(4px);
+}
+
+.playerRow {
+    background: rgba(255, 0, 255, 0.05);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+}
+
+.name {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.subtext {
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
+.actionBar {
+    width: 500px;
+    padding: 20px;
+}
+
+.actionsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.actionsGrid button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+}
+
+.actionsGrid button:hover:not(:disabled) {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: #00ffff;
+}
+
+.primaryBtn {
+    border-color: rgba(255, 0, 255, 0.5) !important;
+}
+
+.primaryBtn:hover:not(:disabled) {
+    background: rgba(255, 0, 255, 0.1) !important;
+    border-color: #ff00ff !important;
+}
+
+.btnIcon {
+    font-size: 1.5rem;
+}
+
+.btnLabel {
+    font-size: 0.65rem;
+    font-weight: bold;
+}
+
+.statusPanel {
+    width: 320px;
+    padding: 20px;
+}
+
+.statusContent {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hpBarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.barLabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.barTrack {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barFill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.modal {
+    width: 400px;
+    padding: 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.rewardItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rewardVal {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+.closeBtn {
+    margin-top: 16px;
+    background: transparent;
+    border: 1px solid #ff00ff;
+    color: #ff00ff;
+    padding: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: #ff00ff;
+    color: #000;
+}
+
+.activeBtn {
+    background: rgba(0, 255, 255, 0.2) !important;
+    border-color: #00ffff !important;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.menuContainer {
+    position: relative;
+    display: flex;
+}
+
+/* Action Menus */
+.actionMenu {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(10, 15, 20, 0.95);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 200px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    animation: menuFadeIn 0.2s ease-out;
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+.menuHeader {
+    font-size: 0.75rem;
+    color: #00ffff;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+    padding-bottom: 4px;
+}
+
+.menuList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.menuItem {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+    text-align: left;
+    width: 100%;
+}
+
+.menuItem:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+.itemName {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.itemQty,
+.apCost {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 800;
+}
+
+.apCost {
+    color: #00ffff;
+}
+
+.emptyMessage {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 12px;
+    text-align: center;
+}

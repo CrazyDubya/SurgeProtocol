@@ -1,0 +1,154 @@
+.gridWrapper {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    transform: rotateX(45deg) rotateZ(-45deg);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.1);
+}
+
+.row {
+    display: flex;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.cell:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.4);
+}
+
+.combatant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transform: rotateZ(45deg) rotateX(-45deg) translateY(-20px);
+    pointer-events: none;
+}
+
+.portrait {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.player .portrait {
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.enemy .portrait {
+    border-color: #ff0055;
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+}
+
+.hpLabel {
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.nameLabel {
+    font-size: 0.6rem;
+    margin-top: 4px;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Range Highlighting */
+.targetable {
+    background: rgba(255, 0, 85, 0.1);
+    box-shadow: inset 0 0 10px rgba(255, 0, 85, 0.2);
+}
+
+.targetable:hover {
+    background: rgba(255, 0, 85, 0.2);
+    box-shadow: inset 0 0 15px rgba(255, 0, 85, 0.3);
+}
+
+.reachable {
+    background: rgba(0, 255, 255, 0.05);
+    box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.1);
+}
+
+.reachable:hover {
+    background: rgba(0, 255, 255, 0.15);
+    box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.3);
+}
+
+/* Floating Feedback */
+.feedback {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 800;
+    font-size: 1.5rem;
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 2s ease-out forwards;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.damage {
+    color: #ff0055;
+    text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+}
+
+.miss {
+    color: #888;
+    font-size: 1rem;
+}
+
+.status {
+    color: #00ffff;
+    font-size: 1.1rem;
+}
+
+.heal {
+    color: #00ffaa;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 0);
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -40px);
+    }
+}

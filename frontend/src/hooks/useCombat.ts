@@ -4,7 +4,7 @@
  * Connects to a CombatSession Durable Object for real-time combat.
  */
 
-import { useCallback } from 'preact/hooks';
+import { useCallback, useEffect } from 'preact/hooks';
 import { useWebSocket } from './useWebSocket';
 import {
   combatStore,
@@ -72,6 +72,99 @@ export function useCombat(combatId: string | null) {
       setPendingAction(false);
     },
   });
+
+  // Calculate reachable cells and valid targets
+  useEffect(() => {
+    const player = combatStore.playerCombatant.value;
+    if (!combatStore.isPlayerTurn.value || !player || !player.position) {
+      combatStore.reachableCells.value = [];
+      combatStore.validTargets.value = [];
+      return;
+    }
+
+    // 1. Calculate Reachable Cells (Movement)
+    const moveRange = player.movementRemaining ?? 3;
+    const reachable: { x: number; y: number }[] = [];
+    const others = combatStore.combatants.value
+      .filter(c => c.id !== player.id && c.hp > 0)
+      .map(c => c.position)
+      .filter((p): p is { x: number; y: number } => !!p);
+
+    for (let dx = -moveRange; dx <= moveRange; dx++) {
+      for (let dy = -(moveRange - Math.abs(dx)); dy <= (moveRange - Math.abs(dx)); dy++) {
+        const nx = player.position.x + dx;
+        const ny = player.position.y + dy;
+        if (nx >= 0 && nx < 10 && ny >= 0 && ny < 10) {
+          if (!others.some(o => o.x === nx && o.y === ny)) {
+            reachable.push({ x: nx, y: ny });
+          }
+        }
+      }
+    }
+    combatStore.reachableCells.value = reachable;
+
+    // 2. Calculate Valid Targets (Attack)
+    const weaponRange = player.weapon?.range || (player.weapon?.type === 'RANGED' ? 5 : 1);
+    const targets: string[] = [];
+    const playerPos = player.position; // Local to help TS narrowing
+
+    combatStore.enemyCombatants.value.forEach(enemy => {
+      if (enemy.hp > 0 && enemy.position) {
+        const dist = Math.abs(enemy.position.x - playerPos.x) + Math.abs(enemy.position.y - playerPos.y);
+        if (dist <= weaponRange) {
+          targets.push(enemy.id);
+        }
+      }
+    });
+    combatStore.validTargets.value = targets;
+  }, [
+    combatStore.isPlayerTurn.value,
+    combatStore.combatants.value,
+    combatStore.currentTurnId.value,
+  ]);
+
+  // Handle Action Feedback (Floating Text)
+  useEffect(() => {
+    const log = combatStore.actionLog.value;
+    if (log.length === 0) return;
+
+    const lastAction = log[log.length - 1];
+    const target = combatStore.combatants.value.find(c => c.id === lastAction.targetId);
+
+    if (target && target.position) {
+      const id = `fb_${lastAction.id}_${Date.now()}`;
+      let text = '';
+      let type: 'damage' | 'heal' | 'status' | 'miss' = 'status';
+
+      if (lastAction.result.damage !== undefined) {
+        text = `-${lastAction.result.damage}`;
+        type = 'damage';
+      } else if (!lastAction.result.success) {
+        text = 'MISS';
+        type = 'miss';
+      } else if (lastAction.result.effects?.length) {
+        text = lastAction.result.effects[0];
+        type = 'status';
+      }
+
+      if (text) {
+        const feedback = {
+          id,
+          x: target.position.x,
+          y: target.position.y,
+          text,
+          type
+        };
+
+        combatStore.floatingFeedbacks.value = [...combatStore.floatingFeedbacks.value, feedback];
+
+        // Auto-remove after 2s
+        setTimeout(() => {
+          combatStore.floatingFeedbacks.value = combatStore.floatingFeedbacks.value.filter(fb => fb.id !== id);
+        }, 2000);
+      }
+    }
+  }, [combatStore.actionLog.value.length]);
 
   // Send a combat action
   const sendAction = useCallback(
@@ -155,28 +248,32 @@ export function useCombat(combatId: string | null) {
     disconnect: leaveCombat,
 
     // Combat state
-    combatId: combatStore.combatId,
-    phase: combatStore.phase,
-    round: combatStore.round,
-    combatants: combatStore.combatants,
-    currentTurnId: combatStore.currentTurnId,
-    actionLog: combatStore.actionLog,
-    endReason: combatStore.endReason,
-    rewards: combatStore.rewards,
-    pendingAction: combatStore.pendingAction,
+    combatId: combatStore.combatId.value,
+    phase: combatStore.phase.value,
+    round: combatStore.round.value,
+    combatants: combatStore.combatants.value,
+    currentTurnId: combatStore.currentTurnId.value,
+    actionLog: combatStore.actionLog.value,
+    endReason: combatStore.endReason.value,
+    rewards: combatStore.rewards.value,
+    pendingAction: combatStore.pendingAction.value,
 
     // Computed
-    isInCombat: combatStore.isInCombat,
-    currentCombatant: combatStore.currentCombatant,
-    isPlayerTurn: combatStore.isPlayerTurn,
-    playerCombatant: combatStore.playerCombatant,
-    enemyCombatants: combatStore.enemyCombatants,
-    allyCombatants: combatStore.allyCombatants,
-    turnOrder: combatStore.turnOrder,
-    activeCombatants: combatStore.activeCombatants,
-    recentActions: combatStore.recentActions,
-    isVictory: combatStore.isVictory,
-    isDefeat: combatStore.isDefeat,
+    isInCombat: combatStore.isInCombat.value,
+    currentCombatant: combatStore.currentCombatant.value,
+    isPlayerTurn: combatStore.isPlayerTurn.value,
+    playerCombatant: combatStore.playerCombatant.value,
+    enemyCombatants: combatStore.enemyCombatants.value,
+    allyCombatants: combatStore.allyCombatants.value,
+    turnOrder: combatStore.turnOrder.value,
+    activeCombatants: combatStore.activeCombatants.value,
+    recentActions: combatStore.recentActions.value,
+    isVictory: combatStore.isVictory.value,
+    isDefeat: combatStore.isDefeat.value,
+    reachableCells: combatStore.reachableCells.value,
+    validTargets: combatStore.validTargets.value,
+    selectedTargetId: combatStore.selectedTargetId.value,
+    floatingFeedbacks: combatStore.floatingFeedbacks.value,
 
     // Actions
     sendAction,

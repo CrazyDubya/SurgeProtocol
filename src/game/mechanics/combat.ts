@@ -81,6 +81,9 @@ export interface Combatant {
     damage: number;
   };
   conditions: string[];
+  position: { x: number; y: number };
+  items?: Array<{ id: string; name: string; description?: string; quantity: number }>;
+  abilities?: Array<{ id: string; name: string; description?: string; apCost?: number }>;
 }
 
 /** Initiative result */

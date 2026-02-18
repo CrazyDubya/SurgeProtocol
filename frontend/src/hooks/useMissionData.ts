@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useCallback } from 'preact/hooks';
+import { useLocation } from 'wouter-preact';
 import { missionService } from '@/api';
 import type { MissionActionType } from '@/api';
 import {
@@ -30,6 +31,7 @@ import { activeCharacterId } from '@/stores/authStore';
 import { toast } from '@/stores/uiStore';
 
 export function useMissionData() {
+  const [, setLocation] = useLocation();
   const characterId = activeCharacterId.value;
 
   /**
@@ -45,19 +47,20 @@ export function useMissionData() {
       const response = await missionService.getAvailable();
 
       // Transform API response to store format
-      setAvailableMissions(response.missions.map((m) => ({
+      // Transform API response to store format
+      setAvailableMissions(response.missions.map((m: any) => ({
         id: m.id,
-        title: m.name, // API uses 'name', store uses 'title'
+        title: m.name,
         description: m.description || '',
-        missionType: m.type, // API uses 'type', store uses 'missionType'
-        difficulty: m.difficulty,
-        riskLevel: m.riskLevel,
-        tierRequired: m.tierRequired,
-        ratingRequired: m.ratingRequired || 0,
-        timeLimit: m.timeLimit,
-        baseCredits: m.baseCredits,
-        baseXp: m.baseXp,
-        baseReputation: m.baseReputation || 0,
+        missionType: m.mission_type, // BE: mission_type
+        difficulty: mapDifficulty(m.difficulty_rating || 5),
+        riskLevel: m.danger_warning || 'LOW',
+        tierRequired: m.tier_requirement ?? m.tier_minimum ?? 1,
+        ratingRequired: m.rating_requirement || 0,
+        timeLimit: m.time_limit_minutes,
+        baseCredits: m.base_credits || m.effective_credits, // Use effective if available
+        baseXp: m.base_xp || m.effective_xp,
+        baseReputation: 0,
       })));
 
       setTierInfo(response.currentTier, response.canAcceptNew ? 1 : 0);
@@ -209,12 +212,17 @@ export function useMissionData() {
         });
       }
 
+      // Handle combat redirect
+      if (response.result.outcome === 'COMBAT_STARTED' && response.result.details?.combatId) {
+        setLocation(`/combat/${response.result.details.combatId}`);
+      }
+
       return response;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Action failed');
       return null;
     }
-  }, []);
+  }, [setLocation]);
 
   /**
    * Complete the active mission
@@ -329,3 +337,12 @@ export function useMissionData() {
 }
 
 export default useMissionData;
+
+function mapDifficulty(rating: number): string {
+  if (rating <= 2) return 'TRIVIAL';
+  if (rating <= 4) return 'EASY';
+  if (rating <= 6) return 'MEDIUM';
+  if (rating <= 8) return 'HARD';
+  return 'EXTREME';
+}
+

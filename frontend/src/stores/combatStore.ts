@@ -54,6 +54,19 @@ export interface Combatant {
   status?: 'active' | 'wounded' | 'critical' | 'defeated';
   actionsRemaining?: number;
   movementRemaining?: number;
+  weapon?: {
+    id: string;
+    name: string;
+    type: 'MELEE' | 'RANGED';
+    range?: number;
+    ranges?: {
+      short: number;
+      medium: number;
+      long: number;
+    };
+  };
+  items?: Array<{ id: string; name: string; description?: string; quantity: number }>;
+  abilities?: Array<{ id: string; name: string; description?: string; apCost?: number }>;
 }
 
 /** Helper to normalize combatant for UI display */
@@ -69,6 +82,8 @@ function normalizeCombatant(c: Combatant, playerId?: string): Combatant {
     status: c.hp <= 0 ? 'defeated' : hpPercent <= 25 ? 'critical' : hpPercent <= 50 ? 'wounded' : 'active',
     actionsRemaining: c.actionsRemaining ?? 1,
     movementRemaining: c.movementRemaining ?? 1,
+    items: c.items ?? [],
+    abilities: c.abilities ?? [],
   };
 }
 
@@ -118,6 +133,18 @@ export const endReason = signal<CombatEndReason | null>(null);
 export const rewards = signal<{ xp: number; credits: number; items: string[] } | null>(null);
 export const connected = signal<boolean>(false);
 export const pendingAction = signal<boolean>(false);
+export const reachableCells = signal<{ x: number; y: number }[]>([]);
+export const validTargets = signal<string[]>([]);
+export const selectedTargetId = signal<string | null>(null);
+
+export interface FloatingFeedback {
+  id: string;
+  x: number;
+  y: number;
+  text: string;
+  type: 'damage' | 'heal' | 'status' | 'miss';
+}
+export const floatingFeedbacks = signal<FloatingFeedback[]>([]);
 
 // =============================================================================
 // COMPUTED VALUES
@@ -153,7 +180,7 @@ export const allyCombatants = computed(() =>
 
 /** Turn order (sorted by initiative) */
 export const turnOrder = computed(() =>
-  [...combatants.value].sort((a, b) => b.initiative - a.initiative)
+  [...combatants.value].sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0))
 );
 
 /** Active combatants (not defeated) */
@@ -303,6 +330,10 @@ export const combatStore = {
   rewards,
   connected,
   pendingAction,
+  reachableCells,
+  validTargets,
+  selectedTargetId,
+  floatingFeedbacks,
 
   // Computed
   isInCombat,
