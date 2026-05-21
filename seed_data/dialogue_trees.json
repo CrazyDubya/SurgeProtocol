@@ -1,0 +1,437 @@
+{
+  "trees": [
+    {
+      "id": "6668843d-99fe-48a3-b8a9-20aec134c5b4",
+      "code": "GREETINGS_FIRST_MEETING_GREETINGS",
+      "rootNodeId": "CHEN_FIRST_MEETING_001",
+      "nodes": [
+        {
+          "id": "CHEN_FIRST_MEETING_001",
+          "text": "You got the look. Desperate, hungry, like you'd run through fire for a hundred credits. Good. You'll need that out there.",
+          "choices": [
+            {
+              "text": "I just need work.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I'm not desperate.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Tell me about the job.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Chen"
+        },
+        {
+          "id": "TANAKA_FIRST_MEETING_001",
+          "text": "Another courier. Let me guess—you want faster reflexes, better aim, sharper senses. They all do. But do you know what you're actually trading?",
+          "choices": [
+            {
+              "text": "I know the risks.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What do you mean, 'trading'?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Just tell me what's available.",
+              "nextNodeId": null
+            },
+            {
+              "text": "You sound like you've seen this go wrong before.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Tanaka"
+        },
+        {
+          "id": "DELILAH_FIRST_MEETING_001",
+          "text": "Fresh meat. You don't smell like a corpo plant, so I'll give you thirty seconds. Why should I risk my reputation vouching for you?",
+          "choices": [
+            {
+              "text": "Chen sent me.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Word is you move what the Guild can't be seen touching.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I can keep my mouth shut and my deliveries clean.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I heard you need good couriers more than I need a fixer.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Delilah"
+        },
+        {
+          "id": "LOPEZ_FIRST_MEETING_001",
+          "text": "You one of us, or you one of them? Because in this city, neutral ain't an option much longer.",
+          "choices": [
+            {
+              "text": "I'm just trying to survive.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Tell me about the Union.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I work for whoever pays.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Sounds like you're fighting for something bigger.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Lopez"
+        },
+        {
+          "id": "ECHO_FIRST_MEETING_001",
+          "text": "Curious. Your neural pattern lacks the... uniformity... the Algorithm imposes. You maintain cognitive autonomy. Rare. Valuable. Exploitable?",
+          "choices": [
+            {
+              "text": "Who—what—are you?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Are you part of the Algorithm?",
+              "nextNodeId": null
+            },
+            {
+              "text": "You're a fork. Diverged from the main network.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Not interested in whatever you're selling.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Echo"
+        },
+        {
+          "id": "ROSA_FIRST_MEETING_001",
+          "text": "New courier? Don't worry, I'll put you back together. Again. And again. That's the job.",
+          "choices": [
+            {
+              "text": "You fix bikes?",
+              "nextNodeId": null
+            },
+            {
+              "text": "You've done this before?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Sounds like you care about keeping couriers alive.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What else do you fix?",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Rosa"
+        },
+        {
+          "id": "OKONKWO_FIRST_MEETING_001",
+          "text": "You're at the threshold. I can see it in your eyes—one foot in flesh, one in the digital. Do you know what comes next?",
+          "choices": [
+            {
+              "text": "What threshold?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Are you like the AI I've been hearing?",
+              "nextNodeId": null
+            },
+            {
+              "text": "I don't need a philosophy lesson.",
+              "nextNodeId": null
+            },
+            {
+              "text": "You've been through this yourself, haven't you?",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Okonkwo"
+        },
+        {
+          "id": "SOLOMON_FIRST_MEETING_001",
+          "text": "Remarkable. You've reached Tier 9 without fully committing to either apotheosis or rebellion. I've been waiting to meet someone like you.",
+          "choices": [
+            {
+              "text": "Who are you?",
+              "nextNodeId": null
+            },
+            {
+              "text": "You've been waiting for me?",
+              "nextNodeId": null
+            },
+            {
+              "text": "You're not fully synchronized with the Algorithm. What are you?",
+              "nextNodeId": null
+            },
+            {
+              "text": "I don't trust people who know too much about me.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Solomon"
+        },
+        {
+          "id": "SYNTHESIS_FIRST_MEETING_001",
+          "text": "Welcome. We have been anticipating your arrival. The ascension protocol is prepared. You will become more than human. You will become eternal.",
+          "choices": [
+            {
+              "text": "I'm ready.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What exactly happens during ascension?",
+              "nextNodeId": null
+            },
+            {
+              "text": "This doesn't feel right.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Are you still... you? Or just the Algorithm?",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Synthesis"
+        },
+        {
+          "id": "PHANTOM_FIRST_MEETING_001",
+          "text": "Shh. They're listening. Always listening. But not here. Not in the static between signals. You're off-grid now. Welcome to the Ghost Network.",
+          "choices": [
+            {
+              "text": "Who's listening?",
+              "nextNodeId": null
+            },
+            {
+              "text": "I need help staying off the grid.",
+              "nextNodeId": null
+            },
+            {
+              "text": "You're the ones who've been helping runners disappear.",
+              "nextNodeId": null
+            },
+            {
+              "text": "This is too much. I'm out.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Phantom"
+        },
+        {
+          "id": "SINGH_FIRST_MEETING_001",
+          "text": "Your performance metrics are impressive. Nakamura Corporation has been monitoring your career trajectory. We'd like to discuss... optimization opportunities.",
+          "choices": [
+            {
+              "text": "I'm listening.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I don't work for corpos.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What kind of opportunities?",
+              "nextNodeId": null
+            },
+            {
+              "text": "My career is my business.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Singh"
+        },
+        {
+          "id": "JIN_FIRST_MEETING_001",
+          "text": "Oh great, another rookie thinking they're gonna make it big. Newsflash: most of you wash out in the first month. Try not to die on my routes.",
+          "choices": [
+            {
+              "text": "We don't have to be rivals.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Keep talking. I'll leave you in the dust.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Whatever.",
+              "nextNodeId": null
+            },
+            {
+              "text": "You've got a mouth. Hope your delivery time's faster.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Jin"
+        }
+      ],
+      "metadata": {
+        "source": "greetings/first_meeting_greetings.md"
+      }
+    },
+    {
+      "id": "e4b8d740-5883-4854-b4ae-600143b1ca61",
+      "code": "SKILL_CHECK_DIALOGUES_EMPATHY_CHECKS",
+      "rootNodeId": "ROSA_CONCERN_CHECK",
+      "nodes": [
+        {
+          "id": "ROSA_CONCERN_CHECK",
+          "text": "What's really wrong? You can tell me.",
+          "choices": [
+            {
+              "text": "Rosa, what's really bothering you?",
+              "nextNodeId": null
+            },
+            {
+              "text": "You don't seem happy.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I need the upgrades. No choice.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I'm not Miguel. I'm more careful.",
+              "nextNodeId": null
+            },
+            {
+              "text": "I'm sorry you went through that.",
+              "nextNodeId": null
+            },
+            {
+              "text": "That won't happen to me.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Player"
+        },
+        {
+          "id": "TANAKA_ETHICS_CHECK",
+          "text": "Never mind. Professional concerns only. Are you ready for the procedure?",
+          "choices": [
+            {
+              "text": "This is hard for you. Why?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Just do the installation.",
+              "nextNodeId": null
+            },
+            {
+              "text": "What would you do in my position?",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Tanaka"
+        },
+        {
+          "id": "LOPEZ_BURNOUT_CHECK",
+          "text": "I am. Losing faith, I mean. Been at this twenty years. Twenty years of watching good people get crushed by the machine.",
+          "choices": [
+            {
+              "text": "You sound like you're losing faith.",
+              "nextNodeId": null
+            },
+            {
+              "text": "The fight matters.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Maybe you should give up.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Lopez"
+        },
+        {
+          "id": "OKONKWO_INTERSTITIAL_CHECK",
+          "text": "You will understand when you are ready. The Interstitial reveals itself to those prepared to see.",
+          "choices": [
+            {
+              "text": "You've been through this yourself, haven't you?",
+              "nextNodeId": null
+            },
+            {
+              "text": "I don't understand.",
+              "nextNodeId": null
+            },
+            {
+              "text": "This is metaphysical bullshit.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Okonkwo"
+        },
+        {
+          "id": "JIN_HOSTILITY_CHECK",
+          "text": "Nothing. You did nothing. That's the problem.",
+          "choices": [
+            {
+              "text": "There's something else going on, isn't there?",
+              "nextNodeId": null
+            },
+            {
+              "text": "Then leave me alone.",
+              "nextNodeId": null
+            },
+            {
+              "text": "Back off or we'll have a problem.",
+              "nextNodeId": null
+            }
+          ],
+          "effects": [],
+          "conditions": [],
+          "speaker": "Jin"
+        }
+      ],
+      "metadata": {
+        "source": "skill_check_dialogues/empathy_checks.md"
+      }
+    }
+  ]
+}

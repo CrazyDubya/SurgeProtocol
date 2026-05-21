@@ -14,13 +14,14 @@ import {
 } from '@components/game';
 import type { Character, Mission, AlgorithmMessage } from '@/types';
 import type { QuickAction } from '@components/game';
-import { useCharacterData, useMissionData } from '@/hooks';
+import { useCharacterData, useMissionData, useInventoryData } from '@/hooks';
 import {
   character,
   healthPercent,
   humanityPercent,
   totalCredits,
   attributes,
+  activeVehicle,
 } from '@/stores/characterStore';
 import { availableMissions, activeMission, canAcceptNew } from '@/stores/missionStore';
 import styles from './Dashboard.module.css';
@@ -38,60 +39,63 @@ export function Dashboard() {
     acceptMission,
   } = useMissionData();
 
+  // Load inventory to get credits
+  useInventoryData();
+
   // Transform store data to component format
   const characterData: Character | null = character.value
     ? {
-        id: character.value.id,
-        name: character.value.handle || 'Unknown',
-        alias: character.value.streetName || character.value.handle || 'Unknown',
-        level: character.value.currentTier,
-        hp: {
-          current: character.value.currentHealth,
-          max: character.value.maxHealth,
-        },
-        humanity: {
-          current: character.value.currentHumanity,
-          max: character.value.maxHumanity,
-        },
-        xp: {
-          current: character.value.currentXp || 0,
-          toNextLevel: character.value.currentTier * 1000, // Placeholder
-        },
-        credits: totalCredits.value,
-        reputation: {
-          algorithm: character.value.carrierRating,
-          street: 0,
-          corporate: 0,
-        },
-        attributes: transformAttributes(),
-        augmentations: [],
-      }
+      id: character.value.id,
+      name: character.value.handle || 'Unknown',
+      alias: character.value.streetName || character.value.handle || 'Unknown',
+      level: character.value.currentTier,
+      hp: {
+        current: character.value.currentHealth,
+        max: character.value.maxHealth,
+      },
+      humanity: {
+        current: character.value.currentHumanity,
+        max: character.value.maxHumanity,
+      },
+      xp: {
+        current: character.value.currentXp || 0,
+        toNextLevel: character.value.currentTier * 1000, // Placeholder
+      },
+      credits: totalCredits.value,
+      reputation: {
+        algorithm: character.value.carrierRating,
+        street: 0,
+        corporate: 0,
+      },
+      attributes: transformAttributes(),
+      augmentations: [],
+    }
     : null;
 
   // Transform active mission to component format (using nested structure)
-  const activeMissionData: Mission | null = activeMission.value
+  const activeMissionData: Mission | null = activeMission.value && activeMission.value.definition
     ? {
-        id: activeMission.value.instance.id,
-        title: activeMission.value.definition.title,
-        description: activeMission.value.definition.description || '',
-        type: activeMission.value.definition.missionType.toLowerCase() as Mission['type'],
-        difficulty: activeMission.value.definition.difficulty.toLowerCase() as Mission['difficulty'],
-        status: 'active',
-        reward: {
-          credits: activeMission.value.definition.baseCredits || 0,
-          xp: activeMission.value.definition.baseXp || 0,
-        },
-        timeLimit: activeMission.value.definition.timeLimit,
-      }
+      id: activeMission.value.instance.id,
+      title: activeMission.value.definition.title || 'Unknown Mission',
+      description: activeMission.value.definition.description || '',
+      type: (activeMission.value.definition.missionType?.toLowerCase() || 'delivery') as Mission['type'],
+      difficulty: (activeMission.value.definition.difficulty?.toLowerCase() || 'easy') as Mission['difficulty'],
+      status: 'active',
+      reward: {
+        credits: activeMission.value.definition.baseCredits || 0,
+        xp: activeMission.value.definition.baseXp || 0,
+      },
+      timeLimit: activeMission.value.definition.timeLimit,
+    }
     : null;
 
   // Transform available missions to component format (using store types)
   const availableMissionData: Mission[] = availableMissions.value.slice(0, 3).map((m) => ({
     id: m.id,
-    title: m.title,
+    title: m.title || 'Unknown Mission',
     description: m.description || '',
-    type: m.missionType.toLowerCase() as Mission['type'],
-    difficulty: m.difficulty.toLowerCase() as Mission['difficulty'],
+    type: (m.missionType?.toLowerCase() || 'delivery') as Mission['type'],
+    difficulty: (m.difficulty?.toLowerCase() || 'easy') as Mission['difficulty'],
     status: 'available',
     reward: {
       credits: m.baseCredits,
@@ -309,6 +313,14 @@ export function Dashboard() {
                 icon="▶"
                 text={`Mission active: ${activeMissionData.title}`}
                 time="Active"
+                variant="highlight"
+              />
+            )}
+            {activeVehicle.value && (
+              <ActivityItem
+                icon="🏍️"
+                text={`Active Vehicle: ${activeVehicle.value.vehicle_name}`}
+                time="Ready"
                 variant="highlight"
               />
             )}

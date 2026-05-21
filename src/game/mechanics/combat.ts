@@ -82,6 +82,9 @@ export interface Combatant {
   };
   conditions: string[];
   position: { x: number; y: number };
+  facing?: { x: number; y: number }; // Direction vector (normalized)
+  actionsRemaining?: number;
+  movementRemaining?: number;
   items?: Array<{ id: string; name: string; description?: string; quantity: number }>;
   abilities?: Array<{ id: string; name: string; description?: string; apCost?: number }>;
 }
@@ -132,6 +135,76 @@ export const COVER_TYPES: Record<string, Cover> = {
   HEAVY: { type: 'HEAVY', defenseBonus: 6, hp: 50 },
   FULL: { type: 'FULL', defenseBonus: 999, hp: 999 }, // Cannot be targeted
 };
+
+export interface TerrainMap {
+  obstacles: Array<{ x: number; y: number }>;
+  coverPoints: Array<{ x: number; y: number; type: 'LIGHT' | 'MEDIUM' | 'HEAVY' }>;
+}
+
+// =============================================================================
+// TACTICAL CALCULATIONS (Cover & Flanking)
+// =============================================================================
+
+
+/**
+ * Check if attacker is flanking defender.
+ * Flanking = Attacker is within the rear 180 degrees of defender's facing.
+ */
+export function isFlanking(
+  attackerPos: { x: number; y: number },
+  defenderPos: { x: number; y: number },
+  defenderFacing?: { x: number; y: number }
+): boolean {
+  if (!defenderFacing) return false;
+
+  const attackAngle = Math.atan2(attackerPos.y - defenderPos.y, attackerPos.x - defenderPos.x);
+  const facingAngle = Math.atan2(defenderFacing.y, defenderFacing.x);
+
+  let diff = attackAngle - facingAngle;
+  // Normalize to -PI to PI
+  while (diff <= -Math.PI) diff += Math.PI * 2;
+  while (diff > Math.PI) diff -= Math.PI * 2;
+
+  // Rear arc is roughly > 90 degrees (PI/2) from front
+  return Math.abs(diff) > Math.PI / 2;
+}
+
+/**
+ * Calculate cover based on position relative to attacker.
+ * Checks if there is a cover point adjacent to the defender in the direction of the attacker.
+ */
+export function calculateCover(
+  defenderPos: { x: number; y: number },
+  attackerPos: { x: number; y: number },
+  terrain: TerrainMap
+): Cover | null {
+  // Simple checks:
+  // Is there a cover object adjacent to defender?
+  // Is that object "between" defender and attacker?
+
+  // 1. Trace line from defender to attacker
+  // If the very first step hits a cover point, they have cover.
+  const dx = attackerPos.x - defenderPos.x;
+  const dy = attackerPos.y - defenderPos.y;
+
+  // Normalize direction to find adjacent tile
+  const length = Math.sqrt(dx * dx + dy * dy);
+  if (length === 0) return null; // Same tile
+
+  const stepX = Math.round(dx / length);
+  const stepY = Math.round(dy / length);
+
+  const checkPos = { x: defenderPos.x + stepX, y: defenderPos.y + stepY };
+
+  // Check if this adjacent position has cover
+  const coverPoint = terrain.coverPoints.find(p => p.x === checkPos.x && p.y === checkPos.y);
+
+  if (coverPoint) {
+    return COVER_TYPES[coverPoint.type]!;
+  }
+
+  return COVER_TYPES.NONE;
+}
 
 // =============================================================================
 // INITIATIVE
@@ -197,10 +270,11 @@ export function sortByInitiative(
  * Calculate a combatant's defense value.
  * Defense = 10 + AGI mod + armor bonus + cover bonus + augment bonus - wound penalty
  */
-export function calculateDefense(combatant: Combatant): number {
+export function calculateDefense(combatant: Combatant, activeCover?: Cover | null): number {
   const agiMod = getAttributeModifier(combatant.attributes.AGI);
   const armorBonus = combatant.armor?.value ?? 0;
-  const coverBonus = combatant.cover?.defenseBonus ?? 0;
+  // Use provided active cover, or fallback to static cover state
+  const coverBonus = (activeCover?.defenseBonus) ?? (combatant.cover?.defenseBonus ?? 0);
   const augmentBonus = combatant.augmentBonuses.defense;
   const woundPenalty = getWoundPenalty(combatant.hp, combatant.hpMax);
 
@@ -234,7 +308,8 @@ export function getRangePenalty(distance: number, weapon: Weapon): number {
 export function performAttack(
   attacker: Combatant,
   defender: Combatant,
-  distance: number = 0
+  distance: number = 0,
+  tactical: { cover?: Cover | null; isFlanking?: boolean } = {}
 ): AttackResult {
   const weapon = attacker.weapon;
   if (!weapon) {
@@ -248,13 +323,13 @@ export function performAttack(
       scalingAttribute: 'PWR',
       scalingDivisor: 2,
       attackMod: 0,
-    });
+    }, tactical); // Pass tactical
   }
 
   if (weapon.type === 'MELEE') {
-    return performMeleeAttack(attacker, defender, weapon);
+    return performMeleeAttack(attacker, defender, weapon, tactical);
   } else {
-    return performRangedAttack(attacker, defender, weapon, distance);
+    return performRangedAttack(attacker, defender, weapon, distance, tactical);
   }
 }
 
@@ -266,9 +341,10 @@ export function performAttack(
 function performMeleeAttack(
   attacker: Combatant,
   defender: Combatant,
-  weapon: Weapon
+  weapon: Weapon,
+  tactical: { cover?: Cover | null; isFlanking?: boolean } = {}
 ): AttackResult {
-  const targetDefense = calculateDefense(defender);
+  const targetDefense = calculateDefense(defender, tactical.cover);
   const woundPenalty = getWoundPenalty(attacker.hp, attacker.hpMax);
 
   const modifiers = [
@@ -276,6 +352,10 @@ function performMeleeAttack(
     { name: 'Augment', value: attacker.augmentBonuses.attack },
     { name: 'Wounds', value: -woundPenalty },
   ];
+
+  if (tactical.isFlanking) {
+    modifiers.push({ name: 'Flanking', value: 2 }); // +2 Bonus for flanking
+  }
 
   const roll = performSkillCheck(
     attacker.attributes.PWR,
@@ -321,9 +401,10 @@ function performRangedAttack(
   attacker: Combatant,
   defender: Combatant,
   weapon: Weapon,
-  distance: number
+  distance: number,
+  tactical: { cover?: Cover | null; isFlanking?: boolean } = {}
 ): AttackResult {
-  const baseDefense = calculateDefense(defender);
+  const baseDefense = calculateDefense(defender, tactical.cover);
   const rangePenalty = getRangePenalty(distance, weapon);
   const targetDefense = baseDefense + rangePenalty;
   const woundPenalty = getWoundPenalty(attacker.hp, attacker.hpMax);
@@ -333,6 +414,10 @@ function performRangedAttack(
     { name: 'Augment', value: attacker.augmentBonuses.attack },
     { name: 'Wounds', value: -woundPenalty },
   ];
+
+  if (tactical.isFlanking) {
+    modifiers.push({ name: 'Flanking', value: 2 });
+  }
 
   const roll = performSkillCheck(
     attacker.attributes.VEL,

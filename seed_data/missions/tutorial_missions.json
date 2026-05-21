@@ -75,7 +75,11 @@
         "augmentsRequired": []
       },
       "complications": {
-        "possible": ["TRAFFIC_SLOWDOWN", "VEHICLE_WARNING", "FRIENDLY_NPC_HAIL"],
+        "possible": [
+          "TRAFFIC_SLOWDOWN",
+          "VEHICLE_WARNING",
+          "FRIENDLY_NPC_HAIL"
+        ],
         "guaranteed": [],
         "probability": 0.3
       },
@@ -114,14 +118,16 @@
         "failure": "The package is damaged or late. Dr. Tanaka sighs. 'I needed these. Someone might suffer because of this.' Chen's going to hear about this."
       },
       "storyFlags": {
-        "sets": ["FIRST_DELIVERY_COMPLETE"],
+        "sets": [
+          "FIRST_DELIVERY_COMPLETE"
+        ],
         "requires": []
       },
       "metadata": {
         "estimatedDuration": "10-15 minutes",
         "routeDanger": "LOW",
         "routeComplexity": "SIMPLE",
-        "isRepeatable": false
+        "isRepeatable": true
       }
     },
     {
@@ -158,7 +164,10 @@
         "credits": 0,
         "xp": 10,
         "ratingImpact": null,
-        "unlocks": ["CONTACT_ROSA", "VEHICLE_MAINTENANCE_TUTORIAL"]
+        "unlocks": [
+          "CONTACT_ROSA",
+          "VEHICLE_MAINTENANCE_TUTORIAL"
+        ]
       },
       "requirements": {
         "minTier": 0,
@@ -195,14 +204,17 @@
         "success": "Rosa looks over your ride. 'Vehicle's in rough shape, but I got her running. Don't push her too hard, yeah?' She wipes her hands and smiles. You've made a friend."
       },
       "storyFlags": {
-        "sets": ["MET_ROSA", "VEHICLE_DIAGNOSED"],
+        "sets": [
+          "MET_ROSA",
+          "VEHICLE_DIAGNOSED"
+        ],
         "requires": []
       },
       "metadata": {
         "estimatedDuration": "3-5 minutes",
         "routeDanger": "NONE",
         "routeComplexity": "TRIVIAL",
-        "isRepeatable": false
+        "isRepeatable": true
       }
     },
     {
@@ -245,7 +257,10 @@
         "id": "jin",
         "name": "Jin",
         "type": "RIVAL_COURIER",
-        "augments": ["reflex_boosters", "enhanced_eyes"],
+        "augments": [
+          "reflex_boosters",
+          "enhanced_eyes"
+        ],
         "baseSpeed": 1.15,
         "riskTolerance": "HIGH"
       },
@@ -267,7 +282,9 @@
             "max": -0.1
           }
         },
-        "unlocks": ["PREMIUM_CONTRACT_MERIDIAN"]
+        "unlocks": [
+          "PREMIUM_CONTRACT_MERIDIAN"
+        ]
       },
       "requirements": {
         "minTier": 1,
@@ -276,8 +293,14 @@
         "augmentsRequired": []
       },
       "complications": {
-        "possible": ["TRAFFIC_JAM", "POLICE_CHECKPOINT", "PACKAGE_DAMAGE"],
-        "guaranteed": ["JIN_CRASH"],
+        "possible": [
+          "TRAFFIC_JAM",
+          "POLICE_CHECKPOINT",
+          "PACKAGE_DAMAGE"
+        ],
+        "guaranteed": [
+          "JIN_CRASH"
+        ],
         "probability": 0.5
       },
       "scriptedEvents": [
@@ -287,7 +310,11 @@
           "location": "race_route_midpoint",
           "description": "Jin crashes their vehicle",
           "playerChoice": true,
-          "choices": ["HELP_JIN", "KEEP_GOING", "CALL_ROSA"]
+          "choices": [
+            "HELP_JIN",
+            "KEEP_GOING",
+            "CALL_ROSA"
+          ]
         }
       ],
       "narrativeContext": {
@@ -297,8 +324,12 @@
         "failure": "Jin beat you. Or neither of you finished. Chen's disappointed, but there will be other opportunities."
       },
       "storyFlags": {
-        "sets": ["TEST_RACE_COMPLETE"],
-        "requires": ["FIRST_DELIVERY_COMPLETE"],
+        "sets": [
+          "TEST_RACE_COMPLETE"
+        ],
+        "requires": [
+          "FIRST_DELIVERY_COMPLETE"
+        ],
         "conditional": {
           "JIN_SAVED": {
             "condition": "chose_HELP_JIN"
@@ -315,7 +346,7 @@
         "estimatedDuration": "15-20 minutes",
         "routeDanger": "MODERATE",
         "routeComplexity": "MODERATE",
-        "isRepeatable": false,
+        "isRepeatable": true,
         "hasBranchingOutcomes": true
       }
     },
@@ -392,10 +423,16 @@
         "vehicleRequired": true,
         "augmentsRequired": [],
         "prerequisiteMission": "MISSION_T1_TEST_RACE",
-        "requiredFlags": ["TEST_RACE_COMPLETE"]
+        "requiredFlags": [
+          "TEST_RACE_COMPLETE"
+        ]
       },
       "complications": {
-        "possible": ["TRAFFIC_JAM", "CORPO_CHECKPOINT", "WEATHER_RAIN"],
+        "possible": [
+          "TRAFFIC_JAM",
+          "CORPO_CHECKPOINT",
+          "WEATHER_RAIN"
+        ],
         "guaranteed": [],
         "probability": 0.4
       },
@@ -405,14 +442,18 @@
         "failure": "The package is compromised. Meridian isn't happy. One more failure and you lose the contract."
       },
       "storyFlags": {
-        "sets": ["MERIDIAN_FIRST_COMPLETE"],
-        "requires": ["TEST_RACE_COMPLETE"]
+        "sets": [
+          "MERIDIAN_FIRST_COMPLETE"
+        ],
+        "requires": [
+          "TEST_RACE_COMPLETE"
+        ]
       },
       "metadata": {
         "estimatedDuration": "20-25 minutes",
         "routeDanger": "LOW",
         "routeComplexity": "MODERATE",
-        "isRepeatable": false,
+        "isRepeatable": true,
         "isContractMission": true,
         "contractId": "CONTRACT_MERIDIAN_WEEKLY"
       }
@@ -475,7 +516,10 @@
   "metadata": {
     "version": "1.0",
     "totalMissions": 4,
-    "tierCoverage": [0, 1],
+    "tierCoverage": [
+      0,
+      1
+    ],
     "lastUpdated": "2026-01-20"
   }
 }

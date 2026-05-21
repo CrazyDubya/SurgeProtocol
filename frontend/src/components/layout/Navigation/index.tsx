@@ -8,7 +8,9 @@ const NAV_ITEMS = [
   { path: '/character', label: 'Character', icon: '◉', description: 'Stats & augments' },
   { path: '/inventory', label: 'Inventory', icon: '◫', description: 'Gear & items' },
   { path: '/factions', label: 'Factions', icon: '⬡', description: 'Alliances & rep' },
+  { path: '/contracts', label: 'Contracts', icon: '📜', description: 'Jobs & debts' },
   { path: '/war', label: 'War', icon: '⚔', description: 'Faction conflicts' },
+  { path: '/world', label: 'World', icon: '⚡', description: 'Travel & Map' },
 ] as const;
 
 export function Navigation() {
@@ -21,9 +23,8 @@ export function Navigation() {
           <li key={item.path} class={styles.item}>
             <Link
               href={item.path}
-              class={`${styles.link} ${
-                location === item.path ? styles.active : ''
-              }`}
+              class={`${styles.link} ${location === item.path ? styles.active : ''
+                }`}
             >
               <span class={styles.icon}>{item.icon}</span>
               <div class={styles.text}>

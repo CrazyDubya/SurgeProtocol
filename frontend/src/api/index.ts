@@ -42,7 +42,7 @@ export {
   type EquippedItem,
   type CharacterCondition,
   type InventoryResponse,
-  type InventoryItem,
+  type InventoryItem as CharacterInventoryItem,
   type FactionStanding,
   type SelectCharacterResponse,
 } from './characterService';
@@ -135,3 +135,17 @@ export {
   type JoinFactionResponse,
   type LeaveFactionResponse,
 } from './factionService';
+
+// =============================================================================
+// ITEM & CRAFTING SERVICES
+// =============================================================================
+
+export { itemService, type InventoryItem } from './itemService';
+export { craftingService, type Recipe } from './craftingService';
+
+// =============================================================================
+// CONTRACT & BLACK MARKET SERVICES
+// =============================================================================
+
+export { contractService, type CharacterContract, type Debt } from './contractService';
+export { blackMarketService, type BlackMarketContact } from './blackMarketService';

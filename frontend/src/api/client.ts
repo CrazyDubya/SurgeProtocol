@@ -277,4 +277,5 @@ export const api = {
     request<T>(endpoint, { ...options, method: 'DELETE' }),
 };
 
+export const client = api;
 export default api;

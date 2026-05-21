@@ -7,13 +7,12 @@
 -- ============================================
 
 -- Add columns for vehicle requirements and distance tracking
--- Note: SQLite ALTER TABLE ADD COLUMN doesn't support IF NOT EXISTS,
--- so these may error on re-run (which is acceptable)
-ALTER TABLE mission_definitions ADD COLUMN required_vehicle_class TEXT DEFAULT NULL;
+-- Add columns for vehicle requirements and distance tracking
+-- ALTER TABLE mission_definitions ADD COLUMN required_vehicle_class TEXT DEFAULT NULL; -- Already in 0005
 ALTER TABLE mission_definitions ADD COLUMN distance_km REAL DEFAULT NULL;
 
 -- Set default distances based on tier (tier * 5 km)
-UPDATE mission_definitions SET distance_km = tier_minimum * 5 WHERE distance_km IS NULL;
+-- UPDATE mission_definitions SET distance_km = tier_minimum * 5 WHERE distance_km IS NULL; -- tier_minimum column does not exist
 UPDATE mission_definitions SET distance_km = tier_requirement * 5 WHERE distance_km IS NULL AND tier_requirement IS NOT NULL;
 
 -- ============================================

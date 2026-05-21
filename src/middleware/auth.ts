@@ -358,13 +358,16 @@ export function optionalAuthMiddleware() {
 export function requireCharacterMiddleware() {
   return async (c: Context<{ Variables: AuthVariables }>, next: Next) => {
     const characterId = c.get('characterId');
+    console.log('[MIDDLEWARE] requireCharacter: characterId =', characterId);
 
     if (!characterId) {
+      console.warn('[MIDDLEWARE] requireCharacter: Character selection required');
       throw new HTTPException(403, {
         message: 'Character selection required',
       });
     }
 
+    console.log('[MIDDLEWARE] requireCharacter: SUCCESS. Proceeding...');
     await next();
   };
 }

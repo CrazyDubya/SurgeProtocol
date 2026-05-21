@@ -44,10 +44,10 @@ export function Missions() {
   // Transform store data to component format (store uses 'title' and 'missionType')
   const missionList: Mission[] = availableMissions.value.map((m) => ({
     id: m.id,
-    title: m.title,
+    title: m.title || 'Unknown Mission',
     description: m.description || '',
-    type: m.missionType.toLowerCase() as MissionType,
-    difficulty: m.difficulty.toLowerCase() as MissionDifficulty,
+    type: (m.missionType?.toLowerCase() || 'delivery') as MissionType,
+    difficulty: (m.difficulty?.toLowerCase() || 'easy') as MissionDifficulty,
     status: 'available',
     reward: {
       credits: m.baseCredits,
@@ -58,20 +58,20 @@ export function Missions() {
   }));
 
   // Transform active mission (using nested structure)
-  const activeMissionData: Mission | null = activeMission.value
+  const activeMissionData: Mission | null = activeMission.value && activeMission.value.definition
     ? {
-        id: activeMission.value.instance.id,
-        title: activeMission.value.definition.title,
-        description: activeMission.value.definition.description || '',
-        type: activeMission.value.definition.missionType.toLowerCase() as MissionType,
-        difficulty: activeMission.value.definition.difficulty.toLowerCase() as MissionDifficulty,
-        status: 'active',
-        reward: {
-          credits: activeMission.value.definition.baseCredits || 0,
-          xp: activeMission.value.definition.baseXp || 0,
-        },
-        timeLimit: activeMission.value.definition.timeLimit,
-      }
+      id: activeMission.value.instance.id,
+      title: activeMission.value.definition.title || 'Unknown Mission',
+      description: activeMission.value.definition.description || '',
+      type: (activeMission.value.definition.missionType?.toLowerCase() || 'delivery') as MissionType,
+      difficulty: (activeMission.value.definition.difficulty?.toLowerCase() || 'easy') as MissionDifficulty,
+      status: 'active',
+      reward: {
+        credits: activeMission.value.definition.baseCredits || 0,
+        xp: activeMission.value.definition.baseXp || 0,
+      },
+      timeLimit: activeMission.value.definition.timeLimit,
+    }
     : null;
 
   // Filter handlers

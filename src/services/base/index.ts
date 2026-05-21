@@ -20,6 +20,9 @@ export interface ServiceContext {
   cache?: KVNamespace;
   userId?: string;
   characterId?: string;
+  // Optional services for inter-service communication
+  itemService?: any; // Type 'ItemService' creates circular ref if imported here, using any for now or need interface
+  vendorService?: any;
 }
 
 export interface ServiceResult<T> {
@@ -51,12 +54,16 @@ export abstract class BaseService {
   protected readonly cache?: KVNamespace;
   protected readonly userId?: string;
   protected readonly characterId?: string;
+  protected readonly itemService?: any;
+  protected readonly vendorService?: any;
 
   constructor(context: ServiceContext) {
     this.db = context.db;
     this.cache = context.cache;
     this.userId = context.userId;
     this.characterId = context.characterId;
+    this.itemService = context.itemService;
+    this.vendorService = context.vendorService;
   }
 
   /**
@@ -133,10 +140,11 @@ export abstract class BaseService {
       }
       return await stmt.first<T>();
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error('Database query error:', error);
       throw new AppError(
         ErrorCodes.INTERNAL_ERROR,
-        'Database query failed',
+        `Database query failed: ${msg}`,
         500
       );
     }
@@ -161,7 +169,7 @@ export abstract class BaseService {
       console.error('Database query error:', error);
       throw new AppError(
         ErrorCodes.INTERNAL_ERROR,
-        'Database query failed',
+        `Database query failed: ${error instanceof Error ? error.message : String(error)}`,
         500
       );
     }
@@ -181,10 +189,11 @@ export abstract class BaseService {
       }
       return await stmt.run();
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error('Database execute error:', error);
       throw new AppError(
         ErrorCodes.INTERNAL_ERROR,
-        'Database operation failed',
+        `Database operation failed: ${msg}`,
         500
       );
     }
@@ -296,7 +305,17 @@ export abstract class CharacterService extends BaseService {
    */
   protected async getCharacter(): Promise<CharacterData> {
     const character = await this.query<CharacterData>(
-      `SELECT * FROM characters WHERE id = ?`,
+      `SELECT 
+        c.*,
+        c.carrier_rating as overall_rating,
+        c.current_xp as xp_current,
+        c.lifetime_xp as xp_total,
+        c.current_humanity as humanity_current,
+        c.max_humanity as humanity_max,
+        cf.primary_currency_balance as credits
+       FROM characters c
+       LEFT JOIN character_finances cf ON c.id = cf.character_id
+       WHERE c.id = ?`,
       this.requiredCharacterId
     );
     this.assertExists(
@@ -313,26 +332,66 @@ export abstract class CharacterService extends BaseService {
   protected async updateCharacter(
     updates: Partial<CharacterUpdateData>
   ): Promise<void> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
+    const charFields: string[] = [];
+    const charValues: unknown[] = [];
+    const financeFields: string[] = [];
+    const financeValues: unknown[] = [];
 
+    // Map fields to correct tables and columns
     for (const [key, value] of Object.entries(updates)) {
-      if (value !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(value);
+      if (value === undefined) continue;
+
+      switch (key) {
+        case 'credits':
+          financeFields.push('primary_currency_balance = ?');
+          financeValues.push(value);
+          break;
+        case 'overall_rating':
+          charFields.push('carrier_rating = ?');
+          charValues.push(value);
+          break;
+        case 'xp_current':
+          charFields.push('current_xp = ?');
+          charValues.push(value);
+          break;
+        case 'xp_total':
+          charFields.push('lifetime_xp = ?');
+          charValues.push(value);
+          break;
+        case 'humanity_current':
+          charFields.push('current_humanity = ?');
+          charValues.push(value);
+          break;
+        default:
+          // Default to characters table with same name (tier, is_active, etc)
+          charFields.push(`${key} = ?`);
+          charValues.push(value);
       }
     }
 
-    if (fields.length === 0) return;
+    // Execute character update
+    if (charFields.length > 0) {
+      charFields.push('updated_at = ?');
+      charValues.push(new Date().toISOString());
+      charValues.push(this.requiredCharacterId);
 
-    fields.push('updated_at = ?');
-    values.push(new Date().toISOString());
-    values.push(this.requiredCharacterId);
+      await this.execute(
+        `UPDATE characters SET ${charFields.join(', ')} WHERE id = ?`,
+        ...charValues
+      );
+    }
 
-    await this.execute(
-      `UPDATE characters SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    // Execute finance update
+    if (financeFields.length > 0) {
+      financeFields.push('updated_at = ?');
+      financeValues.push(new Date().toISOString());
+      financeValues.push(this.requiredCharacterId);
+
+      await this.execute(
+        `UPDATE character_finances SET ${financeFields.join(', ')} WHERE character_id = ?`,
+        ...financeValues
+      );
+    }
   }
 }
 

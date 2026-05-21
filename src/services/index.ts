@@ -5,7 +5,6 @@
 // Base Service Classes
 export {
   BaseService,
-  CharacterService,
   AppError,
   ErrorCodes,
 } from './base';
@@ -59,6 +58,7 @@ export {
   StatelessProgressionCalculator,
   HumanityService,
   StatelessHumanityCalculator,
+  CharacterService,
   TIER_DEFINITIONS,
   HUMANITY_THRESHOLDS,
 } from './character';
@@ -84,6 +84,10 @@ export type {
 export {
   MissionLifecycleService,
   MissionGeneratorService,
+  MissionActionService,
+  getActiveVehicle,
+  validateVehicleForMission,
+  calculateVehicleTimeBonus,
 } from './mission';
 
 export type {
@@ -107,34 +111,32 @@ export type {
   GeneratedObjective,
   GenerationOptions,
   GenerationResult,
+  MissionActionContext,
+  ActiveVehicleInfo,
+  MissionActionInput,
+  MissionActionResult,
 } from './mission';
 
 // Economy Services
 export {
-  TransactionService,
-  VendorService,
+  EconomyService,
 } from './economy';
 
 export type {
   CharacterFinances,
-  TransactionRecord,
-  BalanceSummary,
   AccountType,
-  PaymentMethod,
-  TransferParams,
-  PurchaseParams,
-  DebtCreateParams,
-  DebtPaymentParams,
-  VendorInfo,
-  ItemDefinition,
-  BuyResult,
-  SellResult,
-  HaggleResult,
+  FinancialTransaction,
+  VendorInventory,
+  TransferRequest,
+  VendorPurchaseRequest,
+  VendorSaleRequest,
+  HaggleRequest,
 } from './economy';
 
 // Combat Services
 export {
   CombatResolverService,
+  CombatService,
 } from './combat';
 
 export type {
@@ -152,3 +154,100 @@ export type {
   Armor,
   AttackResult,
 } from './combat';
+
+// Vehicle Services
+export * from './vehicle/index';
+export * from './vehicle/drone';
+
+// World Services
+export * from './world/index';
+
+// Quest Services
+export { QuestService } from './quest';
+export type {
+  QuestDefinition as QuestDef,
+  QuestObjective as QuestObj,
+  ActiveQuest,
+  QuestStatus,
+} from './quest';
+
+// Skill Services
+export { SkillService, calculateXPForLevel } from './skills';
+export type {
+  SkillDefinition,
+  CharacterSkillRow,
+  EnhancedCharacterSkill,
+  TrainResult,
+} from './skills';
+
+// Algorithm Services
+export { AlgorithmService } from './algorithm';
+export type {
+  AlgorithmTone,
+  ResponseVariant,
+} from './algorithm';
+
+// Settings Services
+export { SettingsService } from './settings';
+export type {
+  PlayerSettings,
+  GameConfig,
+  DifficultyDefinition,
+  LocalizedString,
+} from './settings';
+
+// Save Services
+export { SaveService } from './saves';
+export type {
+  CharacterStateSnapshot,
+  CreateSaveInput,
+  CheckpointInput,
+} from './saves';
+
+// Achievement Services
+export { AchievementService, formatAchievement, formatCharacterAchievement, formatMilestone } from './achievements';
+export type {
+  AchievementDefinition,
+  CharacterAchievement,
+  MilestoneDefinition,
+} from './achievements';
+
+// Messaging Services
+export { MessagingService, formatMessage, formatNotification } from './messaging';
+export type {
+  MessageRow,
+  NotificationRow,
+  SendMessageInput,
+} from './messaging';
+
+// Leaderboard Services
+export { LeaderboardService, formatLeaderboard, formatEntry, getCurrentPeriodId } from './leaderboards';
+export type {
+  LeaderboardRow,
+  EntryRow,
+  SubmitScoreInput,
+} from './leaderboards';
+
+// Analytics Services
+export { AnalyticsService } from './analytics';
+export type {
+  AnalyticsEvent,
+  PlaySession,
+} from './analytics';
+
+// Procedural Services
+export { ProceduralService } from './procedural';
+export type {
+  GenerationTemplate,
+  LootTable,
+} from './procedural';
+
+// Worldstate Services
+export { WorldstateService } from './worldstate';
+export type {
+  WeatherCondition,
+  GameTimeState,
+} from './worldstate';
+
+// Admin Services
+export { AdminService } from './admin';

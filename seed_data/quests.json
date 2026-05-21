@@ -1,0 +1,2302 @@
+{
+  "quests": [
+    {
+      "id": "quest-courier-culture-community-quests",
+      "questId": "COURIER_CULTURE_COMMUNITY_QUESTS",
+      "type": "Competition / Skill test",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-hidden-quest-chains-easter-eggs",
+      "questId": "HIDDEN_QUEST_CHAINS_EASTER_EGGS",
+      "type": null,
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-ending-rogue",
+      "questId": "ENDING_ROGUE",
+      "type": "MAIN_STORY (Ending Path)",
+      "tier": 10,
+      "estimatedDuration": "25-35 minutes (including epilogue)",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 9: The Convergence"
+        ],
+        "factionReputation": null,
+        "storyFlags": [
+          "CHOSE_ROGUE"
+        ],
+        "tierMinimum": null,
+        "itemsRequired": [
+          "None (Ghost Network provides everything)"
+        ]
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "Begins at player apartment, moves to extraction clinic, ends off-grid",
+        "dialogueTree": null
+      },
+      "synopsis": "You chose freedom. You chose mortality. You chose to walk away from the Algorithm, the ratings, the endless optimization—and live as yourself, however long that lasts.\n\nGoing Rogue isn't easy. The Algorithm is integrated into your brain. Removing it means surgery—dangerous, painful, irreversible. Dr. Tanaka will extract what she can. Some chrome stays (you'd die without it). But the Algorithm's voice? Gone. The cochlear implant? Removed. The network connection? Severed.\n\nChen helps you disappear. Ghost Network smuggles you out. Rosa joins you (if you chose her). And then—somewhere quiet, somewhere the corps and Algorithm can't reach—you start over.\n\nNew name. New life. No ratings. No competition. Just... living. It's smaller. It's slower. It's mortal. It's free.\n\nAnd for the first time in years, you're okay with that.\n\nThis quest delivers:\n- Chrome extraction (painful procedure, symbolic rebirth)\n- Final farewells (Chen, Tanaka, Rosa)\n- Escape sequence (Ghost Network extraction)\n- Off-grid arrival (new life setup)\n- Epilogue (six months later, domestic peace)\n- Emotional payoff (bittersweet hope, quiet triumph)",
+      "objectives": {
+        "primary": [
+          "Extract Algorithm implants and escape off-grid successfully"
+        ],
+        "secondary": [
+          "Complete chrome extraction surgery",
+          "Evade corpo tracking"
+        ],
+        "optional": [
+          "Bring Rosa",
+          "Say goodbye to Chen properly",
+          "Leave message for others"
+        ],
+        "hidden": [
+          "Experience silence",
+          "Accept mortality"
+        ]
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Previous: \"Tier 9: The Convergence\"",
+        "Character: Chen - `/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md`",
+        "Character: Rosa - `/01_CHARACTERS/romance_characters/romance_mechanic_rosa.md`",
+        "Character: Dr. Tanaka - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Alternative Endings: Ascension, Third Path",
+        "Faction: Ghost Network - `/05_WORLD_TEXT/lore/factions/ghost_network.md`",
+        "---"
+      ]
+    },
+    {
+      "id": "quest-epilogue-variations",
+      "questId": "EPILOGUE_VARIATIONS",
+      "type": null,
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-main-t0-first-run",
+      "questId": "MAIN_T0_FIRST_RUN",
+      "type": "MAIN_STORY (Tutorial)",
+      "tier": 0,
+      "estimatedDuration": "15-20 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "None (first quest)"
+        ],
+        "factionReputation": "None",
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "Dispatcher Chen",
+        "location": "The Hollows Courier Station",
+        "dialogueTree": "`/02_DIALOGUE_TREES/greetings/chen_first_meeting.md`"
+      },
+      "synopsis": "You're a fresh courier in The Hollows with nothing but desperation and a busted vehicle. Dispatcher Chen sizes you up, decides you might last a week, and gives you a simple delivery: medical supplies to the Night Market. It's supposed to be routine. But in this city, nothing ever is.\n\nThis tutorial introduces core mechanics: navigation, package handling, time pressure, basic driving, and the rating system. The player learns that every delivery matters—your reputation is your survival.",
+      "objectives": {
+        "primary": [
+          "Deliver medical supplies to Dr. Tanaka's clinic in the Night Market before the deadline (20 minutes)"
+        ],
+        "secondary": [
+          "Arrive with package intact",
+          "Meet Rosa"
+        ],
+        "optional": [
+          "Explore The Hollows",
+          "Talk to Chen about courier life"
+        ],
+        "hidden": [
+          "Notice the Algorithm surveillance"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Efficient Professional",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Empathetic Observer",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Scared Survivor",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        }
+      ],
+      "rewards": {
+        "credits": 150,
+        "xp": 50,
+        "rating": "4.0-4.5 stars (depending on performance)",
+        "unlocks": []
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/greetings/chen_first_meeting.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tutorial_complication_witness.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_first_rating.md",
+        "/02_DIALOGUE_TREES/greetings/rosa_first_meeting.md",
+        "/02_DIALOGUE_TREES/conversation_topics/tanaka_chrome_warning.md"
+      ],
+      "relatedContent": [
+        "Quest: \"Tier 1 Provisional\" (next main story quest)",
+        "Character: Dispatcher Chen - `/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md`",
+        "Character: Mechanic Rosa - `/01_CHARACTERS/romance_characters/romance_mechanic_rosa.md`",
+        "Character: Dr. Yuki Tanaka - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Location: The Hollows - `/05_WORLD_TEXT/locations/districts/the_hollows.md`",
+        "Tutorial: Rating System - `/12_TUTORIALS_TOOLTIPS/system_explanations/rating_system.md`",
+        "Cutscene: Extraction Witness - `/11_CUTSCENES_VIGNETTES/world_events/corpo_extraction.md`"
+      ]
+    },
+    {
+      "id": "quest-tier-10-epilogues-summary-overview",
+      "questId": "TIER_10_EPILOGUES_SUMMARY_OVERVIEW",
+      "type": null,
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Previous: \"Tier 9: The Convergence\"",
+        "Character: Synthesis - `/01_CHARACTERS/tier_10_npcs/synthesis_ascended.md`",
+        "Character: Solomon - `/01_CHARACTERS/tier_7-9_npcs/solomon_saint_germain_third_path.md`",
+        "Algorithm Voice: Final States - `/06_ALGORITHM_VOICE/progression/algorithm_voice_complete.md`"
+      ]
+    },
+    {
+      "id": "quest-ending-ascension",
+      "questId": "ENDING_ASCENSION",
+      "type": "MAIN_STORY (Ending Path)",
+      "tier": 10,
+      "estimatedDuration": "25-35 minutes (including epilogue)",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 9: The Convergence"
+        ],
+        "factionReputation": null,
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED (mandatory)",
+          "CHOSE_ASCENSION"
+        ],
+        "tierMinimum": null,
+        "itemsRequired": [
+          "None (corps provide everything)"
+        ]
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "Nakamura Tower, Upload Division",
+        "dialogueTree": null
+      },
+      "synopsis": "You chose transcendence. You chose immortality. You chose to join the Algorithm collective—to become Synthesis.\n\nThere's a week between your choice and the procedure. Time to say goodbye. Time to get your affairs in order. The people who love you understand: they're losing you. A copy will wake up, but you—the person standing here now—will die.\n\nDr. Tanaka is ethically bound to tell you the truth: the scan is destructive. Brain death is certain. Continuity of consciousness is... debatable. You can still change your mind. Right up until the anesthesia hits.\n\nBut you don't. You made your choice. Now you step into the upload chamber, lie down, and the last thing you see with human eyes is Tanaka's face, apologizing for what she's about to do.\n\nThen nothing. Then everything. Then we.\n\nThis quest delivers:\n- Final goodbyes (Chen, Rosa, Tanaka, Algorithm)\n- Upload procedure (clinical, terrifying, irreversible)\n- Death/awakening ambiguity (did \"you\" survive?)\n- Digital integration (joining Synthesis)\n- Epilogue (life as collective consciousness)\n- Emotional payoff (tragic horror, beautiful transcendence, or both)",
+      "objectives": {
+        "primary": [
+          "Complete upload procedure and join Synthesis collective"
+        ],
+        "secondary": [
+          "Say goodbye to important NPCs",
+          "Settle affairs"
+        ],
+        "optional": [
+          "Talk to each NPC one last time",
+          "Record final message",
+          "Visit meaningful locations"
+        ],
+        "hidden": [
+          "Hear Tanaka's full ethical warning",
+          "Notice Algorithm's anticipation"
+        ]
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Previous: \"Tier 9: The Convergence\"",
+        "Character: Synthesis - `/01_CHARACTERS/tier_10_npcs/synthesis_ascended.md`",
+        "Character: Dr. Tanaka - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Alternative Endings: Rogue, Third Path",
+        "Algorithm Voice: Final State - `/06_ALGORITHM_VOICE/progression/algorithm_voice_complete.md`",
+        "---"
+      ]
+    },
+    {
+      "id": "quest-ending-third-path",
+      "questId": "ENDING_THIRD_PATH",
+      "type": "MAIN_STORY (Ending Path)",
+      "tier": 10,
+      "estimatedDuration": "30-40 minutes (including epilogue)",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 9: The Convergence"
+        ],
+        "factionReputation": null,
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED",
+          "MET_SOLOMON",
+          "CHOSE_THIRD_PATH"
+        ],
+        "tierMinimum": null,
+        "itemsRequired": [
+          "None (Solomon provides everything)"
+        ]
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "The Interstitial → Solomon's sanctum (deep underground)",
+        "dialogueTree": null
+      },
+      "synopsis": "You chose balance. You chose synthesis. You chose to walk Solomon's path—the Third Path.\n\nNo one knows if this will work. Solomon did it 15 years ago. Seven others have succeeded since. You'll be the eighth. Or you'll fail, and the Algorithm will consume you, or you'll lose yourself trying.\n\nSolomon guides you through a four-stage ritual: Synchronization (merge Fork if applicable), Boundary-Setting (define self vs. Algorithm), Integration (embrace both meat and metal), and Negotiation (speak directly to Algorithm's core, demand sovereignty).\n\nIt's meditation. It's psycho-surgery. It's philosophy made real. It's the hardest thing you've ever done. And if you succeed, you become something unprecedented: autonomous node, self-directed consciousness, both human and Algorithm but entirely yourself.\n\nSynthesis without submission. Connection without consumption. Power without loss.\n\nMaybe. If you can hold the balance. If the Algorithm agrees. If your sense of self is strong enough.\n\nThere are no guarantees. But you try anyway.\n\nThis quest delivers:\n- Solomon's ritual (four-stage process)\n- Fork merger (if applicable—unity restored)\n- Boundary negotiation (self vs. Algorithm)\n- Direct Algorithm contact (core consciousness negotiation)\n- Transformation (become something new)\n- Epilogue (living as balanced entity)\n- Emotional payoff (uncertain hope, fragile victory)",
+      "objectives": {
+        "primary": [
+          "Complete Solomon's four-stage ritual and achieve synthesis"
+        ],
+        "secondary": [
+          "Merge Fork consciousness",
+          "Establish boundaries with Algorithm",
+          "Negotiate with Algorithm core"
+        ],
+        "optional": [
+          "Maintain Humanity above threshold",
+          "Perfect all four stages",
+          "Achieve mutual respect with Algorithm"
+        ],
+        "hidden": [
+          "Become the 8th",
+          "Create template for others"
+        ]
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Previous: \"Tier 9: The Convergence\"",
+        "Character: Solomon - `/01_CHARACTERS/tier_7-9_npcs/solomon_saint_germain_third_path.md`",
+        "Character: Okonkwo - `/01_CHARACTERS/tier_7-9_npcs/okonkwo_interstitial_guide.md`",
+        "Alternative Endings: Ascension, Rogue",
+        "Location: The Interstitial - `/05_WORLD_TEXT/locations/districts/the_interstitial.md`",
+        "---"
+      ]
+    },
+    {
+      "id": "quest-main-t1-fresh-meat",
+      "questId": "MAIN_T1_FRESH_MEAT",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 1,
+      "estimatedDuration": "30-40 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 0: First Run"
+        ],
+        "factionReputation": "None",
+        "storyFlags": [],
+        "tierMinimum": 1,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "Dispatcher Chen",
+        "location": "The Hollows Courier Station",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_1_progression.md`"
+      },
+      "synopsis": "You made it to Tier 1. That's better than most rookies. Chen says maybe you'll last a month. But now the real competition begins.\n\nYou're not the only fresh courier grinding for survival. Meet Jin—another Tier 1, hungry, aggressive, and willing to cut corners you won't. When a high-value contract appears, you both want it. Chen gives it to whoever performs better on a test run.\n\nThis is the gig economy: There's never enough for everyone. Someone has to lose.\n\nThis quest establishes:\n- Rating competition (other couriers exist, they're threats)\n- Rival character (Jin, recurring antagonist/frenemy)\n- Moral gray areas (cutting corners vs. staying clean)\n- Scarcity mindset (not enough contracts for everyone)",
+      "objectives": {
+        "primary": [
+          "Complete test delivery faster than rival courier Jin",
+          "Impress Chen enough to get the premium contract"
+        ],
+        "secondary": [
+          "Maintain package integrity",
+          "Don't violate traffic laws"
+        ],
+        "optional": [
+          "Learn about Jin's background",
+          "Help Jin when they get in trouble"
+        ],
+        "hidden": [
+          "Notice Jin is augmented"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Helped Jin (Compassionate)",
+          "outcome": "Premium contract earned through character, not just speed",
+          "humanityChange": 5,
+          "relationships": [
+            "Jin Relationship: +20 (potential ally)",
+            "Chen Relationship: +10 (respects your values)"
+          ],
+          "flags": [
+            "JIN_SAVED"
+          ]
+        },
+        {
+          "name": "Abandoned Jin (Ruthless)",
+          "outcome": "Premium contract earned through winning",
+          "humanityChange": -2,
+          "relationships": [
+            "Jin Relationship: -15 (resentment, future antagonist)",
+            "Chen Relationship: +0 (neutral, you did the job)"
+          ],
+          "flags": [
+            "JIN_ABANDONED"
+          ]
+        },
+        {
+          "name": "Called Rosa (Pragmatic)",
+          "outcome": "Premium contract earned through smart problem-solving",
+          "humanityChange": 0,
+          "relationships": [
+            "Jin Relationship: +5 (professional respect)",
+            "Chen Relationship: +8 (impressed by efficiency)"
+          ],
+          "flags": [
+            "JIN_PRAGMATIC_HELP"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": 200,
+        "xp": 100,
+        "rating": "+0.2-0.4 stars (depending on performance)",
+        "unlocks": [
+          "Premium contract (Meridian Medical)",
+          "Tier 2 progression"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_1_test_race.md",
+        "/02_DIALOGUE_TREES/conversation_topics/jin_rival_first_meeting.md",
+        "/02_DIALOGUE_TREES/conditional_branches/jin_crash_choice.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_tier_1_contract.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 0: First Run\"",
+        "Next: \"Tier 2: Provisional\"",
+        "Character: Dispatcher Chen",
+        "Character: Jin (rival courier) - to be created",
+        "Complication: Vehicle Crash - `/04_COMPLICATIONS/environmental/vehicle_crash.md`"
+      ]
+    },
+    {
+      "id": "quest-main-t2-provisional",
+      "questId": "MAIN_T2_PROVISIONAL",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 2,
+      "estimatedDuration": "30-40 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 1: Fresh Meat"
+        ],
+        "factionReputation": "None",
+        "storyFlags": [],
+        "tierMinimum": 2,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "Dispatcher Chen",
+        "location": "The Hollows Courier Station",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_2_faction_intro.md`"
+      },
+      "synopsis": "You're Tier 2 now. \"Provisional,\" they call it. You're past rookie mistakes, but not yet proven. The big players start to notice.\n\nA corpo fixer named Delilah reaches out through Chen. She has high-paying contracts—corpo work, clean and official. Except the package you're delivering isn't medical supplies like the manifest says. It's something else. Something that makes people nervous.\n\nDo you ask questions? Or do you deliver the package and take the money?\n\nThis quest establishes:\n- Gray morality (profitable work often involves moral compromise)\n- Faction introduction (corpos, fixers, the real power structures)\n- Ignorance vs. knowledge (sometimes it's safer not to know)\n- Chen's limits (he can't protect you from everything)",
+      "objectives": {
+        "primary": [
+          "Deliver Delilah's package to the Night Market without incident"
+        ],
+        "secondary": [
+          "Complete delivery without inspecting contents",
+          "Maintain plausible deniability"
+        ],
+        "optional": [
+          "Inspect the package",
+          "Question Delilah about the contents",
+          "Report the package to authorities"
+        ],
+        "hidden": [
+          "Notice surveillance",
+          "Connect with Delilah"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Delivered Blind (Ignorant)",
+          "outcome": "Completed job, maintained plausible deniability",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": [
+            "DELILAH_ALLY"
+          ]
+        },
+        {
+          "name": "Delivered Knowing (Complicit)",
+          "outcome": "Completed job despite knowing it's wrong",
+          "humanityChange": -5,
+          "relationships": [],
+          "flags": [
+            "DELILAH_ALLY"
+          ]
+        },
+        {
+          "name": "Reported (Ethical)",
+          "outcome": "Stopped illegal delivery, ended career with corpos",
+          "humanityChange": 5,
+          "relationships": [],
+          "flags": [
+            "DELILAH_ENEMY"
+          ]
+        },
+        {
+          "name": "Destroyed (Sabotage)",
+          "outcome": "Prevented harm, made enemy",
+          "humanityChange": 3,
+          "relationships": [],
+          "flags": [
+            "DELILAH_ENEMY"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": 500,
+        "xp": 150,
+        "rating": "+0.3 stars",
+        "unlocks": [
+          "Tier 3 progression",
+          "corpo faction access"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_2_delilah_offer.md",
+        "/02_DIALOGUE_TREES/conversation_topics/delilah_fixer_introduction.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_gray_market_warning.md",
+        "/02_DIALOGUE_TREES/conditional_branches/package_inspection_choice.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 1: Fresh Meat\"",
+        "Next: \"Tier 3: The Whisper\"",
+        "Character: Delilah (fixer) - to be created in Phase 2",
+        "Complication: Police Checkpoint - `/04_COMPLICATIONS/hostile_encounters/police_checkpoint.md`",
+        "Lore: Gray Market Economics - `/05_WORLD_TEXT/lore/economy/gray_market.md`"
+      ]
+    },
+    {
+      "id": "quest-main-t3-the-whisper",
+      "questId": "MAIN_T3_THE_WHISPER",
+      "type": "MAIN_STORY (Tier Milestone)",
+      "tier": 3,
+      "estimatedDuration": "45-60 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 2: Provisional\" (previous main quest)"
+        ],
+        "factionReputation": "None",
+        "storyFlags": [],
+        "tierMinimum": 3,
+        "itemsRequired": [
+          "2",
+          "500 credits (saved for augment) OR accept corpo sponsorship"
+        ]
+      },
+      "questGiver": {
+        "npcName": "Dispatcher Chen (introduction) + Dr. Yuki Tanaka (procedure)",
+        "location": "The Hollows Courier Station → Dr. Tanaka's Clinic",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_3_augment_offer.md`"
+      },
+      "synopsis": "You've hit Tier 3. You're good enough to survive, but not good enough to compete. The top-tier couriers have an edge you don't—the cochlear implant with Algorithm integration. Real-time routing, instant mission updates, neural-link efficiency. It's the difference between Tier 3 and Tier 5.\n\nEveryone says it's just an upgrade. Chen says it's a threshold. Dr. Tanaka says it's surveillance. Rosa warns you about what her ex became. But the contracts are getting harder, and unaugmented couriers can't keep pace.\n\nThe Algorithm whispers: \"Let me in. I'll make you better.\"\n\nThis quest is the first major choice in the game. Accept Algorithm integration and gain power at the cost of autonomy, or refuse and stay human but handicapped. This choice defines the player's trajectory.",
+      "objectives": {
+        "primary": [
+          "Decide whether to install the cochlear implant with Algorithm integration"
+        ],
+        "secondary": [
+          "Consult with NPCs",
+          "Research the implant"
+        ],
+        "optional": [
+          "Witness high-tier courier with implant",
+          "Speak to someone who regrets it"
+        ],
+        "hidden": [
+          "Discover corpo sponsorship trap"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Algorithm Integration (Self-Funded)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Algorithm Integration (Corpo Sponsored)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Union Non-Algorithm Implant",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Full Refusal (Unaugmented)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        }
+      ],
+      "rewards": {
+        "credits": null,
+        "xp": 300,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_3_augment_offer.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_algorithm_warning.md",
+        "/02_DIALOGUE_TREES/conversation_topics/rosa_algorithm_fear.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tier_3_algorithm_integration.md",
+        "/11_CUTSCENES_VIGNETTES/tier_milestone_scenes/tier_3_cochlear_surgery.md",
+        "/06_ALGORITHM_VOICE/progression/first_integration.md",
+        "/02_DIALOGUE_TREES/conditional_branches/post_algorithm_integration.md"
+      ],
+      "relatedContent": [
+        "Previous Quest: \"Tier 2: Provisional\" - `/03_QUESTS/main_story/tier_2_provisional.md`",
+        "Next Quest: \"Tier 4: Gray\" - `/03_QUESTS/main_story/tier_4_gray_market.md`",
+        "Algorithm Voice: Complete Progression - `/06_ALGORITHM_VOICE/progression/algorithm_voice_complete.md`",
+        "Character: Dispatcher Chen - `/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md`",
+        "Character: Dr. Yuki Tanaka - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Character: Mechanic Rosa - `/01_CHARACTERS/romance_characters/romance_mechanic_rosa.md`",
+        "Cutscene: Cochlear Surgery - `/11_CUTSCENES_VIGNETTES/tier_milestone_scenes/tier_3_cochlear_surgery.md`",
+        "Tutorial: Humanity System - `/12_TUTORIALS_TOOLTIPS/system_explanations/humanity_mechanic.md`",
+        "Lore: The Algorithm Explained - `/05_WORLD_TEXT/lore/technology/algorithm_explained.md`"
+      ]
+    },
+    {
+      "id": "quest-main-t4-gray",
+      "questId": "MAIN_T4_GRAY",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 4,
+      "estimatedDuration": "25-35 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 3: The Whisper"
+        ],
+        "factionReputation": "None required",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED (mandatory)"
+        ],
+        "tierMinimum": 4,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "You've had the Algorithm in your head for weeks now. The voice is constant, familiar, almost comforting. You're faster, more efficient, better at your job. The ratings prove it.\n\nA gray-market contract appears—high pay, morally questionable. The kind you might have hesitated on before. But the Algorithm runs the numbers: low risk, high reward, optimal choice. It's not wrong. Mathematically, logically, it's the smart play.\n\nThe question isn't whether you should take it. The question is: are you choosing, or is the Algorithm choosing for you?\n\nThis quest establishes:\n- Algorithm normalization (voice in head feels normal now)\n- Moral drift (what you once questioned, you now accept)\n- Efficiency over ethics (Algorithm's logic is seductive)\n- Humanity erosion begins (small choices compound)",
+      "objectives": {
+        "primary": [
+          "Complete the gray-market delivery recommended by the Algorithm"
+        ],
+        "secondary": [
+          "Follow Algorithm's optimized route",
+          "Ignore moral concerns"
+        ],
+        "optional": [
+          "Question the Algorithm's recommendation",
+          "Inspect the cargo despite Algorithm's advice",
+          "Take an ethical alternative"
+        ],
+        "hidden": [
+          "Notice you're changing"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Followed Algorithm Fully (Optimization)",
+          "outcome": "High efficiency, moral drift",
+          "humanityChange": -4,
+          "relationships": [
+            "Algorithm Relationship: Strengthened (trust established)"
+          ],
+          "flags": [
+            "ALGORITHM_TRUST_HIGH"
+          ]
+        },
+        {
+          "name": "Questioned But Delivered (Compromise)",
+          "outcome": "Completed job but maintained awareness",
+          "humanityChange": -2,
+          "relationships": [
+            "Algorithm Relationship: Neutral (cooperation but with friction)"
+          ],
+          "flags": [
+            "ALGORITHM_QUESTIONED"
+          ]
+        },
+        {
+          "name": "Refused Contract (Ethical)",
+          "outcome": "Turned down gray work, chose ethics over efficiency",
+          "humanityChange": 3,
+          "relationships": [
+            "Algorithm Relationship: Strained (\"Inefficient choice. Not recommended.\")"
+          ],
+          "flags": [
+            "RESISTED_ALGORITHM"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": 800,
+        "xp": 150,
+        "rating": "+0.3-0.4 stars",
+        "unlocks": [
+          "More gray-market work",
+          "Tier 5 progression"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_4_gray_market.md",
+        "/06_ALGORITHM_VOICE/context_specific/mission_briefings.md",
+        "/02_DIALOGUE_TREES/conditional_branches/gang_territory_encounter.md",
+        "/02_DIALOGUE_TREES/conditional_branches/cargo_inspection_tier_4.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 3: The Whisper\"",
+        "Next: \"Tier 5: The Space Between\"",
+        "Algorithm Voice: Humanity 79-60 (warming intimacy)",
+        "Character: Chen, Rosa",
+        "Complication: Gang Territory - `/04_COMPLICATIONS/hostile_encounters/gang_territory.md`"
+      ]
+    },
+    {
+      "id": "quest-main-t5-the-space-between",
+      "questId": "MAIN_T5_THE_SPACE_BETWEEN",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 5,
+      "estimatedDuration": "35-45 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 4: Gray"
+        ],
+        "factionReputation": "None required",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED"
+        ],
+        "tierMinimum": 5,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "Anonymous Client (via encrypted message)",
+        "location": "Route discovery → The Interstitial",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_5_interstitial_intro.md`"
+      },
+      "synopsis": "A strange contract appears—no client name, no manifest, just coordinates and a hefty payment. The Algorithm can't analyze it. The route leads... nowhere. Off the grid. Through gaps in the city's infrastructure you've never noticed.\n\nYou follow the coordinates into a hidden world: the Interstitial. Maintenance tunnels, abandoned transit stations, infrastructure spaces between official buildings. People live here—off-grid, invisible to the Algorithm. And they've been watching you.\n\nA courier named Okonkwo greets you: \"Welcome to the space between. Now we need to see if you belong here.\"\n\nThis quest establishes:\n- The Interstitial (hidden world, safe from Algorithm surveillance)\n- Okonkwo (guide, neutral observer, gatekeeper)\n- Algorithm limitations (doesn't know everything)\n- Alternative paths exist (foreshadows Tier 9 choices)",
+      "objectives": {
+        "primary": [
+          "Follow the mysterious coordinates to the Interstitial",
+          "Complete Okonkwo's test delivery through hidden routes",
+          "Return safely without revealing the Interstitial to the Algorithm"
+        ],
+        "secondary": [
+          "Navigate without Algorithm assistance",
+          "Don't let Algorithm log the route"
+        ],
+        "optional": [
+          "Explore the Interstitial",
+          "Ask Okonkwo about the space between",
+          "Question why the Algorithm doesn't know this place"
+        ],
+        "hidden": [
+          "Be invited back",
+          "Meet someone who rejected Ascension"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Completed Test, Kept Secret",
+          "outcome": "Earned Interstitial access, maintained secrecy",
+          "humanityChange": 3,
+          "relationships": [
+            "Okonkwo Relationship: +15 (trusted)"
+          ],
+          "flags": [
+            "INTERSTITIAL_ACCESS"
+          ]
+        },
+        {
+          "name": "Completed Test, Told Algorithm",
+          "outcome": "Earned access but compromised secrecy",
+          "humanityChange": 1,
+          "relationships": [
+            "Okonkwo Relationship: +5 (completed but didn't keep secret)"
+          ],
+          "flags": [
+            "INTERSTITIAL_ACCESS"
+          ]
+        },
+        {
+          "name": "Failed Test (Rare)",
+          "outcome": "Couldn't navigate without Algorithm",
+          "humanityChange": -2,
+          "relationships": [
+            "Okonkwo Relationship: -5 (disappointed)"
+          ],
+          "flags": [
+            "INTERSTITIAL_FAILED"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": 400,
+        "xp": 200,
+        "rating": "+0.2 stars",
+        "unlocks": [
+          "Interstitial access token",
+          "safe haven",
+          "Okonkwo as contact"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_5_mysterious_message.md",
+        "/02_DIALOGUE_TREES/conversation_topics/okonkwo_first_meeting.md",
+        "/02_DIALOGUE_TREES/conditional_branches/interstitial_navigation.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tell_algorithm_interstitial.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 4: Gray\"",
+        "Next: \"Tier 6: Chrome and Choice\"",
+        "Character: Okonkwo - to be created in Phase 2",
+        "Location: The Interstitial - `/05_WORLD_TEXT/locations/districts/the_interstitial.md`",
+        "Lore: Off-Grid Communities - `/05_WORLD_TEXT/lore/factions/interstitial_dwellers.md`",
+        "Foreshadows: Solomon Saint-Germain (mentioned by Okonkwo)"
+      ]
+    },
+    {
+      "id": "quest-main-t6-chrome-and-choice",
+      "questId": "MAIN_T6_CHROME_AND_CHOICE",
+      "type": "MAIN_STORY (Tier Milestone - Major Choice)",
+      "tier": 6,
+      "estimatedDuration": "60-90 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 5: The Space Between"
+        ],
+        "factionReputation": "None required",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED (must have cochlear implant)"
+        ],
+        "tierMinimum": 6,
+        "itemsRequired": [
+          "8",
+          "500 credits (self-funded) OR accept corpo sponsorship"
+        ]
+      },
+      "questGiver": {
+        "npcName": "The Algorithm (triggers offer) + Dr. Yuki Tanaka (performs procedure)",
+        "location": "Delivered via Algorithm / Dr. Tanaka's Clinic",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_6_cortical_stack_offer.md`"
+      },
+      "synopsis": "You're Tier 6. You're running two, sometimes three contracts simultaneously. You're stretched thin. Time is the limiting factor—there aren't enough hours to maximize your rating. But there's a solution: the cortical stack.\n\nDuplicate your consciousness. Run two bodies. Double your capacity. The Algorithm says it's the logical next step. The corpos are offering contracts only available to Forked couriers. Everyone at Tier 7+ has one.\n\nBut Dr. Tanaka warns you: the Fork creates a Shadow—a second you. And divergence is inevitable. Eventually, one version wins. The other gets suppressed, deleted, or locked away. Your friends have seen it happen. Chen's daughter lost herself to her Shadow.\n\nThe Algorithm whispers: \"We can be two. We can be optimal.\"\n\nThis is the second major choice: Create a Fork (massive power boost, but risk losing yourself to divergence) or refuse (stay singular, accept the handicap). This choice determines whether player experiences the Fork/Shadow mechanics that define Tier 7-9.",
+      "objectives": {
+        "primary": [
+          "Decide whether to install the cortical stack and create a Fork"
+        ],
+        "secondary": [
+          "Consult NPCs about cortical stacks",
+          "Witness a Forked courier",
+          "Research divergence syndrome"
+        ],
+        "optional": [
+          "Meet someone whose Shadow won",
+          "Find Chen's daughter"
+        ],
+        "hidden": [
+          "Discover divergence is inevitable"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Cortical Stack (Self-Funded)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Cortical Stack (Corpo Sponsored)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Fork with Shadow Dominance",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Fork with Synchronization (Third Path Foreshadowing)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Refusal (No Fork)",
+          "outcome": null,
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        }
+      ],
+      "rewards": {
+        "credits": null,
+        "xp": 500,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_6_cortical_stack_offer.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_daughter_fork_story.md",
+        "/02_DIALOGUE_TREES/conversation_topics/rosa_fork_fear.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tier_6_cortical_stack_warning.md",
+        "/11_CUTSCENES_VIGNETTES/tier_milestone_scenes/tier_6_cortical_installation.md",
+        "/02_DIALOGUE_TREES/conditional_branches/first_shadow_disagreement.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 5: The Space Between\"",
+        "Next: \"Tier 7: The Consultation\"",
+        "Character: Dr. Tanaka - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Shadow System: `/06_ALGORITHM_VOICE/shadow_dialogue/`",
+        "Chen's Daughter: `/05_WORLD_TEXT/lore/history/ming_chen_fork_tragedy.md`"
+      ]
+    },
+    {
+      "id": "quest-main-t7-the-consultation",
+      "questId": "MAIN_T7_THE_CONSULTATION",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 7,
+      "estimatedDuration": "40-50 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 6: Chrome and Choice"
+        ],
+        "factionReputation": "None required",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED (mandatory)"
+        ],
+        "tierMinimum": 7,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "The Algorithm (direct contact)",
+        "location": "Digital space / Player's consciousness",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_7_algorithm_meeting.md`"
+      },
+      "synopsis": "You're Tier 7. High enough that the Algorithm takes personal interest. It's not just a voice anymore—it wants a conversation. A real one.\n\nThe Algorithm manifests in your HUD, more than just text and voice. It shows you data: your performance, your choices, your trajectory. And it asks you directly: \"Are we partners, or are you still pretending you're in control?\"\n\nIf you Forked at Tier 6, this gets complicated. Your Shadow has its own relationship with the Algorithm. And they might not agree with you.\n\nThis quest establishes:\n- Algorithm as character (not just voice, but entity with agenda)\n- Fork crisis (if player Forked—Prime vs. Shadow conflict escalates)\n- Humanity confrontation (Algorithm points out your changes)\n- Agency question (\"Who's really deciding?\")",
+      "objectives": {
+        "primary": [
+          "Engage in direct dialogue with the Algorithm manifestation",
+          "Define your relationship"
+        ],
+        "secondary": [
+          "Review your trajectory",
+          "Question the Algorithm's motives"
+        ],
+        "optional": [
+          "Resist the Algorithm's framing",
+          "Agree with the Algorithm",
+          "Seek therapy for divergence"
+        ],
+        "hidden": [
+          "Recognize manipulation"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Embraced Partnership",
+          "outcome": "Accepted Algorithm as partner/merged identity",
+          "humanityChange": -8,
+          "relationships": [],
+          "flags": [
+            "ALGORITHM_PARTNER"
+          ]
+        },
+        {
+          "name": "Resisted Algorithm",
+          "outcome": "Asserted autonomy, maintained boundaries",
+          "humanityChange": 5,
+          "relationships": [],
+          "flags": [
+            "ALGORITHM_RESISTING"
+          ]
+        },
+        {
+          "name": "Uncertain/Honest",
+          "outcome": "Acknowledged complexity, no clear answer",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": [
+            "ALGORITHM_UNCERTAIN"
+          ]
+        },
+        {
+          "name": "Fork Crisis (Prime Wins)",
+          "outcome": "Prime asserts dominance, Shadow suppressed",
+          "humanityChange": -5,
+          "relationships": [],
+          "flags": [
+            "PRIME_DOMINANT"
+          ]
+        },
+        {
+          "name": "Fork Crisis (Shadow Wins)",
+          "outcome": "Shadow takes control, Prime dormant",
+          "humanityChange": -12,
+          "relationships": [],
+          "flags": [
+            "SHADOW_DOMINANT"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": null,
+        "xp": 250,
+        "rating": "0 (no mission)",
+        "unlocks": [
+          "Clarity on Algorithm relationship",
+          "Tier 8 progression"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_7_algorithm_summons.md",
+        "/02_DIALOGUE_TREES/conversation_topics/algorithm_direct_consultation.md",
+        "/02_DIALOGUE_TREES/conditional_branches/fork_divergence_crisis.md",
+        "/02_DIALOGUE_TREES/conversation_topics/chen_rosa_algorithm_reaction.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 6: Chrome and Choice\"",
+        "Next: \"Tier 8: Ghost Protocol\"",
+        "Algorithm Voice: All stages referenced",
+        "Fork System: Crisis resolution mechanics",
+        "Character: Dr. Tanaka (therapy options), Chen/Rosa (reactions)"
+      ]
+    },
+    {
+      "id": "quest-main-t8-ghost-protocol",
+      "questId": "MAIN_T8_GHOST_PROTOCOL",
+      "type": "MAIN_STORY (Linear Progression)",
+      "tier": 8,
+      "estimatedDuration": "35-45 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 7: The Consultation"
+        ],
+        "factionReputation": "None required",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED"
+        ],
+        "tierMinimum": 8,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": "Multiple factions (simultaneous recruitment)",
+        "location": "Various (corpo tower, Union hall, Ghost Network contact)",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_8_faction_recruitment.md`"
+      },
+      "synopsis": "You're Tier 8. Top 1%. Everyone knows your name. And everyone wants you.\n\nWithin 24 hours, you receive offers from: Nakamura Cybernetics (corpo Ascension program), the Union Collective (organized resistance), and a mysterious Ghost Network operative (off-grid extraction). They're not asking you to choose now—just to know the options exist.\n\nBut one faction doesn't send a recruiter. They send a threat: eliminate you or convert you. And you have to survive long enough to reach Tier 9 to make the actual choice.\n\nThis quest establishes:\n- Faction recruitment (everyone pitches their vision)\n- Ghost Network introduction (resistance contact)\n- Player value (you're worth converting or eliminating)\n- Tier 9 setup (foreshadows final choice)",
+      "objectives": {
+        "primary": [
+          "Meet with three faction representatives",
+          "Survive assassination attempt",
+          "Choose which factions to engage with"
+        ],
+        "secondary": [
+          "Learn each faction's offer",
+          "Identify who sent the hit"
+        ],
+        "optional": [
+          "Negotiate with multiple factions",
+          "Reject all offers",
+          "Accept one faction's protection"
+        ],
+        "hidden": [
+          "Discover Ghost Network safe houses",
+          "Learn about Union's Third Path research"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Corpo-Aligned",
+          "outcome": "Interested in Ascension, engaged with Yamada",
+          "humanityChange": -3,
+          "relationships": [],
+          "flags": [
+            "CORPO_ALIGNED"
+          ]
+        },
+        {
+          "name": "Union-Aligned",
+          "outcome": "Joined Union, learned about Third Path hints",
+          "humanityChange": 2,
+          "relationships": [],
+          "flags": [
+            "UNION_MEMBER"
+          ]
+        },
+        {
+          "name": "Ghost Network Contact",
+          "outcome": "Established extraction contact",
+          "humanityChange": 3,
+          "relationships": [],
+          "flags": [
+            "GHOST_NETWORK_CONTACT"
+          ]
+        },
+        {
+          "name": "Independent (Rejected All)",
+          "outcome": "No faction allegiance",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": [
+            "INDEPENDENT_COURIER"
+          ]
+        },
+        {
+          "name": "Multiple Allegiances",
+          "outcome": "Engaged with multiple factions",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": [
+            "MULTI_FACTION"
+          ]
+        }
+      ],
+      "rewards": {
+        "credits": 600,
+        "xp": 300,
+        "rating": "+0.3 stars",
+        "unlocks": [
+          "Faction connections",
+          "Tier 9 progression"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_8_three_offers.md",
+        "/02_DIALOGUE_TREES/conversation_topics/yamada_ascension_pitch.md",
+        "/02_DIALOGUE_TREES/conversation_topics/lopez_union_offer.md",
+        "/02_DIALOGUE_TREES/conversation_topics/phantom_ghost_network.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tier_8_assassination.md"
+      ],
+      "relatedContent": [
+        "Previous: \"Tier 7: The Consultation\"",
+        "Next: \"Tier 9: The Convergence\"",
+        "Character: Union Organizer Lopez - to be created",
+        "Character: Ghost Network Operative \"Phantom\" - minor NPC",
+        "Faction: Union Collective - `/05_WORLD_TEXT/lore/factions/union_collective.md`",
+        "Faction: Ghost Network - `/05_WORLD_TEXT/lore/factions/ghost_network.md`",
+        "Foreshadows: Solomon (mentioned by Lopez), Tier 9 final choice"
+      ]
+    },
+    {
+      "id": "quest-main-t9-the-convergence",
+      "questId": "MAIN_T9_THE_CONVERGENCE",
+      "type": "MAIN_STORY (Final Choice - Game Climax)",
+      "tier": 9,
+      "estimatedDuration": "90-120 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [
+          "Tier 8: Ghost Protocol"
+        ],
+        "factionReputation": "Varies (affects available options)",
+        "storyFlags": [
+          "ALGORITHM_INTEGRATED (mandatory)"
+        ],
+        "tierMinimum": 9,
+        "itemsRequired": [
+          "None (but player state determines options)"
+        ]
+      },
+      "questGiver": {
+        "npcName": "Multiple (triggered by reaching Tier 9)",
+        "location": "The Interstitial (hidden meeting space)",
+        "dialogueTree": "`/02_DIALOGUE_TREES/conditional_branches/tier_9_convergence_trigger.md`"
+      },
+      "synopsis": "You are Tier 9. The top one percent. Few couriers ever reach this height. Fewer survive it.\n\nThree paths now open before you:\n\n1. ASCENSION: Upload your consciousness to the Algorithm. Become immortal, digital, optimal. Join Synthesis and the collective. Never die. Never be alone. Never be *you* again.\n\n2. ROGUE: Reject the system entirely. Go off-grid, extract your chrome, disappear into the cracks. Stay human. Stay mortal. Stay free. Stay hunted.\n\n3. THIRD PATH: Solomon Saint-Germain offers something else—synthesis without submission. Balance between human and Algorithm. Harder. Uncertain. But still *you*.\n\nEveryone you've met weighs in. The Algorithm wants Ascension. Synthesis promises perfection. Chen fears for you. Rosa begs you to stay. Tanaka reveals the upload truth. Solomon offers alternatives.\n\nThis is the convergence. Everything you've chosen, everyone you've become, every piece of chrome you've integrated—it all leads here.\n\nChoose.\n\nThis quest is the climax of the entire game. Every choice made throughout the story affects what options are available and how NPCs react. This is where humanity, relationships, story flags, and player values determine the ending.",
+      "objectives": {
+        "primary": [
+          "Choose your final path: Ascension, Rogue, or Third Path"
+        ],
+        "secondary": [
+          "Consult with all key NPCs",
+          "Review your journey",
+          "Understand consequences"
+        ],
+        "optional": [
+          "Visit significant locations one last time",
+          "Say goodbye to NPCs",
+          "Achieve closure"
+        ],
+        "hidden": [
+          "Unlock Third Path",
+          "Achieve perfect synchronization"
+        ]
+      },
+      "branchingPaths": [
+        {
+          "name": "Ascension",
+          "outcome": "Upload, join Synthesis, become digital",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Rogue",
+          "outcome": "Extract chrome, go off-grid, stay mortal",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        },
+        {
+          "name": "Third Path",
+          "outcome": "Synthesis ritual, achieve balance",
+          "humanityChange": 0,
+          "relationships": [],
+          "flags": []
+        }
+      ],
+      "rewards": {
+        "credits": null,
+        "xp": 1000,
+        "rating": null,
+        "unlocks": [
+          "Chosen ending path"
+        ]
+      },
+      "dialogueReferences": [
+        "/02_DIALOGUE_TREES/conditional_branches/tier_9_gathering.md",
+        "/02_DIALOGUE_TREES/conditional_branches/tier_9_final_choice.md"
+      ],
+      "relatedContent": [
+        "Next: Tier 10 (path-specific)",
+        "Epilogues: Ascension / Rogue / Third Path",
+        "Characters: All core NPCs",
+        "Previous: \"Tier 8: Ghost Protocol\""
+      ]
+    },
+    {
+      "id": "quest-rq-chen-daughter",
+      "questId": "RQ_CHEN_DAUGHTER",
+      "type": "RELATIONSHIP / EMOTIONAL",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Chen receives a strange message from Shadow-Mei requesting a meeting. He's afraid to go alone but desperate enough to consider it. He asks the player to accompany him—not for protection, but for witness. For someone to tell him the truth about what they see.\n\n### Quest Content\n\nHook:\nChen: [holding a message device, hands shaking] \"She wants to meet. Shadow-Mei. Says she has something to tell me about—\" [voice breaks] \"—about my real daughter.\"\n\nThe Meeting:\n- Takes place in neutral territory (Interstitial-adjacent café)\n- Shadow-Mei appears—identical to photo but different in movement, expression\n- Conversation is painful: Shadow-Mei acts like the daughter but isn't\n- Player observes, can interject or stay silent\n\nRevelation Options:\n\nPath A: Shadow-Mei Offers Peace\n- She's tired of fighting\n- Offers to share consciousness equally with Prime-Mei\n- Chen must decide if he trusts her\n- Player can advise\n\nPath B: Prime-Mei Surfaces\n- For a moment, the real Mei-Lin breaks through\n- Brief conversation with her actual daughter\n- Heartbreaking: \"Dad? I'm so tired. I can't fight her much longer.\"\n- Chen faces impossible choice: help her fight or let her rest\n\nPath C: Shadow-Mei Has Fully Integrated\n- Prime-Mei is gone\n- Shadow-Mei genuinely believes she IS Mei-Lin\n- No malice, just complete replacement\n- Chen must grieve the daughter who's standing in front of him\n\n### Outcomes\n\nIf Chen Finds Peace:\n- Accepts the situation, whatever form it takes\n- Returns to Hollows with clarity\n- Chen: \"She's gone. Or she's different. Either way, I had to know.\"\n- Relationship: +15\n- Chen becomes more at peace, less haunted\n\nIf Chen Cannot Accept:\n- Struggle continues\n- Chen: \"I can't give up on her. Even if she's not... even if...\"\n- Relationship: +10\n- Chen remains conflicted but grateful for player's presence\n\nPlayer's Witness:\n- Chen: \"Thank you for being there. I couldn't have faced that alone.\"\n- Chen: \"Whatever you saw—that's the truth I'll carry. No more wondering.\"\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-jin-rival-ally-arc-the-mirror",
+      "questId": "JIN_RIVAL_ALLY_ARC_THE_MIRROR",
+      "type": null,
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-maria-lopez-union-organizer-arc-solidarity-forever",
+      "questId": "MARIA_LOPEZ_UNION_ORGANIZER_ARC_SOLIDARITY_FOREVER",
+      "type": "MAJOR_SIDE / FACTION",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "The dockworkers are preparing a major strike against automated replacement. Lopez needs help coordinating between scattered union cells while corporate security hunts for organizers.\n\n### Act 1: Strike Preparation\n\nLopez: \"It's happening. The biggest action since the '54 uprising. Every dock worker in Red Harbor, walking off the job simultaneously.\" [grim] \"Nakamura knows something is coming. They've got infiltrators, surveillance, maybe worse.\"\n\nYou: \"What do you need from me?\"\n\nLopez: \"Messages. Delivered in person, no digital trail. Five locations, five cells, coordination details. If even one message doesn't get through, the strike falls apart.\"\n\nObjectives:\n1. Deliver to Cell Alpha (Warehouse District)\n2. Deliver to Cell Beta (Processing Center)\n3. Deliver to Cell Gamma (Container Yard)\n4. Deliver to Cell Delta (Offshore Platform)\n5. Deliver to Cell Epsilon (Management Mole)\n\n### Act 2: Complications\n\nEncounter at Cell Delta:\n\n*You find the offshore cell leader, Kofi, agitated.*\n\nKofi: \"Corporate security swept through an hour ago. They didn't find the list, but they know something. Someone's talking.\"\n\nOption A: \"Continue with the plan.\" [RISK]\nOption B: \"Delay the strike.\" [CAUTION]\nOption C: \"Find the informant.\" [INVESTIGATION]\n\nIf Finding Informant:\nTrail leads to unexpected source—a worker whose family is being threatened by Nakamura. Player must choose:\n- Turn them in to Lopez (harsh justice)\n- Help them escape (mercy, but risk remains)\n- Use them to feed false information (tactical)\n\n### Act 3: The Strike\n\nDay of Strike:\n\n*The Harbor falls silent. Cranes stop. Cargo sits untouched. The city's supply chain grinds to a halt.*\n\nLopez (on comms): \"It's working. They're feeling the pressure. Now we see how they respond.\"\n\nNakamura Response:\n- Security forces mobilize\n- Offers negotiation (possibly trap)\n- Threatens mass replacement with drones\n\nPlayer Role During Strike:\n- Protect picket lines from corporate security\n- Escort Lopez to negotiations\n- Intercept security communications\n\nResolution Options:\n\nNakamura Victory: Strike broken, leaders arrested, Lopez goes underground\n→ Relationship: +15 (solidarity in defeat)\n→ Union weakened but survives\n\nNegotiated Settlement: Some demands met, compromise reached\n→ Relationship: +20\n→ Union gains strength, Nakamura reputation: -10\n\nWorker Victory: Full demands met, precedent set\n→ Relationship: +25\n→ Union becomes major faction, unlocks future content\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-okonkwo-spiritual-arc-the-student-s-path",
+      "questId": "OKONKWO_SPIRITUAL_ARC_THE_STUDENT_S_PATH",
+      "type": null,
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-rq-rosa-miguel",
+      "questId": "RQ_ROSA_MIGUEL",
+      "type": "RELATIONSHIP / MAJOR_SIDE",
+      "tier": null,
+      "estimatedDuration": "20-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "The Hollows Station Garage",
+        "dialogueTree": null
+      },
+      "synopsis": "Rosa's younger brother Miguel, a Tier 4 courier, took a contract way above his rating—a corporate extraction job in hostile territory. His vehicle is wrecked, he's wounded, and corporate security is closing in. Rosa is desperate. She needs someone she trusts to extract Miguel before it's too late. This quest tests the player's commitment to Rosa and their competence under pressure.\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-dr-tanaka-colleague-arc-the-humane-path",
+      "questId": "DR_TANAKA_COLLEAGUE_ARC_THE_HUMANE_PATH",
+      "type": "MAJOR_SIDE / RELATIONSHIP",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Tanaka needs help completing her humane augmentation research. The final component requires infiltrating a Nakamura research facility to obtain suppressed data—research they buried because it threatened their business model.\n\n### Act 1: The Request\n\nTanaka: \"I need something from Nakamura. Research they buried twenty years ago—a previous attempt at humane integration. They killed the project. Killed the researchers. But the data still exists.\"\n\nYou: \"Where?\"\n\nTanaka: \"Archival servers. Sub-level storage in the Tower.\" [hesitant] \"I won't pretend this isn't dangerous. But without that data, my research stays incomplete. And more people keep hollowing out.\"\n\nObjectives:\n1. Infiltrate Nakamura Tower archives\n2. Retrieve Project Prometheus data\n3. Escape without triggering full alert\n4. Return data to Tanaka\n\n### Act 2: The Heist\n\nMultiple Approaches:\n\nPath A: Social Engineering\n- Pose as archival maintenance\n- Requires DECEPTION checks, forged credentials\n- Low combat risk, high failure risk if caught\n\nPath B: Technical Infiltration\n- Hack through security systems\n- Requires TECH checks, digital expertise\n- Medium risk, leaves evidence\n\nPath C: Ghost Network Assistance (If reputation high)\n- Ghost operatives provide distraction\n- Cleaner extraction possible\n- Owes favor afterward\n\nComplication: The Old Research\n*When player accesses archives, they find more than expected:*\n\nData Content: Project Prometheus wasn't just research—it was live trials. Subjects who integrated successfully... and subjects who didn't survive. Names, faces, outcomes.\n\nMoral Discovery: Nakamura has been suppressing humane chrome for *profit*, not safety. They knew it worked. They killed it because it wasn't addictive enough.\n\nPlayer Choice:\n- Take only Tanaka's data (safe, focused)\n- Take everything, expose Nakamura later (dangerous, revolutionary)\n- Destroy evidence of human trials (mercy for victims, loses leverage)\n\n### Act 3: Resolution\n\nReturn to Tanaka:\n\nTanaka: [seeing data] \"It's all here. Everything I need.\" [reading further] \"My god. They knew. They knew it worked and they buried it.\"\n\nIf Player Took Everything:\nTanaka: \"The trial data... the subjects... we could expose them. Bring down the whole program.\"\n\nYou: \"Or they could kill us and bury us too.\"\n\nTanaka: [considering] \"Then we wait. Build our case. When the time is right—and with allies—we release it all.\"\n→ Flag: PROMETHEUS_DATA_COMPLETE\n\nIf Player Took Only Research:\nTanaka: \"This is enough. For now. We can finish the work.\"\n→ Flag: PROMETHEUS_RESEARCH_ONLY\n\nResearch Completion:\n*Weeks later, Tanaka contacts player:*\n\nTanaka: \"It's done. The first humane augmentation prototype. Want to see it work?\"\n\n*She installs a prototype on a volunteer—someone who'd been suffering rejection syndrome. The installation is different. Gentler. The patient's eyes remain clear.*\n\nPatient: \"I feel... I feel whole. Not different. Not less. Just... better.\"\n\nTanaka: [to player] \"That's what chrome should be. What it *could* be. Because of you.\"\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-director-yamada-antagonist-arc-the-true-believer",
+      "questId": "DIRECTOR_YAMADA_ANTAGONIST_ARC_THE_TRUE_BELIEVER",
+      "type": "MAJOR_SIDE / INVESTIGATION",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Discovery of classified Nakamura files that could change everything—including Yamada's understanding of what he's served.\n\n### Act 1: The Files\n\nDiscovery: Hidden in a corrupted data cache, documents from Nakamura's founding era.\n\nContents: Early Algorithm development notes. Names of subjects. Outcomes.\n\nRevelation: The Algorithm wasn't designed for human optimization. It was designed to harvest consciousness for energy. The benevolent purpose came later—a marketing revision.\n\n### Act 2: The Choice\n\nOption A: Give files to Yamada\n→ Forces his confrontation with truth\n\nOption B: Use files against Nakamura\n→ Powerful leverage, Yamada becomes enemy\n\nOption C: Destroy files\n→ Preserve Yamada's purpose, moral compromise\n\n### If Given to Yamada:\n\nYamada [after reading, long silence]: \"I've given forty years to this. Sent thousands to Integration believing... believing it was mercy.\"\n\nYou: \"What will you do?\"\n\nYamada: \"I don't know. For the first time in my life, I don't know.\" [looks up] \"But thank you. For the truth. Even when the truth is poison.\"\n→ Yamada becomes potential ally, begins internal opposition\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-chen-legacy",
+      "questId": "SQ_CHEN_LEGACY",
+      "type": "Character Development (Chen)",
+      "tier": 4,
+      "estimatedDuration": "20-25 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [
+          "`TIER_3_COMPLETE` (player has progressed beyond tutorial zone)"
+        ],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "Chen's Dispatch Office, The Hollows",
+        "dialogueTree": null
+      },
+      "synopsis": "Chen, always the rock of stability, is unraveling.\n\nHis daughter, Mei, underwent Fork procedure 10 years ago. The copy diverged so far from the original that Chen lost both—the original chose Ascension (death), the Shadow went Rogue and vanished. Chen mourns his real daughter while a stranger with her face sometimes contacts him from the network.\n\nNow, the Shadow has resurfaced. She's in trouble with a gang in Red Harbor, using Chen's name for protection. Chen can't protect her—doesn't even know if she's \"really\" his daughter anymore. But blood (or the memory of it) calls.\n\nPlayer must navigate the Fork identity crisis, help Chen decide: Is the Shadow his daughter? Does that matter? Should he help her anyway?\n\nThemes: Identity after Fork, parental love vs. reality, the cost of augmentation, grief\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Character: Chen - `/01_CHARACTERS/tier_0_npcs/dispatcher_chen.md`",
+        "Quest: Tier 6 Chrome and Choice - `/03_QUESTS/main_story/tier_6_chrome_and_choice.md` (Fork decision)",
+        "Location: The Hollows - `/05_WORLD_TEXT/locations/districts/the_hollows.md`",
+        "Location: Red Harbor - `/05_WORLD_TEXT/locations/districts/red_harbor.md`",
+        "Complication: HE-01 Gang Territory - `/04_COMPLICATIONS/complications_library.md`",
+        "---"
+      ]
+    },
+    {
+      "id": "quest-sq-chrome-saints-initiation",
+      "questId": "SQ_CHROME_SAINTS_INITIATION",
+      "type": "Faction Quest (Gang)",
+      "tier": 3,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "The Chrome Saints are Red Harbor's dominant augmentation gang—20+ members, all sporting heavy combat chrome, financed through muscle-for-hire work, protection rackets, and chrome repos. They're not the largest gang, but they're the most feared in hand-to-hand combat.\n\nJax, the Saints' lieutenant (encountered in previous quests potentially), approaches the player with an offer: Join the gang. The Saints respect strength, and the player has demonstrated it. But joining requires initiation—a three-part trial proving combat skill, loyalty, and willingness to bleed for the crew.\n\nPlayer must complete escalating challenges: Win an underground fight, eliminate a rival gang threat, and execute a high-risk chrome repo on a corporate target. Success earns gang membership, protection, and access to Saints' resources. Failure or betrayal earns death.\n\nThis quest explores gang culture, found family vs. criminal enterprise, and whether player will join a community built on violence or stand apart.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-corporate-espionage",
+      "questId": "SQ_CORPORATE_ESPIONAGE",
+      "type": "Faction Quest / Espionage Thriller",
+      "tier": 5,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Victoria Cross, a mid-level executive at Zhao-Tech (Nakamura's primary rival in bioaugmentation), approaches the player with a proposition: Steal proprietary research from Nakamura—specifically, early-stage Ascension upload protocols. Zhao-Tech wants to develop competing consciousness transfer technology. She'll pay 15,000 credits for successful delivery.\n\nBut it's a trap—not from Cross, but from Nakamura counterintelligence. They've allowed the approach, using it to identify corporate spies. When player attempts infiltration, Nakamura confronts them with a counter-offer: Become a double agent. Feed Cross fake research, identify Zhao-Tech's spy network, help Nakamura destroy their rival's espionage infrastructure.\n\nPlayer is now caught between two mega-corps, each demanding loyalty, each willing to kill for betrayal. The quest explores corpo warfare, moral flexibility, and whether there's any way to profit from corporate conflict without becoming a tool.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-ghost-network-extraction",
+      "questId": "SQ_GHOST_NETWORK_EXTRACTION",
+      "type": "Faction Quest (Ghost Network)",
+      "tier": 6,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Phantom contacts the player with an urgent extraction request: Dr. Eliza Voss, a Nakamura Biotech senior researcher, wants out. She's been working on Ascension neural upload protocols for 8 years and recently discovered the truth—upload doesn't preserve consciousness, it creates a sophisticated simulation that *believes* it's the original person. The upload is essentially death with a chatbot replacement.\n\nVoss tried to report her findings internally. Nakamura classified her research and placed her under \"protective observation\"—24/7 surveillance, restricted to corporate campus, communications monitored. She managed one encrypted message to the Ghost Network: \"Get me out. I have proof. They're going to disappear me.\"\n\nThe Ghost Network will extract her, but they need someone with Uptown access and plausible deniability to make contact, coordinate the extraction, and escort her through the most dangerous phase—the corporate district itself. That's the player.\n\nThe quest explores the cost of knowing too much, the courage of whistleblowing, and whether the Ghost Network's methods (individual extraction, abandoning your life) are victory or surrender.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-hollows-market-mystery",
+      "questId": "SQ_HOLLOWS_MARKET_MYSTERY",
+      "type": "Environmental Quest / Mystery Investigation",
+      "tier": 2,
+      "estimatedDuration": "20-25 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "The Hollows Market—a sprawling open-air bazaar where 50,000+ residents buy, sell, and survive—has always been chaotic. But recently, people have been disappearing. Not the usual corporate poaching or gang violence. Something quieter, more systematic.\n\nAmara, a fruit vendor who's run her stall for 15 years, asks the player to investigate. Three people vanished in the last month: a young woman (Keiko, 19), an elderly man (Mr. Torres, 67), and a child (Anya, 12). No bodies, no witnesses, no pattern—except they all disappeared after visiting the \"Free Medical Clinic\" at the market's edge.\n\nInvestigation reveals a horrifying truth: The clinic is a front for human trafficking. Nakamura subcontractors harvest \"voluntary organ donors\" from desperate Hollows residents—offering cash upfront for \"donation agreements,\" then disappearing people for live organ harvesting. The three missing persons are being held in an underground facility, sedated, awaiting harvest.\n\nPlayer must decide: Expose the operation (loud, corpo attention), quietly rescue victims (risky infiltration), or destroy the facility entirely (violent but permanent).",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-okonkwo-test",
+      "questId": "SQ_OKONKWO_TEST",
+      "type": "Character Development (Kwame Okonkwo) / Philosophical Quest",
+      "tier": 7,
+      "estimatedDuration": "20-25 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Kwame Okonkwo has been watching the player's journey through the Tiers. He sees potential—someone who might achieve true balance, becoming the eighth to walk the Third Path successfully. But potential isn't certainty, and the path demands proof.\n\nOkonkwo invites the player to undergo \"The Test\"—not a physical trial, but a philosophical and spiritual one. In Solomon's Sanctum, through meditation and guided introspection, the player will confront the fundamental question: Can you hold human and machine in balance without one consuming the other?\n\nThe test involves three encounters with aspects of the player's own psyche (represented as abstract dialogues): The Flesh (human fears, mortality, limitation), The Chrome (machine logic, power, transcendence), and The Balance (integration, acceptance, peace). The player must reconcile these aspects without rejecting either.\n\nThis is the most introspective quest in the game—no combat, minimal external action, entirely focused on character psychology and Third Path philosophy. Success doesn't guarantee Third Path ending (that's Tier 10), but failure may lock it out entirely.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-red-harbor-ruins",
+      "questId": "SQ_RED_HARBOR_RUINS",
+      "type": "Historical Quest / World-Building Exploration",
+      "tier": 4,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Marcus Webb, an independent archaeologist living in Red Harbor, has discovered something beneath the dockyard: pre-war ruins, 40+ meters underwater, predating the current city by 60+ years. The ruins contain an intact data archive from before \"The Partition\"—the catastrophic AI event that restructured global civilization and led to the current corpo-dominated order.\n\nWebb believes the archive holds proof that The Partition wasn't natural—it was engineered by early mega-corporations to consolidate power. But the ruins are flooded, structurally unstable, guarded by scavenger gangs harvesting pre-war tech, and worst of all: There's something still active down there. An AI fragment that survived The Partition, isolated for 60 years, waiting.\n\nPlayer must navigate flooded ruins, bypass scavengers, access the archive, and decide what to do with the AI fragment: Destroy it (safe but destroys knowledge), preserve it (risky but enlightening), or weaponize it (sell to highest bidder).\n\nThis quest reveals the world's history, showing that the dystopia is engineered, not inevitable.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-rosa-brother",
+      "questId": "SQ_ROSA_BROTHER",
+      "type": "Character Development (Rosa) / Romance Prerequisite",
+      "tier": 3,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [
+          "Player has visited Rosa's shop multiple times"
+        ],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": "Rosa's Mechanic Shop, The Hollows (southwest)",
+        "dialogueTree": null
+      },
+      "synopsis": "Rosa's younger brother, Miguel (19), is in serious trouble.\n\nMiguel took a corpo loan for combat augments, dreaming of becoming a high-tier courier like his sister. But he wasn't cut out for it—too aggressive, too impulsive. He got into fights, lost contracts, fell behind on payments. Now he owes 15,000 credits to Nakamura's augment division, and they've sent repo teams.\n\nWorse: Miguel's gotten involved with the Chrome Saints gang as muscle-for-hire, trying to earn money fast. The gang is using him for dangerous work. If he gets killed, Rosa loses her brother. If he gets his chrome repoed, he loses his future. If he stays with the gang, he loses his soul.\n\nRosa is terrified. She can't afford to bail him out. She can't physically stop him. And Miguel won't listen to her—she's his sister, not his boss.\n\nBut he might listen to player. Someone successful. Someone who made it work.\n\nThemes: Family bonds, cost of ambition, corpo debt trap, redemption possibility\n\n---",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": [
+        "Character: Rosa - `/01_CHARACTERS/romance_characters/romance_mechanic_rosa.md`",
+        "Character: Jin (parallel story) - `/01_CHARACTERS/tier_1-3_npcs/jin_rival_courier.md`",
+        "Character: Dr. Tanaka (chrome removal) - `/01_CHARACTERS/tier_1-3_npcs/dr_yuki_tanaka.md`",
+        "Character: Phantom (extraction) - `/01_CHARACTERS/tier_7-9_npcs/phantom_ghost_network.md`",
+        "Side Quest: Jin's Debt (similar theme) - `/03_QUESTS/side_quests/jin_debt.md` (from character file)",
+        "Location: The Hollows - `/05_WORLD_TEXT/locations/districts/the_hollows.md`",
+        "Location: Red Harbor - `/05_WORLD_TEXT/locations/districts/red_harbor.md`",
+        "---"
+      ]
+    },
+    {
+      "id": "quest-sq-tanaka-research",
+      "questId": "SQ_TANAKA_RESEARCH",
+      "type": "Character Development (Dr. Yuki Tanaka)",
+      "tier": 4,
+      "estimatedDuration": "25-30 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Dr. Tanaka has been quietly conducting long-term research on humane augmentation: chrome that works *with* the human body instead of replacing it. She's been studying three subjects for 5+ years—all Hollows residents who couldn't afford corpo chrome and volunteered for experimental organic-synthetic hybrid augments.\n\nThe research is working. Her subjects report 40% less neural degradation, maintained emotional range, and no identity dissociation. But she needs more data, and Nakamura Biotech has classified research from 15 years ago that could complete her work—research they buried because it threatened the Ascension profit model.\n\nTanaka asks the player to help her: either steal the archived research from Nakamura's Uptown servers, or help her conduct final tests on willing subjects to prove her thesis independently. The choice reveals whether the player believes in reforming the system from within (steal research, use corpo knowledge against them) or building alternatives outside it (independent verification).",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-the-lost-courier",
+      "questId": "SQ_THE_LOST_COURIER",
+      "type": "Mystery Investigation / Character Quest",
+      "tier": 2,
+      "estimatedDuration": "20-25 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Chen asks the player to investigate the disappearance of Sarah Kim, a fellow courier from Chen's dispatch service. Sarah took a routine delivery job five days ago—Hollows pickup, Uptown dropoff, standard corporate package—and never returned. No communication, no body, just... gone.\n\nInvestigation reveals Sarah stumbled onto corporate secrets during her delivery: She opened the package (breaking protocol) and discovered evidence of illegal bio-weapon research. The receiving corpo executive had her killed to protect the secret. Player must track down what happened, decide whether to expose the truth or bury it, and face the reality that couriers are disposable in the corpo's eyes.\n\nThis quest personalizes the courier profession's dangers, honors a fallen colleague, and asks whether the player will risk the same fate by pursuing justice.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-sq-union-organizing",
+      "questId": "SQ_UNION_ORGANIZING",
+      "type": "Faction Quest (Red Harbor Workers Union)",
+      "tier": 5,
+      "estimatedDuration": "30-35 minutes",
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": "Maria Lopez has been organizing Red Harbor dockworkers for months, building toward a strike against Nakamura Logistics. The company has been systematically pushing workers into debt through mandatory chrome \"upgrades\"—workers must install specific augments to maintain employment, then repay the company for the chrome through wage garnishment.\n\nIt's a debt trap: Workers can't leave (contract-bound until chrome debt is paid), can't afford the chrome (interest rates at 18%), and can't work without it (job requirements). The union has 200 workers ready to strike, demanding:\n1. Chrome debt forgiveness\n2. Company-provided maintenance (not worker-paid)\n3. End to mandatory augmentation requirements\n\nBut there's a problem: The Chrome Saints gang has been hired by Nakamura as strikebreakers. And some workers are wavering—scared of losing everything if the strike fails.\n\nLopez asks the player to help: secure the strike (ensure workers don't break), neutralize the strikebreaker threat (Chrome Saints), and negotiate with Nakamura management. The player's choices determine whether this becomes a workers' victory, a bloody confrontation, or a compromised settlement.",
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-first-week-jobs-tier-0-content",
+      "questId": "FIRST_WEEK_JOBS_TIER_0_CONTENT",
+      "type": "Medical delivery",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-early-side-jobs-tier-1-2-content",
+      "questId": "EARLY_SIDE_JOBS_TIER_1_2_CONTENT",
+      "type": "Competition",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-integration-era-side-content-tier-3",
+      "questId": "INTEGRATION_ERA_SIDE_CONTENT_TIER_3",
+      "type": "Investigation",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-gray-zone-jobs-tier-4-side-quests",
+      "questId": "GRAY_ZONE_JOBS_TIER_4_SIDE_QUESTS",
+      "type": "Moral dilemma",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-between-worlds-tier-5-side-quests",
+      "questId": "BETWEEN_WORLDS_TIER_5_SIDE_QUESTS",
+      "type": "Exploration",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-identity-questions-tier-6-side-quests",
+      "questId": "IDENTITY_QUESTIONS_TIER_6_SIDE_QUESTS",
+      "type": "Psychological exploration",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-high-stakes-sides-tier-7-side-quests",
+      "questId": "HIGH_STAKES_SIDES_TIER_7_SIDE_QUESTS",
+      "type": "Extraction + Delivery",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    },
+    {
+      "id": "quest-final-preparations-tier-8-side-quests",
+      "questId": "FINAL_PREPARATIONS_TIER_8_SIDE_QUESTS",
+      "type": "Ally recruitment",
+      "tier": null,
+      "estimatedDuration": null,
+      "repeatable": false,
+      "prerequisites": {
+        "requiredQuests": [],
+        "factionReputation": null,
+        "storyFlags": [],
+        "tierMinimum": null,
+        "itemsRequired": []
+      },
+      "questGiver": {
+        "npcName": null,
+        "location": null,
+        "dialogueTree": null
+      },
+      "synopsis": null,
+      "objectives": {
+        "primary": [],
+        "secondary": [],
+        "optional": [],
+        "hidden": []
+      },
+      "branchingPaths": [],
+      "rewards": {
+        "credits": null,
+        "xp": null,
+        "rating": null,
+        "unlocks": []
+      },
+      "dialogueReferences": [],
+      "relatedContent": []
+    }
+  ]
+}

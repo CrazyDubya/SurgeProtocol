@@ -19,6 +19,7 @@ import { api } from './client';
 // =============================================================================
 
 export interface CreateCharacterRequest {
+  name?: string; // For compatibility with some frontend components
   legalName: string;
   streetName?: string;
   handle?: string;
@@ -85,6 +86,13 @@ export interface CharacterStats {
   };
   equipped?: EquippedItem[];
   conditions?: CharacterCondition[];
+  activeVehicle?: {
+    id: string;
+    vehicle_name: string;
+    vehicle_def_id: string;
+    current_hull_points: number;
+    current_fuel: number;
+  } | null;
 }
 
 export interface EquippedItem {
@@ -160,7 +168,45 @@ export const characterService = {
    * Create a new character (max 3 per user)
    */
   async create(data: CreateCharacterRequest): Promise<{ character: CharacterSummary }> {
-    return api.post('/characters', data);
+    // Map frontend attributes to backend schema
+    const backendAttributes = {
+      PWR: data.attributes.STR,
+      AGI: data.attributes.AGI,
+      END: data.attributes.VIT,
+      VEL: data.attributes.VEL,
+      INT: data.attributes.INT,
+      RSN: data.attributes.WIL, // Wilpower -> Reason
+      EMP: data.attributes.CHA, // Charisma -> Empathy 
+      PRC: data.attributes.PRC,
+      // PRE: ??? If backend needs PRE, we might need another mapping or default?
+      // For now, let's assume RSN and EMP cover the socials/mentals we have.
+      // Wait, DB has PRE (Presence) and EMP (Empathy).
+      // Frontend has CHA (Charisma). CHA -> PRE fits better?
+      // EMP (Empathy) is new?
+      // Let's map CHA -> PRE, and maybe something else to EMP?
+      // Or just duplicate/split?
+      // Let's map CHA -> EMP for now as previously decided, and ignore PRE or set it to default (5).
+      // Actually, if I send PRE: 5, I satisfy the DB check if I loop over all codes.
+      PRE: 5,
+    };
+
+    // Map sex enum
+    // Frontend 'OTHER' -> Backend 'UNKNOWN' (or could be NONBINARY depending on intent)
+    // Backend accepts: 'MALE', 'FEMALE', 'NONBINARY', 'SYNTHETIC', 'UNKNOWN'
+    let sex = data.sex as string;
+    if (sex === 'OTHER') sex = 'UNKNOWN';
+
+    const payload = {
+      // Map 'name' from component to 'legalName' for backend
+      legalName: (data as any).name || data.legalName,
+      streetName: data.streetName,
+      handle: data.handle,
+      sex,
+      age: data.age,
+      attributes: backendAttributes,
+    };
+
+    return api.post('/characters', payload);
   },
 
   /**

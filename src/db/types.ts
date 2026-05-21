@@ -182,6 +182,8 @@ export interface MissionDefinition {
   distance_km: number | null;
   is_repeatable: number;
   cooldown_hours: number | null;
+  objectives: string | null; // JSON
+  complications: string | null; // JSON
   created_at: string;
   updated_at: string;
 }
@@ -190,7 +192,7 @@ export interface MissionDefinition {
 export interface CharacterMission {
   id: string;
   character_id: string;
-  mission_id: string;
+  mission_definition_id: string; // Updated to match schema
   status: MissionStatus;
   accepted_at: string;
   started_at: string | null;
@@ -269,7 +271,7 @@ export interface CharacterWithStats extends Character {
 }
 
 /** Mission with objective details */
-export interface MissionWithObjectives extends MissionDefinition {
+export interface MissionWithObjectives extends Omit<MissionDefinition, 'objectives'> {
   objectives: Array<{
     id: string;
     description: string;

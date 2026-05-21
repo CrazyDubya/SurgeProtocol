@@ -31,3 +31,5 @@ export {
   type HumanityChangeSource,
   type AugmentHumanityCost,
 } from './humanity';
+
+export { CharacterService } from './service';

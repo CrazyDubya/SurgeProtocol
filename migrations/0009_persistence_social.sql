@@ -731,41 +731,7 @@ CREATE TABLE IF NOT EXISTS generation_templates (
     updated_at TEXT DEFAULT (datetime('now'))
 );
 
--- ============================================
--- LOOT TABLES
--- ============================================
-
-CREATE TABLE IF NOT EXISTS loot_tables (
-    id TEXT PRIMARY KEY,
-    code TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-
-    -- Source
-    source_type TEXT,
-    source_tier_range TEXT, -- JSON
-
-    -- Entries
-    guaranteed_items TEXT, -- JSON
-    random_items TEXT, -- JSON
-    currency_range TEXT, -- JSON
-
-    -- Modifiers
-    luck_affects INTEGER DEFAULT 1, -- BOOLEAN
-    tier_scaling INTEGER DEFAULT 1, -- BOOLEAN
-    faction_modifiers TEXT, -- JSON
-    region_modifiers TEXT, -- JSON
-
-    -- Special
-    legendary_chance REAL DEFAULT 0.001,
-    nothing_chance REAL DEFAULT 0.1,
-
-    -- Nested
-    nested_tables TEXT, -- JSON
-    mutually_exclusive TEXT, -- JSON
-
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-);
+-- loot_tables moved to 0029_loot_tables.sql
 
 -- ============================================
 -- WEATHER CONDITIONS

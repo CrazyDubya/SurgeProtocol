@@ -24,7 +24,8 @@ export type MissionStatus =
   | 'AVAILABLE'
   | 'ACCEPTED'
   | 'IN_PROGRESS'
-  | 'COMPLETED'
+  | 'COMPLETED_SUCCESS'
+  | 'COMPLETED_PARTIAL'
   | 'FAILED'
   | 'ABANDONED'
   | 'EXPIRED';
@@ -134,7 +135,7 @@ export interface MissionProgressResult {
 export interface MissionCompletionResult {
   mission_id: string;
   mission_name: string;
-  status: 'COMPLETED' | 'FAILED';
+  status: 'COMPLETED_SUCCESS' | 'COMPLETED_PARTIAL' | 'FAILED';
   completion_time_seconds: number;
   objectives_completed: number;
   objectives_total: number;
@@ -185,8 +186,8 @@ export class MissionLifecycleService extends CharacterService {
               f.name as client_name,
               l.name as location_name
        FROM mission_definitions md
-       LEFT JOIN factions f ON md.client_faction_id = f.id
-       LEFT JOIN locations l ON md.target_location_id = l.id
+       LEFT JOIN factions f ON md.source_faction_id = f.id
+       LEFT JOIN locations l ON md.destination_location_id = l.id
        WHERE md.tier_required <= ?
          AND md.is_active = 1
          AND md.id NOT IN (
@@ -217,8 +218,8 @@ export class MissionLifecycleService extends CharacterService {
     const mission = await this.query<MissionDefinitionRow>(
       `SELECT md.*, f.name as client_name, l.name as location_name
        FROM mission_definitions md
-       LEFT JOIN factions f ON md.client_faction_id = f.id
-       LEFT JOIN locations l ON md.target_location_id = l.id
+       LEFT JOIN factions f ON md.source_faction_id = f.id
+       LEFT JOIN locations l ON md.destination_location_id = l.id
        WHERE md.id = ?`,
       missionDefinitionId
     );
@@ -530,10 +531,12 @@ export class MissionLifecycleService extends CharacterService {
   async completeMission(
     missionId: string
   ): Promise<ServiceResponse<MissionCompletionResult>> {
+    console.log('[DEBUG] completeMission called for:', missionId);
     const mission = await this.getActiveMission(missionId);
     if (!mission.success) return mission;
 
     const activeMission = mission.data;
+    console.log('[DEBUG] Active mission retrieved:', activeMission.id, activeMission.status);
 
     if (activeMission.status !== 'IN_PROGRESS') {
       return this.error(
@@ -547,6 +550,7 @@ export class MissionLifecycleService extends CharacterService {
       `SELECT * FROM mission_definitions WHERE id = ?`,
       activeMission.mission_definition_id
     );
+    console.log('[DEBUG] Definition retrieved:', definition?.id);
 
     if (!definition) {
       return this.error(ErrorCodes.NOT_FOUND, 'Mission definition not found');
@@ -560,6 +564,7 @@ export class MissionLifecycleService extends CharacterService {
       activeMission.objectives_completed as unknown as string,
       []
     );
+    console.log('[DEBUG] Objectives parsed. Completed:', completedIds.length, 'Required:', objectives.length);
 
     const requiredObjectives = objectives.filter((o) => !o.is_optional);
     const optionalObjectives = objectives.filter((o) => o.is_optional);
@@ -570,6 +575,7 @@ export class MissionLifecycleService extends CharacterService {
     );
 
     if (!allRequiredComplete) {
+      console.log('[DEBUG] Not all required objectives complete');
       return this.error(
         ErrorCodes.VALIDATION_ERROR,
         'Not all required objectives completed'
@@ -577,7 +583,9 @@ export class MissionLifecycleService extends CharacterService {
     }
 
     // Calculate rewards
+    console.log('[DEBUG] Getting character...');
     const character = await this.getCharacter();
+    console.log('[DEBUG] Character retrieved:', character.id, 'Credits:', character.credits);
     const now = new Date();
 
     const startTime = activeMission.started_at
@@ -629,8 +637,8 @@ export class MissionLifecycleService extends CharacterService {
     const humanityChange = definition.humanity_impact ?? 0;
 
     // Update character
-    const newCredits = character.credits + finalPay;
-    const newRating = Math.max(0, character.overall_rating + ratingChange);
+    const newCredits = (character.credits || 0) + finalPay;
+    const newRating = Math.max(0, (character.overall_rating || 0) + ratingChange);
     const newHumanity = Math.max(
       0,
       Math.min(100, character.humanity_current + humanityChange)
@@ -647,7 +655,7 @@ export class MissionLifecycleService extends CharacterService {
     // Update mission
     await this.execute(
       `UPDATE character_missions
-       SET status = 'COMPLETED', completed_at = ?,
+       SET status = 'COMPLETED_SUCCESS', completed_at = ?,
            final_rating = ?, final_pay = ?,
            time_elapsed_seconds = ?, updated_at = ?
        WHERE id = ?`,
@@ -659,7 +667,7 @@ export class MissionLifecycleService extends CharacterService {
       missionId
     );
 
-    await this.logMissionEvent(missionId, 'COMPLETED', {
+    await this.logMissionEvent(missionId, 'COMPLETED_SUCCESS', {
       final_pay: finalPay,
       xp_reward: xpReward,
       rating_change: ratingChange,
@@ -668,7 +676,7 @@ export class MissionLifecycleService extends CharacterService {
     return this.success({
       mission_id: missionId,
       mission_name: definition.name,
-      status: 'COMPLETED',
+      status: 'COMPLETED_SUCCESS',
       completion_time_seconds: completionTime,
       objectives_completed: completedIds.length,
       objectives_total: objectives.length,
@@ -928,8 +936,8 @@ export class MissionLifecycleService extends CharacterService {
       description: row.description ?? '',
       mission_type: row.mission_type as MissionType,
       tier_required: row.tier_required,
-      client_faction_id: row.client_faction_id,
-      target_location_id: row.target_location_id,
+      client_faction_id: row.source_faction_id,
+      target_location_id: row.destination_location_id,
       base_pay: row.base_pay,
       bonus_pay: row.bonus_pay ?? 0,
       time_limit_seconds: row.time_limit_seconds,
@@ -1034,8 +1042,8 @@ interface MissionDefinitionRow {
   description: string | null;
   mission_type: string;
   tier_required: number;
-  client_faction_id: string | null;
-  target_location_id: string | null;
+  source_faction_id: string | null;
+  destination_location_id: string | null;
   base_pay: number;
   bonus_pay: number | null;
   time_limit_seconds: number | null;

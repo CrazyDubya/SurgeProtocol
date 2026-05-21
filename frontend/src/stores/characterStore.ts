@@ -91,6 +91,11 @@ export const skills = signal<CharacterSkill[]>([]);
 export const factions = signal<FactionStanding[]>([]);
 export const finances = signal<CharacterFinances | null>(null);
 export const conditions = signal<CharacterCondition[]>([]);
+export const activeVehicle = signal<{
+  id: string;
+  vehicle_name: string;
+  vehicle_def_id: string;
+} | null>(null);
 export const equipped = signal<EquippedItem[]>([]);
 
 // Loading states
@@ -286,6 +291,7 @@ export const characterStore = {
   factions,
   finances,
   conditions,
+  activeVehicle,
   equipped,
   isLoadingCharacter,
   isLoadingStats,

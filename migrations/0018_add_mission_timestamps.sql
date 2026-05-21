@@ -1,0 +1,3 @@
+-- Redundant migration. Timestamps added in 0017_mission_schema_update.sql
+-- ALTER TABLE character_missions ADD COLUMN created_at TEXT DEFAULT (datetime('now'));
+-- ALTER TABLE character_missions ADD COLUMN updated_at TEXT DEFAULT (datetime('now'));

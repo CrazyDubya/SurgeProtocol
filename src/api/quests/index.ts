@@ -14,12 +14,12 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { nanoid } from 'nanoid';
 import {
   authMiddleware,
   requireCharacterMiddleware,
   type AuthVariables,
 } from '../../middleware/auth';
+import { QuestService } from '../../services/quest';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -409,12 +409,12 @@ questRoutes.get('/:id', async (c) => {
         isRepeatable: quest.repeatable === 1,
         questGiver: quest.quest_giver_npc_id
           ? {
-              id: quest.quest_giver_npc_id,
-              name: quest.quest_giver_name,
-              type: quest.quest_giver_type,
-              locationId: quest.quest_giver_location_id,
-              locationName: quest.quest_giver_location_name,
-            }
+            id: quest.quest_giver_npc_id,
+            name: quest.quest_giver_name,
+            type: quest.quest_giver_type,
+            locationId: quest.quest_giver_location_id,
+            locationName: quest.quest_giver_location_name,
+          }
           : null,
       },
     },
@@ -428,159 +428,30 @@ questRoutes.get('/:id', async (c) => {
 questRoutes.post('/:questId/accept', requireCharacterMiddleware(), zValidator('json', acceptQuestSchema), async (c) => {
   const characterId = c.get('characterId')!;
   const questId = c.req.param('questId');
-  const { tracked } = c.req.valid('json');
 
-  // Get quest definition
-  const quest = await c.env.DB
-    .prepare(
-      `SELECT * FROM quest_definitions WHERE id = ? OR code = ?`
-    )
-    .bind(questId, questId)
-    .first<QuestDefinition>();
+  const questService = new QuestService({
+    db: c.env.DB,
+    cache: c.env.CACHE,
+    userId: c.get('userId'),
+    characterId,
+  });
 
-  if (!quest) {
+  const result = await questService.acceptQuest(questId);
+
+  if (!result.success) {
     return c.json({
       success: false,
-      errors: [{ code: 'QUEST_NOT_FOUND', message: 'Quest not found' }],
-    }, 404);
-  }
-
-  // Check if already accepted
-  const existing = await c.env.DB
-    .prepare(
-      `SELECT id, status FROM character_quests
-       WHERE character_id = ? AND quest_definition_id = ?`
-    )
-    .bind(characterId, quest.id)
-    .first<{ id: string; status: string }>();
-
-  if (existing) {
-    if (existing.status === 'IN_PROGRESS' || existing.status === 'ACCEPTED') {
-      return c.json({
-        success: false,
-        errors: [{ code: 'QUEST_ALREADY_ACTIVE', message: 'Quest already in progress' }],
-      }, 400);
-    }
-
-    if (!quest.repeatable && existing.status === 'COMPLETED') {
-      return c.json({
-        success: false,
-        errors: [{ code: 'QUEST_ALREADY_COMPLETED', message: 'Quest already completed and is not repeatable' }],
-      }, 400);
-    }
-  }
-
-  // Check tier requirement
-  const character = await c.env.DB
-    .prepare('SELECT current_tier FROM characters WHERE id = ?')
-    .bind(characterId)
-    .first<{ current_tier: number }>();
-
-  if (!character || character.current_tier < quest.required_tier) {
-    return c.json({
-      success: false,
-      errors: [{
-        code: 'TIER_TOO_LOW',
-        message: `Requires tier ${quest.required_tier}, you are tier ${character?.current_tier ?? 0}`,
-      }],
+      errors: [{ code: result.error.code, message: result.error.message }],
     }, 400);
   }
-
-  // Check prerequisite quests
-  if (quest.required_quests) {
-    const prereqs = JSON.parse(quest.required_quests) as string[];
-
-    for (const prereqCode of prereqs) {
-      const prereqComplete = await c.env.DB
-        .prepare(
-          `SELECT cq.status FROM character_quests cq
-           JOIN quest_definitions qd ON cq.quest_definition_id = qd.id
-           WHERE cq.character_id = ? AND (qd.id = ? OR qd.code = ?) AND cq.status = 'COMPLETED'`
-        )
-        .bind(characterId, prereqCode, prereqCode)
-        .first();
-
-      if (!prereqComplete) {
-        return c.json({
-          success: false,
-          errors: [{
-            code: 'PREREQUISITE_NOT_MET',
-            message: `Requires completion of quest: ${prereqCode}`,
-          }],
-        }, 400);
-      }
-    }
-  }
-
-  // Check faction reputation requirements
-  if (quest.required_reputation) {
-    const reqs = JSON.parse(quest.required_reputation) as Array<{ factionId: string; minRep: number }>;
-
-    for (const req of reqs) {
-      const rep = await c.env.DB
-        .prepare(
-          `SELECT reputation FROM character_faction_standing
-           WHERE character_id = ? AND faction_id = ?`
-        )
-        .bind(characterId, req.factionId)
-        .first<{ reputation: number }>();
-
-      if (!rep || rep.reputation < req.minRep) {
-        return c.json({
-          success: false,
-          errors: [{
-            code: 'REPUTATION_TOO_LOW',
-            message: `Requires ${req.minRep} reputation with faction ${req.factionId}`,
-          }],
-        }, 400);
-      }
-    }
-  }
-
-  // Get initial objectives
-  const objectives = await c.env.DB
-    .prepare(
-      `SELECT id FROM quest_objectives
-       WHERE quest_definition_id = ? AND sequence_order = 0`
-    )
-    .bind(quest.id)
-    .all<{ id: string }>();
-
-  const initialObjectives: Record<string, number> = {};
-  for (const obj of objectives.results) {
-    initialObjectives[obj.id] = 0;
-  }
-
-  // Create character quest entry
-  const instanceId = nanoid();
-  await c.env.DB
-    .prepare(
-      `INSERT INTO character_quests (
-        id, character_id, quest_definition_id, accepted_at, status,
-        current_stage, current_objectives, is_tracked, seed
-      ) VALUES (?, ?, ?, datetime('now'), 'ACCEPTED', 0, ?, ?, ?)`
-    )
-    .bind(
-      instanceId,
-      characterId,
-      quest.id,
-      JSON.stringify(initialObjectives),
-      tracked ? 1 : 0,
-      Math.floor(Math.random() * 1000000)
-    )
-    .run();
 
   return c.json({
     success: true,
     data: {
-      questInstanceId: instanceId,
-      quest: {
-        id: quest.id,
-        code: quest.code,
-        name: quest.name,
-        description: quest.description,
-      },
-      message: `Quest accepted: ${quest.name}`,
+      questInstanceId: result.data.questId,
+      status: result.data.status,
+      activeObjectives: result.data.activeObjectives,
+      message: `Quest accepted`,
     },
   }, 201);
 });
@@ -591,124 +462,32 @@ questRoutes.post('/:questId/accept', requireCharacterMiddleware(), zValidator('j
  */
 questRoutes.post('/:questId/progress', requireCharacterMiddleware(), zValidator('json', updateProgressSchema), async (c) => {
   const characterId = c.get('characterId')!;
-  const questId = c.req.param('questId');
   const { objectiveId, progress } = c.req.valid('json');
 
-  // Get character quest
-  const charQuest = await c.env.DB
-    .prepare(
-      `SELECT cq.* FROM character_quests cq
-       JOIN quest_definitions qd ON cq.quest_definition_id = qd.id
-       WHERE cq.character_id = ? AND (cq.id = ? OR qd.code = ?)
-       AND cq.status IN ('ACCEPTED', 'IN_PROGRESS')`
-    )
-    .bind(characterId, questId, questId)
-    .first<CharacterQuest>();
+  const questService = new QuestService({
+    db: c.env.DB,
+    cache: c.env.CACHE,
+    userId: c.get('userId'),
+    characterId,
+  });
 
-  if (!charQuest) {
+  const result = await questService.updateObjective(objectiveId, progress);
+
+  if (!result.success) {
     return c.json({
       success: false,
-      errors: [{ code: 'QUEST_NOT_FOUND', message: 'Active quest not found' }],
-    }, 404);
-  }
-
-  // Get objective
-  const objective = await c.env.DB
-    .prepare(
-      `SELECT * FROM quest_objectives WHERE id = ? AND quest_definition_id = ?`
-    )
-    .bind(objectiveId, charQuest.quest_definition_id)
-    .first<QuestObjective>();
-
-  if (!objective) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'OBJECTIVE_NOT_FOUND', message: 'Objective not found for this quest' }],
-    }, 404);
-  }
-
-  // Parse current state
-  const currentObjectives = charQuest.current_objectives
-    ? JSON.parse(charQuest.current_objectives) as Record<string, number>
-    : {};
-  const completedObjectives = charQuest.objectives_completed
-    ? JSON.parse(charQuest.objectives_completed) as string[]
-    : [];
-
-  // Check if already completed
-  if (completedObjectives.includes(objectiveId)) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'OBJECTIVE_ALREADY_COMPLETE', message: 'Objective already completed' }],
+      errors: [{ code: result.error.code, message: result.error.message }],
     }, 400);
   }
-
-  // Update progress
-  const newProgress = Math.min(progress, objective.target_quantity);
-  currentObjectives[objectiveId] = newProgress;
-
-  // Check if objective is now complete
-  const justCompleted = newProgress >= objective.target_quantity;
-  if (justCompleted) {
-    completedObjectives.push(objectiveId);
-
-    // Award objective completion rewards
-    if (objective.completion_xp > 0) {
-      await c.env.DB
-        .prepare(`UPDATE characters SET current_xp = current_xp + ? WHERE id = ?`)
-        .bind(objective.completion_xp, characterId)
-        .run();
-    }
-    if (objective.completion_creds > 0) {
-      await c.env.DB
-        .prepare(`UPDATE character_finances SET credits = credits + ? WHERE character_id = ?`)
-        .bind(objective.completion_creds, characterId)
-        .run();
-    }
-  }
-
-  // Update quest status to IN_PROGRESS if just started
-  const newStatus = charQuest.status === 'ACCEPTED' ? 'IN_PROGRESS' : charQuest.status;
-
-  await c.env.DB
-    .prepare(
-      `UPDATE character_quests
-       SET current_objectives = ?, objectives_completed = ?, status = ?, updated_at = datetime('now')
-       WHERE id = ?`
-    )
-    .bind(
-      JSON.stringify(currentObjectives),
-      JSON.stringify(completedObjectives),
-      newStatus,
-      charQuest.id
-    )
-    .run();
-
-  // Check if all required objectives are complete
-  const allObjectives = await c.env.DB
-    .prepare(
-      `SELECT id, is_optional FROM quest_objectives WHERE quest_definition_id = ?`
-    )
-    .bind(charQuest.quest_definition_id)
-    .all<{ id: string; is_optional: number }>();
-
-  const requiredObjectives = allObjectives.results.filter(o => o.is_optional === 0);
-  const allRequiredComplete = requiredObjectives.every(o => completedObjectives.includes(o.id));
 
   return c.json({
     success: true,
     data: {
       objectiveId,
-      previousProgress: currentObjectives[objectiveId] ?? 0,
-      newProgress,
-      targetQuantity: objective.target_quantity,
-      justCompleted,
-      rewards: justCompleted ? {
-        xp: objective.completion_xp,
-        credits: objective.completion_creds,
-      } : null,
-      questStatus: newStatus,
-      canCompleteQuest: allRequiredComplete,
+      questStatus: result.data.questStatus,
+      newObjectives: result.data.newObjectives,
+      justCompleted: result.data.justCompleted,
+      rewards: result.data.rewards ?? null,
     },
   });
 });
@@ -721,149 +500,30 @@ questRoutes.post('/:questId/complete', requireCharacterMiddleware(), async (c) =
   const characterId = c.get('characterId')!;
   const questId = c.req.param('questId');
 
-  // Get character quest with definition
-  const charQuest = await c.env.DB
-    .prepare(
-      `SELECT cq.*, qd.name, qd.xp_reward, qd.credit_reward, qd.item_rewards, qd.reputation_rewards
-       FROM character_quests cq
-       JOIN quest_definitions qd ON cq.quest_definition_id = qd.id
-       WHERE cq.character_id = ? AND (cq.id = ? OR qd.code = ?)
-       AND cq.status IN ('ACCEPTED', 'IN_PROGRESS')`
-    )
-    .bind(characterId, questId, questId)
-    .first<CharacterQuest & {
-      name: string;
-      xp_reward: number;
-      credit_reward: number;
-      item_rewards: string | null;
-      reputation_rewards: string | null;
-    }>();
+  const questService = new QuestService({
+    db: c.env.DB,
+    cache: c.env.CACHE,
+    userId: c.get('userId'),
+    characterId,
+  });
 
-  if (!charQuest) {
+  const result = await questService.completeQuest(questId);
+
+  if (!result.success) {
+    const status = result.error.code === 'NOT_FOUND' ? 404 : 400;
     return c.json({
       success: false,
-      errors: [{ code: 'QUEST_NOT_FOUND', message: 'Active quest not found' }],
-    }, 404);
+      errors: [{ code: result.error.code, message: result.error.message }],
+    }, status);
   }
-
-  // Check all required objectives are complete
-  const completedObjectives = charQuest.objectives_completed
-    ? JSON.parse(charQuest.objectives_completed) as string[]
-    : [];
-
-  const requiredObjectives = await c.env.DB
-    .prepare(
-      `SELECT id, title FROM quest_objectives
-       WHERE quest_definition_id = ? AND is_optional = 0`
-    )
-    .bind(charQuest.quest_definition_id)
-    .all<{ id: string; title: string }>();
-
-  const incompleteObjectives = requiredObjectives.results.filter(
-    o => !completedObjectives.includes(o.id)
-  );
-
-  if (incompleteObjectives.length > 0) {
-    return c.json({
-      success: false,
-      errors: [{
-        code: 'OBJECTIVES_INCOMPLETE',
-        message: `Incomplete objectives: ${incompleteObjectives.map(o => o.title).join(', ')}`,
-      }],
-    }, 400);
-  }
-
-  // Award rewards
-  const rewards = {
-    xp: charQuest.xp_reward,
-    credits: charQuest.credit_reward,
-    items: [] as Array<{ id: string; quantity: number }>,
-    reputation: [] as Array<{ factionId: string; change: number }>,
-  };
-
-  // Award XP
-  if (rewards.xp > 0) {
-    await c.env.DB
-      .prepare(`UPDATE characters SET current_xp = current_xp + ? WHERE id = ?`)
-      .bind(rewards.xp, characterId)
-      .run();
-  }
-
-  // Award credits
-  if (rewards.credits > 0) {
-    await c.env.DB
-      .prepare(`UPDATE character_finances SET credits = credits + ? WHERE character_id = ?`)
-      .bind(rewards.credits, characterId)
-      .run();
-  }
-
-  // Award items
-  if (charQuest.item_rewards) {
-    const itemRewards = JSON.parse(charQuest.item_rewards) as Array<{ itemId: string; quantity: number }>;
-    for (const item of itemRewards) {
-      // Check if character already has this item
-      const existing = await c.env.DB
-        .prepare(
-          `SELECT id, quantity FROM character_inventory WHERE character_id = ? AND item_id = ?`
-        )
-        .bind(characterId, item.itemId)
-        .first<{ id: string; quantity: number }>();
-
-      if (existing) {
-        await c.env.DB
-          .prepare(`UPDATE character_inventory SET quantity = quantity + ? WHERE id = ?`)
-          .bind(item.quantity, existing.id)
-          .run();
-      } else {
-        await c.env.DB
-          .prepare(
-            `INSERT INTO character_inventory (id, character_id, item_id, quantity, created_at)
-             VALUES (?, ?, ?, ?, datetime('now'))`
-          )
-          .bind(nanoid(), characterId, item.itemId, item.quantity)
-          .run();
-      }
-
-      rewards.items.push({ id: item.itemId, quantity: item.quantity });
-    }
-  }
-
-  // Award reputation
-  if (charQuest.reputation_rewards) {
-    const repRewards = JSON.parse(charQuest.reputation_rewards) as Array<{ factionId: string; amount: number }>;
-    for (const rep of repRewards) {
-      await c.env.DB
-        .prepare(
-          `INSERT INTO character_faction_standing (id, character_id, faction_id, reputation)
-           VALUES (?, ?, ?, ?)
-           ON CONFLICT(character_id, faction_id) DO UPDATE SET reputation = reputation + ?`
-        )
-        .bind(nanoid(), characterId, rep.factionId, rep.amount, rep.amount)
-        .run();
-
-      rewards.reputation.push({ factionId: rep.factionId, change: rep.amount });
-    }
-  }
-
-  // Update quest status
-  await c.env.DB
-    .prepare(
-      `UPDATE character_quests
-       SET status = 'COMPLETED', completed_at = datetime('now'),
-           rewards_claimed = 1, rewards_received = ?
-       WHERE id = ?`
-    )
-    .bind(JSON.stringify(rewards), charQuest.id)
-    .run();
 
   return c.json({
     success: true,
     data: {
-      questId: charQuest.id,
-      questName: charQuest.name,
+      questId,
       status: 'COMPLETED',
-      rewards,
-      message: `Quest complete: ${charQuest.name}`,
+      rewards: result.data.rewards,
+      message: 'Quest complete!',
     },
   });
 });
@@ -1031,7 +691,7 @@ export async function startQuestFromTrigger(
   }
 
   // Create quest entry
-  const instanceId = nanoid();
+  const instanceId = crypto.randomUUID();
   await db
     .prepare(
       `INSERT INTO character_quests (

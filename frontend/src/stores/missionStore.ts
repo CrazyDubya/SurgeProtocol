@@ -62,7 +62,8 @@ export interface ActiveMission {
 export type MissionStatus =
   | 'PENDING'
   | 'ACTIVE'
-  | 'COMPLETED'
+  | 'COMPLETED_SUCCESS'
+  | 'COMPLETED_PARTIAL'
   | 'FAILED'
   | 'ABANDONED'
   | 'EXPIRED';
@@ -171,7 +172,9 @@ export const isTimeCritical = computed(() => {
 export const missionStats = computed(() => {
   const history = missionHistory.value;
 
-  const completed = history.filter((m) => m.status === 'COMPLETED').length;
+  const completed = history.filter((m) =>
+    m.status === 'COMPLETED_SUCCESS' || m.status === 'COMPLETED_PARTIAL'
+  ).length;
   const failed = history.filter((m) => m.status === 'FAILED').length;
   const abandoned = history.filter((m) => m.status === 'ABANDONED').length;
   const total = history.length;
@@ -179,7 +182,7 @@ export const missionStats = computed(() => {
   const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const totalCredits = history
-    .filter((m) => m.status === 'COMPLETED')
+    .filter((m) => m.status === 'COMPLETED_SUCCESS' || m.status === 'COMPLETED_PARTIAL')
     .reduce((sum, m) => sum + (m.creditsEarned || 0), 0);
 
   return {

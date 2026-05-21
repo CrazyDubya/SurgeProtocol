@@ -14,6 +14,7 @@ import { Layout } from '@components/layout/Layout';
 import { ProtectedRoute } from '@components/layout/ProtectedRoute';
 import { ErrorBoundary } from '@components/layout/ErrorBoundary';
 import { PageLoader } from '@components/ui/PageLoader';
+import { ToastProvider } from '@components/ui';
 
 // Auth pages (loaded immediately - critical path)
 import { Login } from '@pages/Login';
@@ -29,6 +30,11 @@ const Inventory = lazy(() => import('@pages/Inventory').then((m) => ({ default: 
 const Factions = lazy(() => import('@pages/Factions').then((m) => ({ default: m.Factions })));
 const War = lazy(() => import('@pages/War').then((m) => ({ default: m.War })));
 const CharacterCreate = lazy(() => import('@pages/CharacterCreate').then((m) => ({ default: m.CharacterCreate })));
+const Contracts = lazy(() => import('@pages/Contracts').then((m) => ({ default: m.Contracts })));
+const Crafting = lazy(() => import('@pages/Crafting').then((m) => ({ default: m.Crafting })));
+const World = lazy(() => import('@pages/World').then((m) => ({ default: m.World })));
+const Combat = lazy(() => import('@pages/Combat').then((m) => ({ default: m.CombatPage })));
+
 const NotFound = lazy(() => import('@pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 /**
@@ -54,67 +60,81 @@ export function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <Router>
-          <Switch>
-          {/* Public auth routes */}
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
+        <ToastProvider>
+          <Router>
+            <Switch>
+              {/* Public auth routes */}
+              <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
 
-          {/* Character select - requires auth but not character */}
-          <Route path="/select-character">
-            {() => (
-              <ProtectedRoute requireCharacter={false}>
-                <CharacterSelect />
-              </ProtectedRoute>
-            )}
-          </Route>
+              {/* Character select - requires auth but not character */}
+              <Route path="/select-character">
+                {() => (
+                  <ProtectedRoute requireCharacter={false}>
+                    <CharacterSelect />
+                  </ProtectedRoute>
+                )}
+              </Route>
 
-          {/* Protected game routes */}
-          <Route path="/">
-            {() => <ProtectedPage component={Dashboard} />}
-          </Route>
-          <Route path="/missions">
-            {() => <ProtectedPage component={Missions} />}
-          </Route>
-          <Route path="/algorithm">
-            {() => <ProtectedPage component={Algorithm} />}
-          </Route>
-          <Route path="/character">
-            {() => <ProtectedPage component={Character} />}
-          </Route>
-          <Route path="/inventory">
-            {() => <ProtectedPage component={Inventory} />}
-          </Route>
-          <Route path="/factions">
-            {() => <ProtectedPage component={Factions} />}
-          </Route>
-          <Route path="/war">
-            {() => <ProtectedPage component={War} />}
-          </Route>
+              {/* Protected game routes */}
+              <Route path="/">
+                {() => <ProtectedPage component={Dashboard} />}
+              </Route>
+              <Route path="/missions">
+                {() => <ProtectedPage component={Missions} />}
+              </Route>
+              <Route path="/algorithm">
+                {() => <ProtectedPage component={Algorithm} />}
+              </Route>
+              <Route path="/character">
+                {() => <ProtectedPage component={Character} />}
+              </Route>
+              <Route path="/inventory">
+                {() => <ProtectedPage component={Inventory} />}
+              </Route>
+              <Route path="/factions">
+                {() => <ProtectedPage component={Factions} />}
+              </Route>
+              <Route path="/war">
+                {() => <ProtectedPage component={War} />}
+              </Route>
+              <Route path="/contracts">
+                {() => <ProtectedPage component={Contracts} />}
+              </Route>
+              <Route path="/crafting">
+                {() => <ProtectedPage component={Crafting} />}
+              </Route>
+              <Route path="/world">
+                {() => <ProtectedPage component={World} />}
+              </Route>
+              <Route path="/combat/:combatId">
+                {() => <ProtectedPage component={Combat} />}
+              </Route>
 
-          {/* Character creation - requires auth but not character */}
-          <Route path="/create-character">
-            {() => (
-              <ProtectedRoute requireCharacter={false}>
-                <Suspense fallback={<PageLoader />}>
-                  <CharacterCreate />
-                </Suspense>
-              </ProtectedRoute>
-            )}
-          </Route>
+              {/* Character creation - requires auth but not character */}
+              <Route path="/create-character">
+                {() => (
+                  <ProtectedRoute requireCharacter={false}>
+                    <Suspense fallback={<PageLoader />}>
+                      <CharacterCreate />
+                    </Suspense>
+                  </ProtectedRoute>
+                )}
+              </Route>
 
-          {/* 404 */}
-          <Route>
-            {() => (
-              <Layout>
-                <Suspense fallback={<PageLoader />}>
-                  <NotFound />
-                </Suspense>
-              </Layout>
-            )}
-          </Route>
-          </Switch>
-        </Router>
+              {/* 404 */}
+              <Route>
+                {() => (
+                  <Layout>
+                    <Suspense fallback={<PageLoader />}>
+                      <NotFound />
+                    </Suspense>
+                  </Layout>
+                )}
+              </Route>
+            </Switch>
+          </Router>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

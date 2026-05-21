@@ -87,21 +87,8 @@ INSERT OR IGNORE INTO currency_definitions (id, code, name, symbol, description,
 ('curr-ghost', 'GHOST', 'GhostCoin', 'Ǥ', 'Untraceable cryptocurrency', 'CRYPTO', 0),
 ('curr-karma', 'KARMA', 'Karma Points', '☯', 'Reputation-based reward points', 'REWARD', 0);
 
--- ============================================
--- FACTIONS
--- ============================================
-
-INSERT OR IGNORE INTO factions (id, code, name, short_name, tagline, faction_type, alignment_corporate, alignment_law, joinable_by_player, colors_primary) VALUES
-('fact-omni', 'OMNI', 'Omnideliver Corporation', 'Omni', 'Always On Time', 'MEGACORP', 100, 50, 0, '#FF6600'),
-('fact-network', 'NETWORK', 'The Network', 'Network', 'All Nodes Connected', 'COLLECTIVE', 80, 30, 0, '#00FFFF'),
-('fact-union', 'UNION', 'Courier''s Union', 'Union', 'Solidarity Forever', 'GUILD', -20, 20, 1, '#FF0000'),
-('fact-circuit', 'CIRCUIT', 'Shadow Circuit', 'Circuit', 'What You Need, When You Need It', 'SYNDICATE', -80, -60, 1, '#8B00FF'),
-('fact-collective', 'COLLECTIVE', 'Collective Flesh', 'Collective', 'Transcend the Meat', 'CULT', -100, -80, 0, '#00FF00'),
-('fact-trauma', 'TRAUMA', 'Trauma Team International', 'Trauma', 'Your Life Is Our Priority', 'CORPORATION', 60, 70, 0, '#FF0000'),
-('fact-ncpd', 'NCPD', 'Metro Police Department', 'NCPD', 'To Protect and Serve', 'LAW_ENFORCEMENT', 30, 100, 0, '#0000FF'),
-('fact-tigers', 'TIGERS', 'Chrome Tigers', 'Tigers', 'Strength Through Steel', 'GANG', -50, -70, 1, '#FFD700'),
-('fact-saints', 'SAINTS', 'Digital Saints', 'Saints', 'Free the Data', 'MOVEMENT', -60, -20, 1, '#FFFFFF'),
-('fact-ascend', 'ASCEND', 'Church of Ascension', 'Ascension', 'The Algorithm Provides', 'CULT', 40, 10, 0, '#GOLD');
+-- Factions removed in favor of universal seeder
+-- See seed_universal.sql
 
 -- ============================================
 -- HUMANITY THRESHOLDS

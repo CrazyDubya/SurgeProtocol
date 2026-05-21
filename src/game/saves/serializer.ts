@@ -11,7 +11,7 @@
  * - World state
  */
 
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
 import type {
   Character,
   CharacterAttribute,
@@ -377,7 +377,7 @@ export class SaveDataSerializer {
         .filter(m => ['ACCEPTED', 'IN_PROGRESS'].includes(m.status))
         .map(m => ({
           id: m.id,
-          mission_id: m.mission_id,
+          mission_id: m.mission_definition_id,
           status: m.status,
           accepted_at: m.accepted_at,
           started_at: m.started_at,
@@ -388,7 +388,7 @@ export class SaveDataSerializer {
         })),
       completedMissionIds: missions.results
         .filter(m => m.status === 'COMPLETED')
-        .map(m => m.mission_id),
+        .map(m => m.mission_definition_id),
       missionCooldowns: {}, // Would be populated from cooldown tracking
     };
 
@@ -508,7 +508,7 @@ export class SaveDataSerializer {
     const checksum = calculateChecksum(compressed);
 
     return {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       save_id: saveId,
       chunk_type: chunkType,
       data: compressed,

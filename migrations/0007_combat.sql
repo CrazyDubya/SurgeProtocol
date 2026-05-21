@@ -307,64 +307,35 @@ CREATE TABLE IF NOT EXISTS condition_definitions (
 CREATE TABLE IF NOT EXISTS character_conditions (
     id TEXT PRIMARY KEY,
     character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    condition_id TEXT NOT NULL REFERENCES condition_definitions(id),
-    applied_at TEXT DEFAULT (datetime('now')),
-
-    -- State
-    current_stacks INTEGER DEFAULT 1,
-    duration_remaining_seconds REAL,
-    is_paused INTEGER DEFAULT 0, -- BOOLEAN
-
-    -- Source
-    source_type TEXT,
-    source_id TEXT,
-    source_name TEXT,
-
-    -- Tracking
-    times_ticked INTEGER DEFAULT 0,
-    total_damage_dealt INTEGER DEFAULT 0,
-    total_healing_done INTEGER DEFAULT 0,
-    times_refreshed INTEGER DEFAULT 0
-);
-
--- ============================================
--- ADDICTION TYPES
--- ============================================
-
-CREATE TABLE IF NOT EXISTS addiction_types (
-    id TEXT PRIMARY KEY,
-    code TEXT UNIQUE NOT NULL,
+    type TEXT NOT NULL REFERENCES enum_condition_type(value),
+    
+    -- Description
     name TEXT NOT NULL,
     description TEXT,
-    substance_id TEXT REFERENCES item_definitions(id),
-
-    -- Progression
-    stages TEXT, -- JSON array of stage definitions
-    tolerance_rate REAL DEFAULT 0.1,
-    dependence_rate REAL DEFAULT 0.1,
-    decay_rate_per_day REAL DEFAULT 0.05,
-
-    -- Withdrawal
-    withdrawal_onset_hours INTEGER DEFAULT 12,
-    withdrawal_peak_hours INTEGER DEFAULT 48,
-    withdrawal_duration_hours INTEGER DEFAULT 72,
-    withdrawal_effects TEXT, -- JSON
-    withdrawal_lethality REAL DEFAULT 0.01,
-
-    -- Treatment
-    treatment_methods TEXT, -- JSON
-    treatment_cost INTEGER DEFAULT 1000,
-    treatment_duration_days INTEGER DEFAULT 7,
-    relapse_risk REAL DEFAULT 0.2,
-
-    -- Cravings
-    craving_triggers TEXT, -- JSON
-    craving_strength_base INTEGER DEFAULT 50,
-    craving_response_options TEXT, -- JSON
-
+    icon_asset TEXT,
+    
+    -- Mechanics
+    severity TEXT DEFAULT 'MINOR' REFERENCES enum_severity(value),
+    value INTEGER DEFAULT 1, -- Generic magnitude (e.g. stack count, tier)
+    
+    -- Duration
+    duration_seconds INTEGER, -- NULL = Permanent
+    expires_at TEXT, -- ISO Timestamp
+    
+    -- Effects (JSON)
+    -- Structure: [{ type: 'STAT_MOD', target: 'strength', value: -2 }, ...]
+    effects_data TEXT, 
+    
+    -- Source
+    source_type TEXT, -- e.g. 'ITEM', 'ENVIRONMENT', 'COMBAT'
+    source_id TEXT,
+    
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_conditions_character ON character_conditions(character_id);
+CREATE INDEX IF NOT EXISTS idx_conditions_expires ON character_conditions(expires_at);
 
 -- ============================================
 -- CHARACTER ADDICTIONS
@@ -373,41 +344,25 @@ CREATE TABLE IF NOT EXISTS addiction_types (
 CREATE TABLE IF NOT EXISTS character_addictions (
     id TEXT PRIMARY KEY,
     character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    addiction_type_id TEXT NOT NULL REFERENCES addiction_types(id),
-    started_at TEXT DEFAULT (datetime('now')),
-
+    substance_id TEXT NOT NULL, -- Logical ID of the substance (e.g. item ID)
+    
     -- State
-    current_stage INTEGER DEFAULT 1,
-    tolerance_level REAL DEFAULT 0,
-    dependence_level REAL DEFAULT 0,
-    last_use TEXT,
-    times_used_total INTEGER DEFAULT 0,
-
+    stage TEXT DEFAULT 'RECREATIONAL' REFERENCES enum_addiction_stage(value),
+    severity_level INTEGER DEFAULT 0, -- 0-100 Progress bar to next stage
+    
+    -- Tracking
+    usage_count INTEGER DEFAULT 0,
+    last_consumed_at TEXT,
+    
     -- Withdrawal
-    in_withdrawal INTEGER DEFAULT 0, -- BOOLEAN
-    withdrawal_stage INTEGER DEFAULT 0,
-    withdrawal_started TEXT,
-
-    -- Treatment
-    in_treatment INTEGER DEFAULT 0, -- BOOLEAN
-    treatment_progress REAL DEFAULT 0,
-    treatment_start TEXT,
-    treatment_method TEXT,
-
-    -- History
-    recovery_attempts INTEGER DEFAULT 0,
-    relapses INTEGER DEFAULT 0,
-    clean_streaks TEXT, -- JSON
-    longest_clean_streak_hours INTEGER DEFAULT 0,
-
-    -- Cravings
-    current_craving_strength INTEGER DEFAULT 0,
-    last_craving TEXT,
-    cravings_resisted INTEGER DEFAULT 0,
-    cravings_succumbed INTEGER DEFAULT 0,
-
-    UNIQUE(character_id, addiction_type_id)
+    withdrawal_onset_at TEXT, -- When withdrawal starts if not consumed
+    is_in_withdrawal INTEGER DEFAULT 0, -- BOOLEAN
+    
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_addictions_character ON character_addictions(character_id);
 
 -- ============================================
 -- CYBERPSYCHOSIS EPISODES

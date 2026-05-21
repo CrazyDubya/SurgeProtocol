@@ -1,0 +1,2 @@
+-- Emptying broken seed file.
+-- Recipes are now handled by src/db/seed.ts

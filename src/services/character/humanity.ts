@@ -7,10 +7,11 @@
  */
 
 import {
-  CharacterService,
+  BaseService,
   type ServiceContext,
   type ServiceResponse,
   ErrorCodes,
+  AppError,
 } from '../base/index';
 
 // =============================================================================
@@ -236,9 +237,43 @@ const HUMANITY_THRESHOLDS: HumanityThreshold[] = [
 // HUMANITY SERVICE
 // =============================================================================
 
-export class HumanityService extends CharacterService {
+export class HumanityService extends BaseService {
+  protected readonly characterIdForService?: string;
+
   constructor(context: ServiceContext) {
     super(context);
+    this.characterIdForService = context.characterId;
+  }
+
+  private get requiredId(): string {
+    if (!this.characterIdForService) {
+      throw new AppError(ErrorCodes.NO_CHARACTER, 'No character selected', 400);
+    }
+    return this.characterIdForService;
+  }
+
+  /**
+   * Get the current character's data.
+   */
+  protected async getCharacter(): Promise<any> {
+    const character = await this.query<any>(
+      `SELECT * FROM characters WHERE id = ?`,
+      this.requiredId
+    );
+    if (!character) {
+      throw new AppError(ErrorCodes.CHARACTER_NOT_FOUND, 'Character not found', 404);
+    }
+    return character;
+  }
+
+  /**
+   * Update character data.
+   */
+  protected async updateCharacter(updates: any): Promise<void> {
+    const fields = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+    const values = Object.values(updates);
+    values.push(this.requiredId);
+    await this.execute(`UPDATE characters SET ${fields} WHERE id = ?`, ...values);
   }
 
   /**
@@ -246,27 +281,64 @@ export class HumanityService extends CharacterService {
    */
   async getHumanitySnapshot(): Promise<ServiceResponse<HumanitySnapshot>> {
     const character = await this.getCharacter();
-    const threshold = this.getThresholdForHumanity(character.humanity_current);
-    const nextThreshold = this.getNextThreshold(character.humanity_current);
+    const threshold = this.getThresholdForHumanity(character.current_humanity);
+    const nextThreshold = this.getNextThreshold(character.current_humanity);
 
-    const cyberpsychoRisk = this.calculateCyberpsychosisRisk(character.humanity_current);
-    const shadowActive = character.humanity_current <= 60;
-    const forkRisk = character.humanity_current <= 20;
+    const cyberpsychoRisk = this.calculateCyberpsychosisRisk(character.current_humanity);
+    const shadowActive = character.current_humanity <= 60;
+    const forkRisk = character.current_humanity <= 20;
 
     return this.success({
       character_id: character.id,
-      humanity_current: character.humanity_current,
-      humanity_max: character.humanity_max,
-      humanity_percent: Math.round((character.humanity_current / character.humanity_max) * 100),
+      humanity_current: character.current_humanity,
+      humanity_max: character.max_humanity,
+      humanity_percent: Math.round((character.current_humanity / character.max_humanity) * 100),
       threshold_name: threshold.name,
       threshold_level: threshold.level,
-      active_effects: this.getActiveEffects(character.humanity_current),
-      near_threshold: nextThreshold !== undefined && character.humanity_current - nextThreshold.level <= 10,
+      active_effects: this.getActiveEffects(character.current_humanity),
+      near_threshold: nextThreshold !== undefined && character.current_humanity - nextThreshold.level <= 10,
       next_threshold: nextThreshold?.level,
       cyberpsychosis_risk: cyberpsychoRisk,
       shadow_active: shadowActive,
       fork_risk: forkRisk,
     });
+  }
+
+  /**
+   * Get character's current humanity state (alias for snapshot).
+   */
+  async getCharacterHumanity() {
+    return this.getHumanitySnapshot();
+  }
+
+  /**
+   * List all humanity thresholds.
+   */
+  async listThresholds() {
+    return this.success(HUMANITY_THRESHOLDS);
+  }
+
+  /**
+   * List recent humanity events.
+   */
+  async listEvents(limit: number = 20, offset: number = 0) {
+    return this.getHumanityHistory(limit, offset);
+  }
+
+  /**
+   * List cyberpsychosis episodes.
+   */
+  async listEpisodes(limit: number = 20, offset: number = 0) {
+    const results = await this.queryAll<any>(
+      `SELECT * FROM character_humanity_log 
+       WHERE character_id = ? AND event_type = 'CYBERPSYCHOSIS_EPISODE'
+       ORDER BY created_at DESC 
+       LIMIT ? OFFSET ?`,
+      this.requiredId,
+      limit,
+      offset
+    );
+    return this.success(results);
   }
 
   /**
@@ -276,17 +348,17 @@ export class HumanityService extends CharacterService {
     source: HumanityChangeSource
   ): Promise<ServiceResponse<HumanityChangeResult>> {
     const character = await this.getCharacter();
-    const previousHumanity = character.humanity_current;
+    const previousHumanity = character.current_humanity;
     const previousThreshold = this.getThresholdForHumanity(previousHumanity);
 
     // Calculate new humanity (clamped 0-max)
     const newHumanity = Math.max(
       0,
-      Math.min(character.humanity_max, previousHumanity + source.base_amount)
+      Math.min(character.max_humanity, previousHumanity + source.base_amount)
     );
 
     // Update character
-    await this.updateCharacter({ humanity_current: newHumanity });
+    await this.updateCharacter({ current_humanity: newHumanity });
 
     // Log the change
     await this.logHumanityChange(source, previousHumanity, newHumanity);
@@ -339,26 +411,26 @@ export class HumanityService extends CharacterService {
       humanity_cost: number;
       slot: string;
     }>(
-      `SELECT id, name, humanity_cost, slot FROM augments WHERE id = ?`,
+      `SELECT id, name, humanity_cost, slot FROM augment_definitions WHERE id = ?`,
       augmentId
     );
 
     if (!augment) {
-      return this.error(ErrorCodes.NOT_FOUND, 'Augment not found');
+      return this.error(ErrorCodes.NOT_FOUND, 'Augment definition not found');
     }
 
     // Calculate modified cost based on existing chrome
     const existingAugs = await this.queryAll<{ slot: string }>(
       `SELECT slot FROM character_augments WHERE character_id = ?`,
-      this.requiredCharacterId
+      this.requiredId
     );
 
     // More augments = slightly higher humanity cost (diminishing returns on humanity)
     const augCountModifier = 1 + existingAugs.length * 0.05;
     const modifiedCost = Math.round(augment.humanity_cost * augCountModifier);
 
-    const newHumanity = character.humanity_current - modifiedCost;
-    const currentThreshold = this.getThresholdForHumanity(character.humanity_current);
+    const newHumanity = character.current_humanity - modifiedCost;
+    const currentThreshold = this.getThresholdForHumanity(character.current_humanity);
     const newThreshold = this.getThresholdForHumanity(newHumanity);
 
     return this.success({
@@ -382,7 +454,7 @@ export class HumanityService extends CharacterService {
     const character = await this.getCharacter();
 
     // Cap recovery based on max humanity (can't exceed max)
-    const effectiveAmount = Math.min(amount, character.humanity_max - character.humanity_current);
+    const effectiveAmount = Math.min(amount, character.max_humanity - character.current_humanity);
 
     if (effectiveAmount <= 0) {
       return this.error(
@@ -433,13 +505,11 @@ export class HumanityService extends CharacterService {
   // ===========================================================================
 
   private getThresholdForHumanity(humanity: number): HumanityThreshold {
-    // Find the highest threshold that humanity is at or below
     for (const threshold of HUMANITY_THRESHOLDS) {
       if (humanity >= threshold.level) {
         return threshold;
       }
     }
-    // HUMANITY_THRESHOLDS always has entries, so this is safe
     return HUMANITY_THRESHOLDS[HUMANITY_THRESHOLDS.length - 1]!;
   }
 
@@ -476,13 +546,12 @@ export class HumanityService extends CharacterService {
     newThreshold: HumanityThreshold,
     previousThreshold: HumanityThreshold
   ): Promise<void> {
-    // Log the threshold crossing
     await this.execute(
       `INSERT INTO character_humanity_log
-       (id, character_id, event_type, old_threshold, new_threshold, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+         (id, character_id, event_type, old_threshold, new_threshold, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
       crypto.randomUUID(),
-      this.requiredCharacterId,
+      this.requiredId,
       'THRESHOLD_CROSSED',
       previousThreshold.name,
       newThreshold.name,
@@ -496,35 +565,32 @@ export class HumanityService extends CharacterService {
   }
 
   private async triggerShadowEmergence(): Promise<void> {
-    // Log shadow emergence
     await this.execute(
       `INSERT INTO character_humanity_log
-       (id, character_id, event_type, created_at)
-       VALUES (?, ?, ?, ?)`,
+         (id, character_id, event_type, created_at)
+         VALUES (?, ?, ?, ?)`,
       crypto.randomUUID(),
-      this.requiredCharacterId,
+      this.requiredId,
       'SHADOW_EMERGED',
       new Date().toISOString()
     );
 
-    // Set shadow active flag
     await this.execute(
       `UPDATE characters SET shadow_active = 1, updated_at = ? WHERE id = ?`,
       new Date().toISOString(),
-      this.requiredCharacterId
+      this.requiredId
     );
 
     this.log('warn', 'Shadow has emerged', {});
   }
 
   private async triggerCyberpsychosis(): Promise<void> {
-    // Log cyberpsychosis episode
     await this.execute(
       `INSERT INTO character_humanity_log
-       (id, character_id, event_type, created_at)
-       VALUES (?, ?, ?, ?)`,
+         (id, character_id, event_type, created_at)
+         VALUES (?, ?, ?, ?)`,
       crypto.randomUUID(),
-      this.requiredCharacterId,
+      this.requiredId,
       'CYBERPSYCHOSIS_EPISODE',
       new Date().toISOString()
     );
@@ -539,10 +605,10 @@ export class HumanityService extends CharacterService {
   ): Promise<void> {
     await this.execute(
       `INSERT INTO character_humanity_log
-       (id, character_id, event_type, source_type, source_id, old_value, new_value, reason, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, character_id, event_type, source_type, source_id, old_value, new_value, reason, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       crypto.randomUUID(),
-      this.requiredCharacterId,
+      this.requiredId,
       'HUMANITY_CHANGE',
       source.type,
       source.source_id ?? null,
@@ -552,39 +618,54 @@ export class HumanityService extends CharacterService {
       new Date().toISOString()
     );
   }
+
+  /**
+   * Get humanity history/episodes for the character.
+   */
+  async getHumanityHistory(limit: number = 20, offset: number = 0): Promise<ServiceResponse<any[]>> {
+    const results = await this.queryAll<any>(
+      `SELECT * FROM character_humanity_log 
+       WHERE character_id = ? 
+       ORDER BY created_at DESC 
+       LIMIT ? OFFSET ?`,
+      this.requiredId,
+      limit,
+      offset
+    );
+
+    return this.success(results.map(row => ({
+      id: row.id,
+      eventType: row.event_type,
+      sourceType: row.source_type,
+      sourceId: row.source_id,
+      oldValue: row.old_value,
+      newValue: row.new_value,
+      oldThreshold: row.old_threshold,
+      newThreshold: row.new_threshold,
+      reason: row.reason,
+      createdAt: row.created_at,
+    })));
+  }
 }
 
 // =============================================================================
 // STATELESS HUMANITY HELPERS
 // =============================================================================
 
-/**
- * Stateless humanity calculator for use outside service context.
- */
 export class StatelessHumanityCalculator {
-  /**
-   * Get threshold for a humanity value.
-   */
   getThreshold(humanity: number): HumanityThreshold {
     for (const threshold of HUMANITY_THRESHOLDS) {
       if (humanity >= threshold.level) {
         return threshold;
       }
     }
-    // HUMANITY_THRESHOLDS always has entries, so this is safe
     return HUMANITY_THRESHOLDS[HUMANITY_THRESHOLDS.length - 1]!;
   }
 
-  /**
-   * Get all thresholds.
-   */
   getAllThresholds(): HumanityThreshold[] {
     return [...HUMANITY_THRESHOLDS];
   }
 
-  /**
-   * Calculate cyberpsychosis risk level.
-   */
   getCyberpsychosisRisk(humanity: number): 'NONE' | 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL' {
     if (humanity > 60) return 'NONE';
     if (humanity > 40) return 'LOW';
@@ -593,31 +674,19 @@ export class StatelessHumanityCalculator {
     return 'CRITICAL';
   }
 
-  /**
-   * Check if shadow should be active.
-   */
   isShadowActive(humanity: number): boolean {
     return humanity <= 60;
   }
 
-  /**
-   * Check if fork risk exists.
-   */
   hasForkRisk(humanity: number): boolean {
     return humanity <= 20;
   }
 
-  /**
-   * Get Algorithm message for humanity level.
-   */
   getAlgorithmMessage(humanity: number): string {
     const threshold = this.getThreshold(humanity);
     return threshold.algorithm_message;
   }
 
-  /**
-   * Calculate estimated humanity after augment installation.
-   */
   estimateHumanityAfterAugment(
     currentHumanity: number,
     augmentCost: number,
@@ -628,9 +697,5 @@ export class StatelessHumanityCalculator {
     return Math.max(0, currentHumanity - modifiedCost);
   }
 }
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 export { HUMANITY_THRESHOLDS };

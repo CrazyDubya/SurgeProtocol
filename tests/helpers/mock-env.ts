@@ -512,11 +512,11 @@ export class MockD1Database {
           // % = any characters, _ = single character
           const regex = new RegExp(
             '^' +
-              pattern
-                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars
-                .replace(/%/g, '.*')
-                .replace(/_/g, '.') +
-              '$'
+            pattern
+              .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars
+              .replace(/%/g, '.*')
+              .replace(/_/g, '.') +
+            '$'
           );
           return regex.test(String(rowValue));
         }

@@ -15,18 +15,12 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
 import {
   authMiddleware,
-  generateTokenPair,
   type AuthVariables,
 } from '../../middleware/auth';
-import {
-  getCharacter,
-  getCharacterAttributes,
-  getCharacterInventory,
-  createCharacter,
-} from '../../db';
+import { CharacterService } from '../../services/character';
 
 // =============================================================================
 // TYPES & BINDINGS
@@ -54,8 +48,10 @@ const createCharacterSchema = z.object({
     END: z.number().int().min(1).max(10),
     VEL: z.number().int().min(1).max(10),
     INT: z.number().int().min(1).max(10),
-    WIS: z.number().int().min(1).max(10),
+    RSN: z.number().int().min(1).max(10).optional(), // Reason (was WIS)
+    WIS: z.number().int().min(1).max(10).optional(), // Keep for compat if needed, or remove
     EMP: z.number().int().min(1).max(10),
+    PRE: z.number().int().min(1).max(10).optional(), // Presence (was missing)
     PRC: z.number().int().min(1).max(10),
   }).optional(),
 });
@@ -80,93 +76,28 @@ characterRoutes.use('*', authMiddleware());
  */
 characterRoutes.post('/', zValidator('json', createCharacterSchema), async (c) => {
   const userId = c.get('userId');
-  const data = c.req.valid('json');
+  const service = new CharacterService(c.env.DB);
+  try {
+    const data = c.req.valid('json');
 
-  // Check character limit (max 3 per user)
-  const existingCount = await c.env.DB
-    .prepare('SELECT COUNT(*) as count FROM characters WHERE player_id = ?')
-    .bind(userId)
-    .first<{ count: number }>();
+    // Get a starting location (Tier 1)
+    const startLocation = await c.env.DB
+      .prepare('SELECT id FROM locations WHERE tier_requirement <= 1 LIMIT 1')
+      .first<{ id: string }>();
 
-  if (existingCount && existingCount.count >= 3) {
+    const character = await service.createCharacter(userId, data, startLocation?.id);
+
+    return c.json({
+      success: true,
+      data: { character },
+    }, 201);
+  } catch (err: any) {
+    console.error('[API] Create Character Error:', err);
     return c.json({
       success: false,
-      errors: [{ code: 'CHARACTER_LIMIT', message: 'Maximum 3 characters per account' }],
-    }, 400);
+      errors: [{ code: 'SERVER_ERROR', message: err.message }],
+    }, err.message === 'Maximum 3 characters per account' ? 400 : err.message === 'Handle already in use' ? 409 : 500);
   }
-
-  // Check handle uniqueness
-  if (data.handle) {
-    const handleExists = await c.env.DB
-      .prepare('SELECT id FROM characters WHERE handle = ?')
-      .bind(data.handle)
-      .first();
-
-    if (handleExists) {
-      return c.json({
-        success: false,
-        errors: [{ code: 'HANDLE_TAKEN', message: 'Handle already in use' }],
-      }, 409);
-    }
-  }
-
-  // Validate attribute point buy (if provided)
-  if (data.attributes) {
-    const totalPoints = Object.values(data.attributes).reduce((sum, v) => sum + v, 0);
-    const expectedPoints = 40; // 8 attributes * 5 base
-    if (totalPoints !== expectedPoints) {
-      return c.json({
-        success: false,
-        errors: [{
-          code: 'INVALID_ATTRIBUTES',
-          message: `Attribute points must total ${expectedPoints}, got ${totalPoints}`,
-        }],
-      }, 400);
-    }
-  }
-
-  // Create character
-  const characterId = await createCharacter(c.env.DB, {
-    playerId: userId,
-    legalName: data.legalName,
-    streetName: data.streetName,
-    handle: data.handle,
-    sex: data.sex,
-    age: data.age,
-  });
-
-  // Initialize attributes if provided
-  if (data.attributes) {
-    const attributeCodes = ['PWR', 'AGI', 'END', 'VEL', 'INT', 'WIS', 'EMP', 'PRC'];
-
-    for (const code of attributeCodes) {
-      const value = data.attributes[code as keyof typeof data.attributes];
-
-      // Get attribute definition ID
-      const attrDef = await c.env.DB
-        .prepare('SELECT id FROM attribute_definitions WHERE code = ?')
-        .bind(code)
-        .first<{ id: string }>();
-
-      if (attrDef) {
-        await c.env.DB
-          .prepare(
-            `INSERT INTO character_attributes (id, character_id, attribute_id, base_value, current_value)
-             VALUES (?, ?, ?, ?, ?)`
-          )
-          .bind(nanoid(), characterId, attrDef.id, value, value)
-          .run();
-      }
-    }
-  }
-
-  // Fetch created character
-  const character = await getCharacter(c.env.DB, characterId);
-
-  return c.json({
-    success: true,
-    data: { character },
-  }, 201);
 });
 
 /**
@@ -175,23 +106,14 @@ characterRoutes.post('/', zValidator('json', createCharacterSchema), async (c) =
  */
 characterRoutes.get('/', async (c) => {
   const userId = c.get('userId');
-
-  const result = await c.env.DB
-    .prepare(
-      `SELECT id, legal_name, street_name, handle, current_tier, carrier_rating,
-              current_health, max_health, is_active, created_at
-       FROM characters
-       WHERE player_id = ?
-       ORDER BY is_active DESC, updated_at DESC`
-    )
-    .bind(userId)
-    .all();
+  const service = new CharacterService(c.env.DB);
+  const characters = await service.listCharacters(userId);
 
   return c.json({
     success: true,
     data: {
-      characters: result.results,
-      count: result.results.length,
+      characters,
+      count: characters.length,
     },
   });
 });
@@ -203,37 +125,20 @@ characterRoutes.get('/', async (c) => {
 characterRoutes.get('/:id', async (c) => {
   const userId = c.get('userId');
   const characterId = c.req.param('id');
+  const service = new CharacterService(c.env.DB);
 
-  const character = await c.env.DB
-    .prepare(
-      `SELECT * FROM characters WHERE id = ? AND player_id = ?`
-    )
-    .bind(characterId, userId)
-    .first();
+  const result = await service.getCharacterDetails(userId, characterId);
 
-  if (!character) {
+  if (!result) {
     return c.json({
       success: false,
       errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
     }, 404);
   }
 
-  // Get attributes
-  const attributes = await getCharacterAttributes(c.env.DB, characterId);
-
-  // Get rating components
-  const ratingComponents = await c.env.DB
-    .prepare('SELECT * FROM rating_components WHERE character_id = ?')
-    .bind(characterId)
-    .first();
-
   return c.json({
     success: true,
-    data: {
-      character,
-      attributes,
-      ratingComponents,
-    },
+    data: result,
   });
 });
 
@@ -245,61 +150,20 @@ characterRoutes.patch('/:id', zValidator('json', updateCharacterSchema), async (
   const userId = c.get('userId');
   const characterId = c.req.param('id');
   const updates = c.req.valid('json');
+  const service = new CharacterService(c.env.DB);
 
-  // Verify ownership
-  const character = await c.env.DB
-    .prepare('SELECT id FROM characters WHERE id = ? AND player_id = ?')
-    .bind(characterId, userId)
-    .first();
-
-  if (!character) {
+  try {
+    const character = await service.updateCharacter(userId, characterId, updates);
+    return c.json({
+      success: true,
+      data: { character },
+    });
+  } catch (err: any) {
     return c.json({
       success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
-    }, 404);
+      errors: [{ code: err.message === 'Character not found' ? 'NOT_FOUND' : 'SERVER_ERROR', message: err.message }],
+    }, err.message === 'Character not found' ? 404 : err.message === 'Handle already in use' ? 409 : 500);
   }
-
-  // Check handle uniqueness if changing
-  if (updates.handle) {
-    const handleExists = await c.env.DB
-      .prepare('SELECT id FROM characters WHERE handle = ? AND id != ?')
-      .bind(updates.handle, characterId)
-      .first();
-
-    if (handleExists) {
-      return c.json({
-        success: false,
-        errors: [{ code: 'HANDLE_TAKEN', message: 'Handle already in use' }],
-      }, 409);
-    }
-  }
-
-  // Build update query
-  const setClauses: string[] = ["updated_at = datetime('now')"];
-  const values: (string | null)[] = [];
-
-  if (updates.streetName !== undefined) {
-    setClauses.push('street_name = ?');
-    values.push(updates.streetName);
-  }
-  if (updates.handle !== undefined) {
-    setClauses.push('handle = ?');
-    values.push(updates.handle);
-  }
-
-  values.push(characterId);
-
-  await c.env.DB
-    .prepare(`UPDATE characters SET ${setClauses.join(', ')} WHERE id = ?`)
-    .bind(...values)
-    .run();
-
-  const updated = await getCharacter(c.env.DB, characterId);
-
-  return c.json({
-    success: true,
-    data: { character: updated },
-  });
 });
 
 /**
@@ -310,51 +174,25 @@ characterRoutes.patch('/:id', zValidator('json', updateCharacterSchema), async (
 characterRoutes.post('/:id/select', async (c) => {
   const userId = c.get('userId');
   const characterId = c.req.param('id');
+  const service = new CharacterService(c.env.DB);
 
-  // Verify ownership and character is alive
-  const character = await c.env.DB
-    .prepare('SELECT id, is_dead FROM characters WHERE id = ? AND player_id = ?')
-    .bind(characterId, userId)
-    .first<{ id: string; is_dead: number }>();
-
-  if (!character) {
+  try {
+    const tokens = await service.selectCharacter(userId, characterId, c.env.JWT_SECRET);
+    return c.json({
+      success: true,
+      data: {
+        characterId,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresIn: tokens.expiresIn,
+      },
+    });
+  } catch (err: any) {
     return c.json({
       success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
-    }, 404);
+      errors: [{ code: err.message === 'Character not found' ? 'NOT_FOUND' : 'SERVER_ERROR', message: err.message }],
+    }, err.message === 'Character not found' ? 404 : 400);
   }
-
-  if (character.is_dead) {
-    return c.json({
-      success: false,
-      errors: [{ code: 'CHARACTER_DEAD', message: 'Cannot select a dead character' }],
-    }, 400);
-  }
-
-  // Deactivate other characters
-  await c.env.DB
-    .prepare('UPDATE characters SET is_active = 0 WHERE player_id = ?')
-    .bind(userId)
-    .run();
-
-  // Activate selected character
-  await c.env.DB
-    .prepare("UPDATE characters SET is_active = 1, last_played = datetime('now') WHERE id = ?")
-    .bind(characterId)
-    .run();
-
-  // Generate new tokens with character ID
-  const tokens = await generateTokenPair(userId, characterId, c.env.JWT_SECRET);
-
-  return c.json({
-    success: true,
-    data: {
-      characterId,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresIn: tokens.expiresIn,
-    },
-  });
 });
 
 /**
@@ -364,76 +202,18 @@ characterRoutes.post('/:id/select', async (c) => {
 characterRoutes.get('/:id/stats', async (c) => {
   const userId = c.get('userId');
   const characterId = c.req.param('id');
+  const service = new CharacterService(c.env.DB);
 
-  // Verify ownership
-  const character = await c.env.DB
-    .prepare('SELECT id FROM characters WHERE id = ? AND player_id = ?')
-    .bind(characterId, userId)
-    .first();
-
-  if (!character) {
+  try {
+    const stats = await service.getCharacterStats(userId, characterId);
     return c.json({
-      success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
-    }, 404);
+      success: true,
+      data: stats,
+    });
+  } catch (err: any) {
+    console.error('[API] Get Stats Error:', err);
+    return c.json({ success: false, errors: [{ message: err.message }] }, err.message === 'Character not found' ? 404 : 500);
   }
-
-  // Get attributes with effective values
-  const attributes = await c.env.DB
-    .prepare(
-      `SELECT ad.code, ad.name, ca.base_value, ca.current_value,
-              ca.bonus_from_augments, ca.bonus_from_items, ca.bonus_from_conditions,
-              (ca.current_value + ca.bonus_from_augments + ca.bonus_from_items +
-               ca.bonus_from_conditions + ca.temporary_modifier) as effective_value
-       FROM character_attributes ca
-       JOIN attribute_definitions ad ON ca.attribute_id = ad.id
-       WHERE ca.character_id = ?`
-    )
-    .bind(characterId)
-    .all();
-
-  // Get skills
-  const skills = await c.env.DB
-    .prepare(
-      `SELECT sd.code, sd.name, cs.current_level, cs.xp_invested
-       FROM character_skills cs
-       JOIN skill_definitions sd ON cs.skill_id = sd.id
-       WHERE cs.character_id = ?`
-    )
-    .bind(characterId)
-    .all();
-
-  // Get equipped items
-  const equipped = await c.env.DB
-    .prepare(
-      `SELECT ci.equipped_slot, id.name, id.item_type, id.rarity
-       FROM character_inventory ci
-       JOIN item_definitions id ON ci.item_id = id.id
-       WHERE ci.character_id = ? AND ci.is_equipped = 1`
-    )
-    .bind(characterId)
-    .all();
-
-  // Get active conditions
-  const conditions = await c.env.DB
-    .prepare(
-      `SELECT cc.*, cd.name, cd.effect_description
-       FROM character_conditions cc
-       JOIN condition_definitions cd ON cc.condition_id = cd.id
-       WHERE cc.character_id = ? AND cc.is_active = 1`
-    )
-    .bind(characterId)
-    .all();
-
-  return c.json({
-    success: true,
-    data: {
-      attributes: attributes.results,
-      skills: skills.results,
-      equipped: equipped.results,
-      conditions: conditions.results,
-    },
-  });
 });
 
 /**
@@ -443,35 +223,18 @@ characterRoutes.get('/:id/stats', async (c) => {
 characterRoutes.get('/:id/inventory', async (c) => {
   const userId = c.get('userId');
   const characterId = c.req.param('id');
+  const service = new CharacterService(c.env.DB);
 
-  // Verify ownership
-  const character = await c.env.DB
-    .prepare('SELECT id FROM characters WHERE id = ? AND player_id = ?')
-    .bind(characterId, userId)
-    .first();
-
-  if (!character) {
+  try {
+    const result = await service.getCharacterInventory(userId, characterId);
     return c.json({
-      success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
-    }, 404);
+      success: true,
+      data: result,
+    });
+  } catch (err: any) {
+    console.error('[API] Get Inventory Error:', err);
+    return c.json({ success: false, errors: [{ message: err.message }] }, err.message === 'Character not found' ? 404 : 500);
   }
-
-  const inventory = await getCharacterInventory(c.env.DB, characterId);
-
-  // Get character's credits
-  const finances = await c.env.DB
-    .prepare('SELECT * FROM character_finances WHERE character_id = ?')
-    .bind(characterId)
-    .first();
-
-  return c.json({
-    success: true,
-    data: {
-      items: inventory,
-      finances,
-    },
-  });
 });
 
 /**
@@ -481,37 +244,18 @@ characterRoutes.get('/:id/inventory', async (c) => {
 characterRoutes.get('/:id/factions', async (c) => {
   const userId = c.get('userId');
   const characterId = c.req.param('id');
+  const service = new CharacterService(c.env.DB);
 
-  // Verify ownership
-  const character = await c.env.DB
-    .prepare('SELECT id FROM characters WHERE id = ? AND player_id = ?')
-    .bind(characterId, userId)
-    .first();
-
-  if (!character) {
+  try {
+    const factions = await service.getCharacterFactions(userId, characterId);
     return c.json({
-      success: false,
-      errors: [{ code: 'NOT_FOUND', message: 'Character not found' }],
-    }, 404);
+      success: true,
+      data: { factions },
+    });
+  } catch (err: any) {
+    console.error('[API] Get Factions Error:', err);
+    return c.json({ success: false, errors: [{ message: err.message }] }, err.message === 'Character not found' ? 404 : 500);
   }
-
-  const standings = await c.env.DB
-    .prepare(
-      `SELECT cr.*, f.name as faction_name, f.faction_type, f.is_hostile_default
-       FROM character_reputations cr
-       JOIN factions f ON cr.faction_id = f.id
-       WHERE cr.character_id = ?
-       ORDER BY cr.reputation_value DESC`
-    )
-    .bind(characterId)
-    .all();
-
-  return c.json({
-    success: true,
-    data: {
-      standings: standings.results,
-    },
-  });
 });
 
 // =============================================================================
@@ -665,7 +409,7 @@ characterRoutes.post('/:id/backstory', async (c) => {
     });
   } else {
     // Create new backstory
-    const id = nanoid();
+    const id = crypto.randomUUID();
 
     await c.env.DB
       .prepare(
@@ -909,7 +653,7 @@ characterRoutes.post('/:id/memories', async (c) => {
     }, 400);
   }
 
-  const id = nanoid();
+  const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
   await c.env.DB

@@ -9,7 +9,7 @@
  * - Checkpoint management
  */
 
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
 import type {
   SaveGame,
   SaveDataChunk,
@@ -135,7 +135,8 @@ export class SaveDataLoader {
     // Verify chunk checksums
     for (const chunk of chunks.results) {
       if (chunk.checksum) {
-        const data = chunk.compressed ? decompressData(chunk.data) : chunk.data;
+        // Decompress for validation if needed
+        if (chunk.compressed) decompressData(chunk.data);
         if (!verifyChecksum(chunk.data, chunk.checksum)) {
           errors.push(`Chunk ${chunk.chunk_type} has invalid checksum`);
         }
@@ -430,7 +431,7 @@ export class SaveDataLoader {
    * Create a checkpoint for a save.
    */
   async createCheckpoint(options: CheckpointCreateOptions): Promise<Checkpoint> {
-    const checkpointId = nanoid();
+    const checkpointId = crypto.randomUUID();
     const now = new Date().toISOString();
 
     await this.db
@@ -475,7 +476,7 @@ export class SaveDataLoader {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
-          nanoid(),
+          crypto.randomUUID(),
           options.saveId,
           `CHECKPOINT_${checkpointId}_${chunk.chunk_type}`,
           chunk.data,
@@ -685,7 +686,7 @@ export class SaveDataLoader {
     }
 
     // Delete checkpoints
-    const result = await this.db
+    await this.db
       .prepare(`
         DELETE FROM checkpoints
         WHERE expires_at IS NOT NULL

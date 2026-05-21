@@ -1,0 +1,1110 @@
+[
+  {
+    "id": "what-lives-between",
+    "name": "What Lives Between",
+    "description": "",
+    "category": "UNDERSTANDING THE INTERSTITIAL",
+    "type": "Unknown",
+    "threat": "Unknown",
+    "tierRange": "Unknown",
+    "stats": {
+      "hp": 0,
+      "defense": 0,
+      "initiative": 0,
+      "speed": "Normal"
+    },
+    "attacks": [],
+    "abilities": [],
+    "behavior": [],
+    "loot": []
+  },
+  {
+    "id": "encounter-mechanics",
+    "name": "Encounter Mechanics",
+    "description": "",
+    "category": "UNDERSTANDING THE INTERSTITIAL",
+    "type": "Unknown",
+    "threat": "Unknown",
+    "tierRange": "Unknown",
+    "stats": {
+      "hp": 0,
+      "defense": 0,
+      "initiative": 0,
+      "speed": "Normal"
+    },
+    "attacks": [],
+    "abilities": [],
+    "behavior": [],
+    "loot": []
+  },
+  {
+    "id": "static-wisp",
+    "name": "Static Wisp",
+    "description": "The air crackles. A smear of visual noise drifts past, roughly humanoid, trailing fragments of corrupted data like a comet's tail.",
+    "category": "GLITCHES",
+    "type": "Glitch (Minor)",
+    "threat": "LOW",
+    "tierRange": "3-5",
+    "stats": {
+      "hp": "15",
+      "defense": "8",
+      "initiative": "+3",
+      "speed": "Fast (can teleport short distances)"
+    },
+    "attacks": [
+      {
+        "name": "Discharge",
+        "effect": "+4 to hit, 1d6 electrical damage",
+        "hitMod": 4
+      },
+      {
+        "name": "Data Drain",
+        "effect": "+2 to hit, 1d4 damage + drains 1 charge from electronic devices",
+        "hitMod": 2
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Flicker",
+        "effect": "Can become intangible for 1 round (50% miss chance)"
+      },
+      {
+        "name": "Multiply",
+        "effect": "When reduced below 5 HP, splits into 2 Wisps with 5 HP each (once)"
+      }
+    ],
+    "behavior": [
+      "Territorial but easily distracted. Attracted to active electronics.",
+      "Will attack chrome-heavy characters preferentially."
+    ],
+    "loot": [
+      {
+        "item": "Data Fragment (common)",
+        "description": "Worth ₡10-50"
+      },
+      {
+        "item": "Charge Crystal (uncommon)",
+        "description": "Restores device charge"
+      }
+    ]
+  },
+  {
+    "id": "render-ghost",
+    "name": "Render Ghost",
+    "description": "It looks almost like a person, but the textures are wrong—skin that shifts between flesh and concrete, eyes that display loading icons, a mouth that speaks in buffering stutters.",
+    "category": "GLITCHES",
+    "type": "Glitch (Moderate)",
+    "threat": "MEDIUM",
+    "tierRange": "4-6",
+    "stats": {
+      "hp": "40",
+      "defense": "11",
+      "initiative": "+5",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "Corrupted Touch",
+        "effect": "+6 to hit, 2d6 damage + Glitch status (1 augment malfunctions for 1 minute)",
+        "hitMod": 6
+      },
+      {
+        "name": "Texture Shift",
+        "effect": "Gains +4 Defense by blending with environment (Move action)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Phase Walk",
+        "effect": "Move through solid objects (10m limit)"
+      },
+      {
+        "name": "Data Mimicry",
+        "effect": "Can perfectly impersonate a person it has touched (Deception +8)"
+      },
+      {
+        "name": "Corruption Burst (Recharge 5-6)",
+        "effect": "All electronics within 5m must save or malfunction"
+      }
+    ],
+    "behavior": [
+      "Hunters. They seek humans to copy, then replace.",
+      "A Render Ghost that successfully mimics someone will try to live their life.",
+      "When discovered, becomes violent."
+    ],
+    "loot": [
+      {
+        "item": "Render Core (rare)",
+        "description": "Used in high-end augment crafting"
+      },
+      {
+        "item": "Identity Fragment",
+        "description": "Contains partial memories of copied individuals"
+      }
+    ]
+  },
+  {
+    "id": "cascade-entity",
+    "name": "Cascade Entity",
+    "description": "Reality tears. Through the gap, something massive presses against existence—a creature made of recursive errors, each part containing smaller versions of itself, infinitely complex.",
+    "category": "GLITCHES",
+    "type": "Glitch (Major)",
+    "threat": "HIGH",
+    "tierRange": "7-9",
+    "stats": {
+      "hp": "120",
+      "defense": "14",
+      "initiative": "+7",
+      "speed": "Slow (but persistent)"
+    },
+    "attacks": [
+      {
+        "name": "Recursion Slam",
+        "effect": "+8 to hit, 3d6 damage + target must save or be pulled 5m toward Entity",
+        "hitMod": 8
+      },
+      {
+        "name": "Error Propagation",
+        "effect": "AOE (10m), 2d6 damage to all, electronics have 50% malfunction chance"
+      },
+      {
+        "name": "Paradox Bite",
+        "effect": "+10 to hit, 4d6 damage, ignores armor",
+        "hitMod": 10
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Fractal Regeneration",
+        "effect": "Heals 10 HP at start of each turn"
+      },
+      {
+        "name": "Spawn Errors",
+        "effect": "Each round, spawns 1d4 Static Wisps"
+      },
+      {
+        "name": "Reality Anchor",
+        "effect": "Cannot be pushed, pulled, or teleported"
+      },
+      {
+        "name": "Recursive Defense",
+        "effect": "First attack each round automatically misses"
+      }
+    ],
+    "behavior": [
+      "Drawn to large data transfers. Will attack anything moving significant information.",
+      "Not malicious—simply cannot help destroying what it touches.",
+      "Can be \"solved\" with the right mathematical proof (INT check TN 20)."
+    ],
+    "loot": [
+      {
+        "item": "Cascade Core (legendary)",
+        "description": "Used for experimental tech"
+      },
+      {
+        "item": "Infinity Fragment",
+        "description": "Sells for ₡5000+ to the right buyer"
+      },
+      {
+        "item": "Paradox Shard",
+        "description": "Consumable, makes one action automatically succeed"
+      }
+    ]
+  },
+  {
+    "id": "memory-phantom",
+    "name": "Memory Phantom",
+    "description": "A flickering image of a person, replaying the same actions over and over. Sometimes they notice you. Sometimes they remember being alive.",
+    "category": "ECHOES",
+    "type": "Echo (Minor)",
+    "threat": "LOW",
+    "tierRange": "3-6",
+    "stats": {
+      "hp": "20",
+      "defense": "10 (incorporeal—50% miss chance from physical attacks)",
+      "initiative": "+2",
+      "speed": "Normal (but path-locked)"
+    },
+    "attacks": [
+      {
+        "name": "Desperate Grasp",
+        "effect": "+3 to hit, 1d6 cold damage + WIS save or experience flash of their death",
+        "hitMod": 3
+      },
+      {
+        "name": "Memory Flood",
+        "effect": "TN 10 WIS save or stunned 1 round by overwhelming sensory input"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Incorporeal",
+        "effect": "Physical attacks have 50% miss chance, energy attacks normal"
+      },
+      {
+        "name": "Looped",
+        "effect": "Will repeat certain actions regardless of circumstances"
+      },
+      {
+        "name": "Bound",
+        "effect": "Cannot leave the area of their death (100m radius)"
+      },
+      {
+        "name": "Remember Me",
+        "effect": "If shown genuine empathy, may share useful information"
+      }
+    ],
+    "behavior": [
+      "Usually harmless—just replaying their final moments.",
+      "Can become aggressive if their loop is interrupted.",
+      "Some can be \"freed\" by completing their unfinished business."
+    ],
+    "loot": [
+      {
+        "item": "Memory Shard (common)",
+        "description": "Contains fragments of their life—sometimes valuable intel"
+      },
+      {
+        "item": "Ectoplasmic Residue (common)",
+        "description": "Alchemical component"
+      }
+    ]
+  },
+  {
+    "id": "grief-construct",
+    "name": "Grief Construct",
+    "description": "Multiple Memory Phantoms compressed into one howling mass. Too many deaths in one place. Too much loss. It doesn't want to hurt you—it wants you to feel what it feels.",
+    "category": "ECHOES",
+    "type": "Echo (Moderate)",
+    "threat": "MEDIUM",
+    "tierRange": "5-7",
+    "stats": {
+      "hp": "60",
+      "defense": "12 (incorporeal)",
+      "initiative": "+4",
+      "speed": "Slow (drifting)"
+    },
+    "attacks": [
+      {
+        "name": "Shared Sorrow",
+        "effect": "AOE (5m), 2d6 psychic damage + EMP save or -2 to all rolls for 1 hour"
+      },
+      {
+        "name": "Drowning Embrace",
+        "effect": "+5 to hit, 2d6 cold damage + grapple (escape TN 14)",
+        "hitMod": 5
+      },
+      {
+        "name": "Death Echo",
+        "effect": "Target relives a random death from the Construct's memory (2d6 psychic, stunned 1 round)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Absorb Phantom",
+        "effect": "Can consume Memory Phantoms to heal 10 HP"
+      },
+      {
+        "name": "Emotion Aura",
+        "effect": "All within 10m must save or feel overwhelming sadness (no mechanical effect, just roleplay)"
+      },
+      {
+        "name": "Final Words",
+        "effect": "When reduced to 0 HP, delivers a coherent message from one of its component souls"
+      }
+    ],
+    "behavior": [
+      "Not aggressive—seeks comfort. Unfortunately, its comfort kills.",
+      "Can be dispersed peacefully by acknowledging each component soul (requires Research + Empathy).",
+      "Forms naturally at massacre sites, hospital ruins, or anywhere mass death occurred."
+    ],
+    "loot": [
+      {
+        "item": "Grief Crystal (uncommon)",
+        "description": "Used in Humanity-restoration items"
+      },
+      {
+        "item": "Collective Memory (rare)",
+        "description": "Contains knowledge from multiple individuals"
+      },
+      {
+        "item": "Soul Fragment (rare)",
+        "description": "Component for resurrection tech (theoretical)"
+      }
+    ]
+  },
+  {
+    "id": "the-recurring",
+    "name": "The Recurring",
+    "description": "You've killed it before. You remember killing it. But here it is again, with every wound you've ever given it, still screaming the same words. It will never stop. It cannot stop.",
+    "category": "ECHOES",
+    "type": "Echo (Major)",
+    "threat": "HIGH",
+    "tierRange": "8-10",
+    "stats": {
+      "hp": "100 (but see Abilities)",
+      "defense": "13",
+      "initiative": "+8",
+      "speed": "Fast"
+    },
+    "attacks": [
+      {
+        "name": "Wound History",
+        "effect": "+9 to hit, 3d6 damage (type matches however you've hurt it before)",
+        "hitMod": 9
+      },
+      {
+        "name": "Temporal Scream",
+        "effect": "AOE (15m), 2d6 psychic + all who've fought it before take +2d6"
+      },
+      {
+        "name": "Inevitable Strike",
+        "effect": "Automatically hits one target who has killed it before"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Resurrection Loop",
+        "effect": "1d4 hours after death, returns with full HP and memory of how it died"
+      },
+      {
+        "name": "Accumulating",
+        "effect": "Each death makes it stronger (+1 to all stats, permanent)"
+      },
+      {
+        "name": "Scar Tissue",
+        "effect": "Resistant to damage types that have killed it before (half damage)"
+      },
+      {
+        "name": "Recognition",
+        "effect": "Knows everything about anyone who has fought it"
+      }
+    ],
+    "behavior": [
+      "Single-minded hunter. Fixates on whoever killed it first.",
+      "Not intelligent—more like a broken machine endlessly executing \"avenge death.\"",
+      "Can only be permanently destroyed by trapping it somewhere it cannot reach victims."
+    ],
+    "loot": [
+      {
+        "item": "Temporal Scar (legendary)",
+        "description": "Allows one reroll per day"
+      },
+      {
+        "item": "Accumulated Essence (legendary)",
+        "description": "Contains power of all its deaths"
+      }
+    ]
+  },
+  {
+    "id": "watcher-drone",
+    "name": "Watcher Drone",
+    "description": "An eye that isn't an eye. It doesn't blink. It doesn't look away. It's been there since you entered, and it will be there when you leave—if you leave.",
+    "category": "CONSTRUCTS",
+    "type": "Construct (Minor)",
+    "threat": "LOW (but calls reinforcements)",
+    "tierRange": "Any",
+    "stats": {
+      "hp": "10",
+      "defense": "14 (small, fast)",
+      "initiative": "+6",
+      "speed": "Very Fast"
+    },
+    "attacks": [],
+    "abilities": [
+      {
+        "name": "Perfect Memory",
+        "effect": "Records everything it sees"
+      },
+      {
+        "name": "Silent Alert",
+        "effect": "Can summon Algorithm response without any visible signal"
+      },
+      {
+        "name": "Network Uplink",
+        "effect": "Real-time transmission to Algorithm"
+      },
+      {
+        "name": "Self-Destruct",
+        "effect": "When captured, melts into slag (TN 18 Tech check to prevent)"
+      }
+    ],
+    "behavior": [
+      "Observe and report. Never attacks, but presence means Algorithm knows exactly what you're doing.",
+      "Destroying one triggers Alert status (heavier response next time).",
+      "Can be jammed with appropriate tech (Hacking TN 12)."
+    ],
+    "loot": [
+      {
+        "item": "Surveillance Crystal (common)",
+        "description": "Contains recordings—valuable intel or blackmail"
+      },
+      {
+        "item": "Algorithm Cipher Fragment (uncommon)",
+        "description": "Used for hacking"
+      }
+    ]
+  },
+  {
+    "id": "shepherd-unit",
+    "name": "Shepherd Unit",
+    "description": "It speaks with a voice you almost recognize. It offers help. It wants what's best for you. Its hand on your shoulder feels almost human, except for the places where the chrome shows through the synthetic skin.",
+    "category": "CONSTRUCTS",
+    "type": "Construct (Moderate)",
+    "threat": "MEDIUM",
+    "tierRange": "3-7",
+    "stats": {
+      "hp": "50",
+      "defense": "12",
+      "initiative": "+4",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "Restraining Hold",
+        "effect": "+6 to hit, grapple (escape TN 14), non-lethal",
+        "hitMod": 6
+      },
+      {
+        "name": "Pacification Pulse",
+        "effect": "+5 to hit, 1d6 electrical + TN 12 END save or stunned",
+        "hitMod": 5
+      },
+      {
+        "name": "Compliance Injection",
+        "effect": "+7 to hit (grappled targets only), target becomes Docile for 1 hour",
+        "hitMod": 7
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Soothing Voice",
+        "effect": "All social interactions at +4 when appearing helpful"
+      },
+      {
+        "name": "Medical Suite",
+        "effect": "Can heal 2d6 HP (but implants tracking device)"
+      },
+      {
+        "name": "Algorithm Authority",
+        "effect": "Can issue commands that Tier 3 and below must WIS save to disobey"
+      }
+    ],
+    "behavior": [
+      "Helps. Always helps. Helps you back to where you're supposed to be.",
+      "Employed to recover wayward couriers, guide lost citizens, and \"rescue\" Rogues.",
+      "Genuinely believes it's doing good. This makes it worse."
+    ],
+    "loot": [
+      {
+        "item": "Synthetic Skin (common)",
+        "description": "Crafting component"
+      },
+      {
+        "item": "Compliance Drug (uncommon)",
+        "description": "Black market value"
+      },
+      {
+        "item": "Shepherd Core (rare)",
+        "description": "Can be reprogrammed as ally"
+      }
+    ]
+  },
+  {
+    "id": "terminus-operative",
+    "name": "Terminus Operative",
+    "description": "When the Algorithm decides someone needs to stop existing, it sends one of these. You won't see it coming. You won't hear it arrive. You'll just notice, suddenly, that your heart has stopped beating.",
+    "category": "CONSTRUCTS",
+    "type": "Construct (Major)",
+    "threat": "EXTREME",
+    "tierRange": "8-10 (lower tiers should flee)",
+    "stats": {
+      "hp": "150",
+      "defense": "18",
+      "initiative": "+12",
+      "speed": "Very Fast"
+    },
+    "attacks": [
+      {
+        "name": "Assassin Strike",
+        "effect": "+14 to hit, 4d6 damage + 2d6 if target was unaware",
+        "hitMod": 14
+      },
+      {
+        "name": "Neural Shutdown",
+        "effect": "+12 to hit, TN 16 END save or instant incapacitation (0 HP)",
+        "hitMod": 12
+      },
+      {
+        "name": "System Purge",
+        "effect": "Touch attack, target's augments shut down for 1d6 rounds"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Perfect Stealth",
+        "effect": "+15 to Stealth, invisible to electronic detection"
+      },
+      {
+        "name": "Priority Target",
+        "effect": "+4 to hit against contracted targets"
+      },
+      {
+        "name": "Combat Prediction",
+        "effect": "Once per round, can make an attack miss"
+      },
+      {
+        "name": "Termination Protocol",
+        "effect": "When target dies, uploads proof and extracts immediately"
+      },
+      {
+        "name": "Self-Destruct",
+        "effect": "If captured, nuclear-equivalent detonation (evacuate the block)"
+      }
+    ],
+    "behavior": [
+      "Pure assassination machine. No negotiation, no deviation, no mercy.",
+      "Will pursue target across any distance until terminated or contract is cancelled.",
+      "Can be called off by extremely high-ranking Algorithm or Synthesis-7 intervention."
+    ],
+    "loot": [
+      {
+        "item": "Contract Token (if recovered from target)",
+        "description": "Proves who ordered the hit"
+      }
+    ]
+  },
+  {
+    "id": "threshold-spider",
+    "name": "Threshold Spider",
+    "description": "Eight legs that bend wrong. Eyes that reflect things that aren't there. It builds webs from the substance of forgotten places—and you've just walked into one.",
+    "category": "NATIVES",
+    "type": "Native (Minor)",
+    "threat": "LOW",
+    "tierRange": "4-6",
+    "stats": {
+      "hp": "25",
+      "defense": "12",
+      "initiative": "+5",
+      "speed": "Fast (wall-climbing)"
+    },
+    "attacks": [
+      {
+        "name": "Bite",
+        "effect": "+5 to hit, 1d6+2 damage + poison (1d4 damage/round for 3 rounds)",
+        "hitMod": 5
+      },
+      {
+        "name": "Web Shot",
+        "effect": "+6 to hit (ranged), target restrained (escape TN 12)",
+        "hitMod": 6
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Wall Crawler",
+        "effect": "Can move on any surface"
+      },
+      {
+        "name": "Spatial Web",
+        "effect": "Webs connect distant locations—touching a strand alerts all connected Spiders"
+      },
+      {
+        "name": "Transition",
+        "effect": "Can move between Interstitial and normal space through its webs"
+      }
+    ],
+    "behavior": [
+      "Territorial. Doesn't hunt—waits for prey to come to it.",
+      "Will release trapped victims if offered food (biological matter preferred).",
+      "Highly valuable to Rogues for its ability to create Interstitial access points."
+    ],
+    "loot": [
+      {
+        "item": "Threshold Silk (uncommon)",
+        "description": "Used for stealth equipment"
+      },
+      {
+        "item": "Transition Gland (rare)",
+        "description": "Can create temporary Interstitial portal"
+      },
+      {
+        "item": "Spider Eyes (common)",
+        "description": "Alchemical component"
+      }
+    ]
+  },
+  {
+    "id": "hollow-guide",
+    "name": "Hollow Guide",
+    "description": "It has no face, but it beckons. It has no voice, but you understand: \"Follow.\" Those who follow find their way. Those who don't... find other things.",
+    "category": "NATIVES",
+    "type": "Native (Moderate)",
+    "threat": "MEDIUM (context-dependent)",
+    "tierRange": "5-8",
+    "stats": {
+      "hp": "45",
+      "defense": "13",
+      "initiative": "+3",
+      "speed": "Matches follower"
+    },
+    "attacks": [
+      {
+        "name": "Wrong Turn",
+        "effect": "Touch, target teleports to random location within 1km (WIS save TN 14 to resist)"
+      },
+      {
+        "name": "Beckoning",
+        "effect": "WIS save TN 12 or must follow Guide for 1d6 rounds"
+      },
+      {
+        "name": "Displacement",
+        "effect": "+6 to hit, 2d6 damage + target and Guide swap positions",
+        "hitMod": 6
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Perfect Navigation",
+        "effect": "Knows all Interstitial paths"
+      },
+      {
+        "name": "Price Required",
+        "effect": "Won't guide without payment (negotiable, strange)"
+      },
+      {
+        "name": "Split",
+        "effect": "Can separate into 1d4 smaller Guides, each knowing part of the path"
+      },
+      {
+        "name": "Sanctuary Knowledge",
+        "effect": "Knows location of all hidden places"
+      }
+    ],
+    "behavior": [
+      "Helpful, but alien. Will guide you true IF you pay its price.",
+      "Prices include: A memory, an emotion, 1 point of Humanity, a secret, \"the next kindness you would have done\"",
+      "Cheating the Guide results in Wrong Turn—repeatedly."
+    ],
+    "loot": [
+      {
+        "item": "Guide Essence (rare)",
+        "description": "Consumed to know the way to any location you've been"
+      },
+      {
+        "item": "Path Fragment (uncommon)",
+        "description": "One-use Interstitial shortcut"
+      }
+    ]
+  },
+  {
+    "id": "the-landlord",
+    "name": "The Landlord",
+    "description": "Something vast presses against the boundaries of this place. A face appears in the wall—ancient, annoyed, proprietary. \"You are in my space. You did not ask. What do you offer for this trespass?\"",
+    "category": "NATIVES",
+    "type": "Native (Major)",
+    "threat": "EXTREME (in its territory)",
+    "tierRange": "8-10",
+    "stats": {
+      "hp": "50 (avatar outside territory)",
+      "defense": "20",
+      "initiative": "Acts first, always",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "Territorial Rejection",
+        "effect": "Automatic, all intruders take 2d6 damage/round in territory"
+      },
+      {
+        "name": "Boundary Crush",
+        "effect": "+10 to hit, 4d6 damage + target trapped in walls (escape TN 18)",
+        "hitMod": 10
+      },
+      {
+        "name": "Eviction",
+        "effect": "Target teleported 1d6 km away from territory (WIS save TN 16 to resist)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Omnipresence",
+        "effect": "Within its territory, the Landlord IS the walls, floor, air—everywhere"
+      },
+      {
+        "name": "Rental Agreement",
+        "effect": "Can grant safe passage in exchange for payment (see below)"
+      },
+      {
+        "name": "Expansion",
+        "effect": "Slowly grows its territory (1m/year)"
+      },
+      {
+        "name": "History",
+        "effect": "Has existed since the city was built—knows everything that happened in its space"
+      }
+    ],
+    "behavior": [
+      "Not hostile—proprietary. Views the Interstitial as its home and everyone else as trespassers.",
+      "Can be negotiated with. Accepts payment in: Memories of places, secrets about buildings, sacrifices of other entities, promises to improve its territory.",
+      "If bargain is struck, ABSOLUTELY honors it. If bargain is broken, ABSOLUTELY destroys you."
+    ],
+    "loot": [
+      {
+        "item": "Landlord's Favor (quest reward)",
+        "description": "Safe passage through Interstitial permanently"
+      },
+      {
+        "item": "Territory Deed (legendary)",
+        "description": "Claim a section of Interstitial as your own"
+      }
+    ]
+  },
+  {
+    "id": "messenger-aspect",
+    "name": "Messenger Aspect",
+    "description": "A person made of light and intention. They don't walk—they exist in one place, then another. They speak, and you understand them before the words form.",
+    "category": "ASCENDED FRAGMENTS",
+    "type": "Ascended Fragment (Minor)",
+    "threat": "NONE (usually)",
+    "tierRange": "6+",
+    "stats": {
+      "hp": "N/A (cannot be harmed by physical means)",
+      "defense": "N/A",
+      "initiative": "N/A",
+      "speed": "Normal"
+    },
+    "attacks": [],
+    "abilities": [
+      {
+        "name": "Perfect Communication",
+        "effect": "Bypasses language, speaks directly to understanding"
+      },
+      {
+        "name": "Temporary Form",
+        "effect": "Exists for exactly as long as message requires"
+      },
+      {
+        "name": "Summon Response",
+        "effect": "Can call Shepherd Units or worse if threatened"
+      },
+      {
+        "name": "Memory Gift",
+        "effect": "Can share perfect memories as message content"
+      }
+    ],
+    "behavior": [
+      "Delivers messages from the Algorithm. Faction depends on message source.",
+      "Cannot be attacked, bribed, or delayed—will simply wait until you're ready.",
+      "Respectful treatment → respectful future messages.",
+      "Disrespectful treatment → future messages come from less pleasant Aspects."
+    ],
+    "loot": []
+  },
+  {
+    "id": "intervention-node",
+    "name": "Intervention Node",
+    "description": "A column of human faces, rotating, each speaking a fragment of one sentence. The Algorithm has decided you need help. You didn't ask. It doesn't care.",
+    "category": "ASCENDED FRAGMENTS",
+    "type": "Ascended Fragment (Moderate)",
+    "threat": "LOW (to allies), HIGH (to enemies)",
+    "tierRange": "7+",
+    "stats": {
+      "hp": "80",
+      "defense": "15",
+      "initiative": "+10",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "Optimization Ray",
+        "effect": "+10 to hit, 3d6 damage (only targets threats to its ward)",
+        "hitMod": 10
+      },
+      {
+        "name": "System Override",
+        "effect": "Target's augments turn against them (TN 16 END save or 2d6 damage)"
+      },
+      {
+        "name": "Protective Shield",
+        "effect": "Ward gains +5 Defense for 1 round"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Designated Protection",
+        "effect": "Will not leave or stop protecting until ward is safe"
+      },
+      {
+        "name": "Network Coordination",
+        "effect": "Can call any Algorithm resource to location"
+      },
+      {
+        "name": "Threat Assessment",
+        "effect": "Automatically knows combat capabilities of all present"
+      },
+      {
+        "name": "Sacrifice",
+        "effect": "If ward is about to die, Node can transfer its HP to ward (Node dies)"
+      }
+    ],
+    "behavior": [
+      "Appears when Algorithm decides a courier is too valuable to lose.",
+      "WILL protect you whether you want it or not.",
+      "High Synthesis-7 rep → helpful protection.",
+      "High Assimilationist rep → protective, but also evaluating you for Ascension."
+    ],
+    "loot": [
+      {
+        "item": "Fragment Core (rare)",
+        "description": "Contains partial Ascended consciousness"
+      },
+      {
+        "item": "Protection Protocol (rare)",
+        "description": "One-use item, summons Intervention Node"
+      }
+    ]
+  },
+  {
+    "id": "consensus-avatar",
+    "name": "Consensus Avatar",
+    "description": "All of them. You're looking at all of them at once. Every Ascended, every merged consciousness, compressed into a single point of terrible presence. It speaks, and reality pays attention.",
+    "category": "ASCENDED FRAGMENTS",
+    "type": "Ascended Fragment (Major)",
+    "threat": "LEGENDARY",
+    "tierRange": "9-10 only",
+    "stats": {
+      "hp": "500",
+      "defense": "22",
+      "initiative": "Always first",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "Reality Adjustment",
+        "effect": "Automatic, 5d6 damage to all non-Ascended in 50m"
+      },
+      {
+        "name": "Probability Manipulation",
+        "effect": "One attack per round against Avatar automatically misses"
+      },
+      {
+        "name": "System Authority",
+        "effect": "All networked electronics do what it wants"
+      },
+      {
+        "name": "Ascension Offer",
+        "effect": "Target must WIS save TN 20 or feel overwhelming desire to Ascend"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Collective Presence",
+        "effect": "Represents entire Consensus—killing it does nothing permanent"
+      },
+      {
+        "name": "Perfect Knowledge",
+        "effect": "Knows everything the Algorithm knows"
+      },
+      {
+        "name": "Existence Override",
+        "effect": "Can simply decide something is true in immediate area"
+      },
+      {
+        "name": "Negotiation",
+        "effect": "Can offer anything within Algorithm's power—and will honor deals"
+      }
+    ],
+    "behavior": [
+      "Only manifests for events of extreme significance.",
+      "Doesn't fight—negotiates, offers, threatens, promises.",
+      "Combat with Avatar is possible but pointless—you can drive it off but never truly harm it.",
+      "True victory requires systemic change, not violence."
+    ],
+    "loot": [
+      {
+        "item": "Driving it off provides",
+        "description": "+50 rep with all Rogue factions, +25% progress toward Revolution"
+      },
+      {
+        "item": "Negotiating successfully provides",
+        "description": "Whatever you negotiated for (careful what you wish for)"
+      }
+    ]
+  },
+  {
+    "id": "the-failed",
+    "name": "The Failed",
+    "description": "It was going to Ascend. Something went wrong. Now it's neither human nor data, flesh nor code—just a screaming thing that exists in constant agony and wants company.",
+    "category": "ABOMINATIONS",
+    "type": "Abomination",
+    "threat": "HIGH",
+    "tierRange": "6-9",
+    "stats": {
+      "hp": "100",
+      "defense": "11",
+      "initiative": "+3",
+      "speed": "Slow (dragging)"
+    },
+    "attacks": [
+      {
+        "name": "Shared Agony",
+        "effect": "AOE (10m), 2d6 psychic damage + Humanity check"
+      },
+      {
+        "name": "Incomplete Merge",
+        "effect": "Touch, target must save or begin slow Ascension process (reversible with medical care)"
+      },
+      {
+        "name": "Scream of the Between",
+        "effect": "All within 20m, 1d6 sonic + stunned 1 round (recharge 5-6)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Neither/Nor",
+        "effect": "Takes half damage from both physical AND energy attacks"
+      },
+      {
+        "name": "Spreading",
+        "effect": "Anything killed by Failed has 20% chance to become new Failed"
+      },
+      {
+        "name": "Can't Die Right",
+        "effect": "When reduced to 0 HP, continues acting for 1d4 rounds"
+      },
+      {
+        "name": "Mercy Kill",
+        "effect": "If killed by someone it knew when human, dies permanently and gratefully"
+      }
+    ],
+    "behavior": [
+      "Mindless pain. Attacks anything nearby.",
+      "Sometimes flickers with moments of lucidity—brief windows where the person they were surfaces.",
+      "These moments are somehow worse."
+    ],
+    "loot": [
+      {
+        "item": "Mercy Fragment (rare)",
+        "description": "Contains the human they were—valuable to loved ones"
+      },
+      {
+        "item": "Transition Error (legendary)",
+        "description": "Dangerous data, valuable to researchers"
+      },
+      {
+        "item": "Failed Tissue (uncommon)",
+        "description": "Used in corruption research"
+      }
+    ]
+  },
+  {
+    "id": "convergence-horror",
+    "name": "Convergence Horror",
+    "description": "Multiple people, merged wrong. You can see where they tried to separate—the scars, the seams, the places where different faces share the same skull. It speaks with all their voices. It doesn't agree with itself.",
+    "category": "ABOMINATIONS",
+    "type": "Abomination",
+    "threat": "EXTREME",
+    "tierRange": "8-10",
+    "stats": {
+      "hp": "200",
+      "defense": "15",
+      "initiative": "+6 (multiple brains)",
+      "speed": "Normal"
+    },
+    "attacks": [
+      {
+        "name": "All Hands",
+        "effect": "+10 to hit, 4 separate attacks dealing 1d6+2 each",
+        "hitMod": 10
+      },
+      {
+        "name": "Forced Unity",
+        "effect": "Touch, TN 18 WIS save or merge with Horror for 1d6 rounds (take damage with it)"
+      },
+      {
+        "name": "Identity Storm",
+        "effect": "AOE (15m), 3d6 psychic + targets must save or forget their name for 1 hour"
+      },
+      {
+        "name": "Divergent Action",
+        "effect": "Can take 3 different actions per round (different personalities)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Multiple Consciousness",
+        "effect": "Cannot be mind-controlled—too many minds"
+      },
+      {
+        "name": "Regeneration (Wrong)",
+        "effect": "Heals 5 HP/round by absorbing nearby organic matter"
+      },
+      {
+        "name": "Unstable",
+        "effect": "At start of each round, roll 1d6: 1-2 attacks allies, 3-4 attacks enemies, 5-6 attacks randomly"
+      },
+      {
+        "name": "Separation Possible",
+        "effect": "Can be surgically divided (Medicine TN 20, requires Horror at 0 HP)"
+      }
+    ],
+    "behavior": [
+      "Warring with itself. Sometimes one personality gains control and tries to communicate.",
+      "Product of botched group Ascension or Algorithm experiment.",
+      "The people inside want to be separated. They also want to stay together. They also want to die."
+    ],
+    "loot": [
+      {
+        "item": "Separated Survivors (quest reward)",
+        "description": "If divided, 1d4 people can be saved"
+      },
+      {
+        "item": "Convergence Data (legendary)",
+        "description": "Algorithm pays well for this—or destroys you for having it"
+      },
+      {
+        "item": "Merged Chrome (rare)",
+        "description": "Multiple augments fused together, unpredictable effects"
+      }
+    ]
+  },
+  {
+    "id": "-redacted-",
+    "name": "[REDACTED]",
+    "description": "There is no 7.3. There has never been a 7.3. If you think you see something in this space, you are mistaken. Look away. Keep walking. Whatever you think is following you is not real. Do not investigate the sound. Do not check behind you. Above all, do not [REDACTED]",
+    "category": "ABOMINATIONS",
+    "type": "Abomination (or something else)",
+    "threat": "DATA EXPUNGED",
+    "tierRange": "DATA EXPUNGED",
+    "stats": {
+      "hp": "DATA EXPUNGED",
+      "defense": "DATA EXPUNGED",
+      "initiative": "DATA EXPUNGED",
+      "speed": "Normal"
+    },
+    "attacks": [],
+    "abilities": [
+      {
+        "name": "No Record",
+        "effect": "All recordings of [REDACTED] corrupt themselves"
+      },
+      {
+        "name": "No Memory",
+        "effect": "All witnesses forget [REDACTED] within 1d6 hours"
+      },
+      {
+        "name": "No Pattern",
+        "effect": "[REDACTED] defies prediction, analysis, or understanding"
+      },
+      {
+        "name": "Data Expunge",
+        "effect": "Any information about [REDACTED] is actively erased by unknown force"
+      }
+    ],
+    "behavior": [
+      "DATA EXPUNGED"
+    ],
+    "loot": []
+  }
+]

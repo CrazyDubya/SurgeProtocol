@@ -16,6 +16,7 @@ import {
   setFactions,
   setEquipped,
   setConditions,
+  activeVehicle,
   setLoadingCharacter,
   setLoadingStats,
   setCharacterError,
@@ -115,6 +116,17 @@ export function useCharacterData() {
           isActive: cond.isActive,
           expiresAt: cond.expiresAt,
         })));
+      }
+
+      // Set active vehicle
+      if (stats.activeVehicle) {
+        activeVehicle.value = {
+          id: stats.activeVehicle.id,
+          vehicle_name: stats.activeVehicle.vehicle_name,
+          vehicle_def_id: stats.activeVehicle.vehicle_def_id,
+        };
+      } else {
+        activeVehicle.value = null;
       }
     } catch (err) {
       console.error('Failed to load character stats:', err);

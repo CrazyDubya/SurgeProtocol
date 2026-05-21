@@ -45,6 +45,8 @@ new_classes = ["CombatSession", "WarTheater", "WorldClock"]
 # Environment variables
 [vars]
 ENVIRONMENT = "development"
+CF_MASTER_TOKEN = "dev-master-token-123"
+JWT_SECRET = "dev-jwt-secret-123"
 
 # Secrets (set via wrangler secret put)
 # - JWT_SECRET: For JWT token signing
@@ -53,7 +55,7 @@ ENVIRONMENT = "development"
 
 # Development environment
 [env.development]
-vars = { ENVIRONMENT = "development" }
+vars = { ENVIRONMENT = "development", CF_MASTER_TOKEN = "dev-master-token-123", JWT_SECRET = "dev-jwt-secret-123" }
 
 # Staging environment
 [env.staging]

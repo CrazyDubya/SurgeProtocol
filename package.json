@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
-    "build": "esbuild src/index.ts --bundle --outdir=dist --format=esm",
+    "build": "esbuild src/index.ts --bundle --outdir=dist --format=esm --external:cloudflare:workers",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",
@@ -18,7 +18,7 @@
     "test:schema": "node tests/schema-validation.test.js",
     "test:tokens": "node --test tests/design-tokens.test.js",
     "test:frontend": "npm run test:tokens && npm run lint:frontend",
-    "test:unit": "vitest",
+    "test:unit": "vitest run",
     "lint:schema": "node scripts/validate-schema.js",
     "lint:frontend": "node scripts/validate-frontend.js",
     "validate:all": "npm run lint:schema && npm run test:schema && npm run lint:frontend && npm run test:tokens",
@@ -27,7 +27,6 @@
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
     "hono": "^4.11.7",
-    "nanoid": "^5.0.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {

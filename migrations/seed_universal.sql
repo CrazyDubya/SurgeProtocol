@@ -1,0 +1,2 @@
+-- Emptying redundant and broken seed file.
+-- Lore-heavy data is now handled by src/db/seed.ts

@@ -2,7 +2,7 @@
  * Login Page
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useLocation } from 'wouter-preact';
 import { Link } from 'wouter-preact';
 import { authStore, isAuthenticated, hasCharacter } from '@/stores/authStore';
@@ -16,14 +16,17 @@ export function Login() {
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Redirect if already authenticated
-  if (isAuthenticated.value) {
-    if (hasCharacter.value) {
-      setLocation('/');
-    } else {
-      setLocation('/select-character');
+  useEffect(() => {
+    if (isAuthenticated.value) {
+      if (hasCharacter.value) {
+        setLocation('/');
+      } else {
+        setLocation('/select-character');
+      }
     }
-    return null;
-  }
+  }, [isAuthenticated.value, hasCharacter.value, setLocation]);
+
+  if (isAuthenticated.value) return null;
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();

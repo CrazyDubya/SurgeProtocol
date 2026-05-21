@@ -22,9 +22,17 @@ export function adminMiddleware() {
   return async (c: Context, next: Next) => {
     const masterToken = c.env?.CF_MASTER_TOKEN as string | undefined;
     const jwtSecret = c.env?.JWT_SECRET as string | undefined;
+    const url = new URL(c.req.url);
+
+    // Allow localhost (Dev Mode)
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      console.log('🔓 Allowing localhost admin access');
+      return next();
+    }
 
     // Check for admin token header
     const adminToken = c.req.header('X-Admin-Token');
+    console.log('Admin Auth Check:', { masterToken, adminToken, match: adminToken === masterToken });
     if (adminToken && masterToken && adminToken === masterToken) {
       // Token auth successful - log and continue
       await logAdminAction(c, 'token', 'system');

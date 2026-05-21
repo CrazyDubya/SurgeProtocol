@@ -1,0 +1,81 @@
+{
+    "drones": [
+        {
+            "code": "DRONE_SCOUT_V1",
+            "name": "SkyEye Scout",
+            "manufacturer": "AeroDyne",
+            "description": "Basic surveillance drone. Cheap, quiet, but fragile.",
+            "drone_class": "QUADCOPTER",
+            "drone_role": "SCOUT",
+            "size_category": "SMALL",
+            "rarity": "COMMON",
+            "stats": {
+                "max_speed_kmh": 60,
+                "acceleration": 70,
+                "maneuverability": 80,
+                "max_altitude_m": 150,
+                "noise_level": 30,
+                "max_hull_points": 15,
+                "battery_capacity_minutes": 25,
+                "sensor_suite": {
+                    "type": "OPTICAL",
+                    "range": 500
+                },
+                "stealth_detection": 20
+            },
+            "requirements": {
+                "tier": 1
+            },
+            "price": 800
+        },
+        {
+            "code": "DRONE_CARGO_MULE",
+            "name": "Mule Hauler",
+            "manufacturer": "HeavyLift",
+            "description": "Heavy lift hexacopter designed for courier deliveries.",
+            "drone_class": "HEXACOPTER",
+            "drone_role": "CARGO",
+            "size_category": "MEDIUM",
+            "rarity": "COMMON",
+            "stats": {
+                "max_speed_kmh": 40,
+                "acceleration": 30,
+                "maneuverability": 40,
+                "max_altitude_m": 100,
+                "noise_level": 70,
+                "max_hull_points": 50,
+                "battery_capacity_minutes": 40,
+                "max_payload_kg": 15.0,
+                "cargo_volume_liters": 20.0
+            },
+            "requirements": {
+                "tier": 2
+            },
+            "price": 1500
+        },
+        {
+            "code": "DRONE_COMBAT_WASP",
+            "name": "Wasp Interceptor",
+            "manufacturer": "Militech Clone",
+            "description": "Light combat drone equipped with a stun gun.",
+            "drone_class": "QUADCOPTER",
+            "drone_role": "COMBAT",
+            "size_category": "SMALL",
+            "rarity": "UNCOMMON",
+            "stats": {
+                "max_speed_kmh": 90,
+                "acceleration": 90,
+                "maneuverability": 85,
+                "max_altitude_m": 200,
+                "max_hull_points": 25,
+                "armor_rating": 2,
+                "weapon_mounts": 1,
+                "autonomous_level": 2
+            },
+            "requirements": {
+                "tier": 3
+            },
+            "price": 3000
+        }
+    ]
+}

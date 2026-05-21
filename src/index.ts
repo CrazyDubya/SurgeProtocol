@@ -206,13 +206,13 @@ app.all('/api/combat/:combatId/*', async (c) => {
   return stub.fetch(new Request(url.toString(), c.req.raw));
 });
 
-app.all('/api/world/*', async (c) => {
-  const id = c.env.WORLD_CLOCK.idFromName('global');
-  const stub = c.env.WORLD_CLOCK.get(id);
-  const url = new URL(c.req.url);
-  url.pathname = url.pathname.replace('/api/world', '');
-  return stub.fetch(new Request(url.toString(), c.req.raw));
-});
+// app.all('/api/world/*', async (c) => {
+//   const id = c.env.WORLD_CLOCK.idFromName('global');
+//   const stub = c.env.WORLD_CLOCK.get(id);
+//   const url = new URL(c.req.url);
+//   url.pathname = url.pathname.replace('/api/world', '');
+//   return stub.fetch(new Request(url.toString(), c.req.raw));
+// });
 
 app.all('/api/wars/:warId/*', async (c) => {
   const id = c.env.WAR_THEATER.idFromName(c.req.param('warId'));

@@ -1,0 +1,43 @@
+--- Verifying Game Loop ---
+1. Logging in...
+   Logged in.
+2. Fetching missions...
+   Found 4 available missions.
+3. Accepting/Checking mission...
+   Found existing active mission.
+   Working with Mission Instance: 4c48ceb4-a7e7-48d5-bcac-48fa238c7fb9
+4. Simulating Gameplay (Updating DB)...
+   Executing SQL update...
+
+ ⛅️ wrangler 4.61.0 (update available 4.65.0)
+─────────────────────────────────────────────
+Resource location: local 
+
+Use --remote if you want to access the remote instance.
+
+🌀 Executing on local database surge-protocol-db (d72bdef1-8719-4820-b906-d751414cdd86) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "duration": 0
+    }
+  }
+]
+   Objectives updated in DB.
+5. Completing Mission (API)...
+Completion Failed: {
+  "success": false,
+  "errors": [
+    {
+      "code": "INTERNAL_ERROR",
+      "message": "DEBUG: Database operation failed",
+      "details": {
+        "stack": "AppError: Database operation failed\n    at MissionLifecycleService.execute (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:8896:13)\n    at async MissionLifecycleService.completeMission (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:9453:5)\n    at async file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:11879:16\n    at async dispatch (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:55:17)\n    at async file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:2371:12\n    at async dispatch (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:55:17)\n    at async file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:7143:5\n    at async dispatch (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:55:17)\n    at async file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:7127:7\n    at async dispatch (file:///Users/pup/SurgeProtocol/.wrangler/tmp/dev-NHtmUA/index.js:55:17)"
+      }
+    }
+  ]
+}

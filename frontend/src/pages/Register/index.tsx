@@ -2,7 +2,7 @@
  * Register Page
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useLocation, Link } from 'wouter-preact';
 import { authStore, isAuthenticated } from '@/stores/authStore';
 import { authService } from '@/api/authService';
@@ -34,10 +34,13 @@ export function Register() {
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Redirect if already authenticated
-  if (isAuthenticated.value) {
-    setLocation('/select-character');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated.value) {
+      setLocation('/select-character');
+    }
+  }, [isAuthenticated.value, setLocation]);
+
+  if (isAuthenticated.value) return null;
 
   const passwordStrength = getPasswordStrength(password);
 
@@ -130,15 +133,14 @@ export function Register() {
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div
                       key={i}
-                      class={`${styles.strengthBar} ${
-                        i <= passwordStrength.score
-                          ? passwordStrength.score <= 2
-                            ? styles.weak
-                            : passwordStrength.score <= 3
+                      class={`${styles.strengthBar} ${i <= passwordStrength.score
+                        ? passwordStrength.score <= 2
+                          ? styles.weak
+                          : passwordStrength.score <= 3
                             ? styles.medium
                             : styles.strong
-                          : ''
-                      }`}
+                        : ''
+                        }`}
                     />
                   ))}
                 </div>
@@ -159,11 +161,10 @@ export function Register() {
             <input
               id="confirmPassword"
               type="password"
-              class={`${styles.input} ${
-                confirmPassword && password !== confirmPassword
-                  ? styles.inputError
-                  : ''
-              }`}
+              class={`${styles.input} ${confirmPassword && password !== confirmPassword
+                ? styles.inputError
+                : ''
+                }`}
               placeholder="••••••••"
               value={confirmPassword}
               onInput={(e) =>

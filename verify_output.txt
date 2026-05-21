@@ -1,0 +1,10 @@
+--- Verifying Game Loop ---
+1. Logging in...
+[TypeError: fetch failed] {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1201:49)
+      at afterConnectMultiple (node:net:1791:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}

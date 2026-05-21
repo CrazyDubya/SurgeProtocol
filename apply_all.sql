@@ -3,7 +3,7 @@
 -- Generated from schema documentation
 
 -- Enable foreign keys
-PRAGMA foreign_keys = ON;
+PRAGMA foreign_keys = OFF;
 
 -- ============================================
 -- ENUM REFERENCE TABLES
@@ -178,13 +178,21 @@ INSERT OR IGNORE INTO enum_reputation_tier (value) VALUES
     ('UNFRIENDLY'), ('HOSTILE'), ('HATED'), ('NEMESIS');
 
 -- Combat Enums
+PRAGMA foreign_keys = OFF;
+DROP TABLE IF EXISTS enum_condition_type;
+PRAGMA foreign_keys = OFF;
 CREATE TABLE IF NOT EXISTS enum_condition_type (
-    value TEXT PRIMARY KEY
+    value TEXT PRIMARY KEY,
+    description TEXT
 );
-INSERT OR IGNORE INTO enum_condition_type (value) VALUES
-    ('BUFF'), ('DEBUFF'), ('DOT'), ('HOT'), ('CROWD_CONTROL'), ('MOVEMENT_IMPAIR'),
-    ('MENTAL'), ('PHYSICAL'), ('ENVIRONMENTAL'), ('MEDICAL'), ('ADDICTION'),
-    ('CYBERPSYCHOSIS'), ('HACKING');
+INSERT OR IGNORE INTO enum_condition_type (value, description) VALUES
+    ('BUFF', 'Positive effect'), ('DEBUFF', 'Negative effect'), ('DOT', 'Damage over time'), ('HOT', 'Heal over time'),
+    ('CROWD_CONTROL', 'Crowd control'), ('MOVEMENT_IMPAIR', 'Movement impairment'),
+    ('MENTAL', 'Mental connection'), ('PHYSICAL', 'Physical effect'),
+    ('ENVIRONMENTAL', 'Environmental effect'), ('MEDICAL', 'Medical condition'), ('ADDICTION', 'Substance addiction'),
+    ('CYBERPSYCHOSIS', 'System overload'), ('HACKING', 'Network intrusion'),
+    ('INJURY', 'Physical damage or trauma'), ('DISEASE', 'Sickness or biological agent'),
+    ('PSYCHOSIS', 'Mental instability');
 
 CREATE TABLE IF NOT EXISTS enum_combat_status (
     value TEXT PRIMARY KEY
@@ -3134,28 +3142,7 @@ CREATE TABLE IF NOT EXISTS condition_definitions (
 -- CHARACTER CONDITIONS
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS character_conditions (
-    id TEXT PRIMARY KEY,
-    character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    condition_id TEXT NOT NULL REFERENCES condition_definitions(id),
-    applied_at TEXT DEFAULT (datetime('now')),
 
-    -- State
-    current_stacks INTEGER DEFAULT 1,
-    duration_remaining_seconds REAL,
-    is_paused INTEGER DEFAULT 0, -- BOOLEAN
-
-    -- Source
-    source_type TEXT,
-    source_id TEXT,
-    source_name TEXT,
-
-    -- Tracking
-    times_ticked INTEGER DEFAULT 0,
-    total_damage_dealt INTEGER DEFAULT 0,
-    total_healing_done INTEGER DEFAULT 0,
-    times_refreshed INTEGER DEFAULT 0
-);
 
 -- ============================================
 -- ADDICTION TYPES
@@ -3200,44 +3187,7 @@ CREATE TABLE IF NOT EXISTS addiction_types (
 -- CHARACTER ADDICTIONS
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS character_addictions (
-    id TEXT PRIMARY KEY,
-    character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    addiction_type_id TEXT NOT NULL REFERENCES addiction_types(id),
-    started_at TEXT DEFAULT (datetime('now')),
 
-    -- State
-    current_stage INTEGER DEFAULT 1,
-    tolerance_level REAL DEFAULT 0,
-    dependence_level REAL DEFAULT 0,
-    last_use TEXT,
-    times_used_total INTEGER DEFAULT 0,
-
-    -- Withdrawal
-    in_withdrawal INTEGER DEFAULT 0, -- BOOLEAN
-    withdrawal_stage INTEGER DEFAULT 0,
-    withdrawal_started TEXT,
-
-    -- Treatment
-    in_treatment INTEGER DEFAULT 0, -- BOOLEAN
-    treatment_progress REAL DEFAULT 0,
-    treatment_start TEXT,
-    treatment_method TEXT,
-
-    -- History
-    recovery_attempts INTEGER DEFAULT 0,
-    relapses INTEGER DEFAULT 0,
-    clean_streaks TEXT, -- JSON
-    longest_clean_streak_hours INTEGER DEFAULT 0,
-
-    -- Cravings
-    current_craving_strength INTEGER DEFAULT 0,
-    last_craving TEXT,
-    cravings_resisted INTEGER DEFAULT 0,
-    cravings_succumbed INTEGER DEFAULT 0,
-
-    UNIQUE(character_id, addiction_type_id)
-);
 
 -- ============================================
 -- CYBERPSYCHOSIS EPISODES
@@ -3286,8 +3236,7 @@ CREATE INDEX IF NOT EXISTS idx_combat_encounters_loc ON combat_encounters(locati
 CREATE INDEX IF NOT EXISTS idx_combat_instances_char ON combat_instances(character_id);
 CREATE INDEX IF NOT EXISTS idx_combat_instances_status ON combat_instances(status);
 CREATE INDEX IF NOT EXISTS idx_condition_defs_type ON condition_definitions(condition_type);
-CREATE INDEX IF NOT EXISTS idx_char_conditions_char ON character_conditions(character_id);
-CREATE INDEX IF NOT EXISTS idx_char_addictions_char ON character_addictions(character_id);
+
 CREATE INDEX IF NOT EXISTS idx_cyberpsychosis_char ON cyberpsychosis_episodes(character_id);
 -- SURGE PROTOCOL: Database Schema Migration
 -- Part 8: Narrative, Dialogue & Quest Systems
@@ -5034,3 +4983,88 @@ INSERT OR IGNORE INTO condition_definitions (id, code, name, condition_type, sev
 ('cond-panicked', 'PANICKED', 'Panicked', 'MENTAL', 3, 0, 15),
 ('cond-enraged', 'ENRAGED', 'Enraged', 'MENTAL', 2, 0, 20),
 ('cond-withdrawal', 'WITHDRAWAL', 'Withdrawal', 'ADDICTION', 3, 0, 3600);
+-- SURGE PROTOCOL: Database Schema Migration
+-- Part 12: Status System (Conditions & Addictions)
+
+
+
+CREATE TABLE IF NOT EXISTS enum_severity (
+    value TEXT PRIMARY KEY
+);
+
+INSERT OR IGNORE INTO enum_severity (value) VALUES ('MINOR'), ('MODERATE'), ('SEVERE'), ('CRITICAL');
+
+CREATE TABLE IF NOT EXISTS enum_addiction_stage (
+    value TEXT PRIMARY KEY,
+    description TEXT
+);
+
+INSERT OR IGNORE INTO enum_addiction_stage (value, description) VALUES 
+('RECREATIONAL', 'Casual use, no withdrawal'), 
+('HABITUAL', 'Regular use, mild cravings'), 
+('DEPENDENT', 'Physical dependence, withdrawal symptoms'), 
+('ACUTE', 'Severe addiction, life-threatening withdrawal');
+
+-- ============================================
+-- CHARACTER CONDITIONS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS character_conditions (
+    id TEXT PRIMARY KEY,
+    character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    type TEXT NOT NULL REFERENCES enum_condition_type(value),
+    
+    -- Description
+    name TEXT NOT NULL,
+    description TEXT,
+    icon_asset TEXT,
+    
+    -- Mechanics
+    severity TEXT DEFAULT 'MINOR' REFERENCES enum_severity(value),
+    value INTEGER DEFAULT 1, -- Generic magnitude (e.g. stack count, tier)
+    
+    -- Duration
+    duration_seconds INTEGER, -- NULL = Permanent
+    expires_at TEXT, -- ISO Timestamp
+    
+    -- Effects (JSON)
+    -- Structure: [{ type: 'STAT_MOD', target: 'strength', value: -2 }, ...]
+    effects_data TEXT, 
+    
+    -- Source
+    source_type TEXT, -- e.g. 'ITEM', 'ENVIRONMENT', 'COMBAT'
+    source_id TEXT,
+    
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_conditions_character ON character_conditions(character_id);
+CREATE INDEX IF NOT EXISTS idx_conditions_expires ON character_conditions(expires_at);
+
+-- ============================================
+-- CHARACTER ADDICTIONS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS character_addictions (
+    id TEXT PRIMARY KEY,
+    character_id TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    substance_id TEXT NOT NULL, -- Logical ID of the substance (e.g. item ID)
+    
+    -- State
+    stage TEXT DEFAULT 'RECREATIONAL' REFERENCES enum_addiction_stage(value),
+    severity_level INTEGER DEFAULT 0, -- 0-100 Progress bar to next stage
+    
+    -- Tracking
+    usage_count INTEGER DEFAULT 0,
+    last_consumed_at TEXT,
+    
+    -- Withdrawal
+    withdrawal_onset_at TEXT, -- When withdrawal starts if not consumed
+    is_in_withdrawal INTEGER DEFAULT 0, -- BOOLEAN
+    
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_addictions_character ON character_addictions(character_id);

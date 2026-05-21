@@ -1,0 +1,55 @@
+{
+    "vehicles": [
+        {
+            "code": "SCOOTER_BASIC",
+            "name": "Vespa Bolt",
+            "manufacturer": "Bolt Motors",
+            "description": "A reliable, if uninspired, electric scooter. Perfect for beginners.",
+            "vehicle_class": "SCOOTER",
+            "vehicle_type": "GROUND",
+            "base_price": 500,
+            "max_hull_points": 50,
+            "fuel_capacity": 40,
+            "cargo_capacity_kg": 20,
+            "top_speed_kmh": 60,
+            "handling_rating": 8,
+            "requirements": {
+                "tier": 1
+            }
+        },
+        {
+            "code": "BIKE_COURIER",
+            "name": "Kinesis Dash",
+            "manufacturer": "Kinesis",
+            "description": "Lightweight delivery bike favored by courier guilds.",
+            "vehicle_class": "BIKE",
+            "vehicle_type": "GROUND",
+            "base_price": 1200,
+            "max_hull_points": 80,
+            "fuel_capacity": 60,
+            "cargo_capacity_kg": 40,
+            "top_speed_kmh": 120,
+            "handling_rating": 9,
+            "requirements": {
+                "tier": 1
+            }
+        },
+        {
+            "code": "VAN_MULE",
+            "name": "Mule Hauler",
+            "manufacturer": "Heavy Ind.",
+            "description": "Rugged transport van. Slow but carries a lot.",
+            "vehicle_class": "VAN",
+            "vehicle_type": "GROUND",
+            "base_price": 4500,
+            "max_hull_points": 200,
+            "fuel_capacity": 100,
+            "cargo_capacity_kg": 500,
+            "top_speed_kmh": 90,
+            "handling_rating": 4,
+            "requirements": {
+                "tier": 2
+            }
+        }
+    ]
+}

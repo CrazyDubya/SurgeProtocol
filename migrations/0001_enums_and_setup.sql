@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS enum_sex_type (
     value TEXT PRIMARY KEY
 );
 INSERT OR IGNORE INTO enum_sex_type (value) VALUES
-    ('MALE'), ('FEMALE'), ('INTERSEX'), ('NONE');
+    ('MALE'), ('FEMALE'), ('INTERSEX'), ('NONBINARY'), ('SYNTHETIC'), ('UNKNOWN'), ('NONE');
 
 CREATE TABLE IF NOT EXISTS enum_blood_type (
     value TEXT PRIMARY KEY
@@ -125,7 +125,8 @@ INSERT OR IGNORE INTO enum_cargo_type (value) VALUES
     ('PACKAGE_SMALL'), ('PACKAGE_MEDIUM'), ('PACKAGE_LARGE'), ('DOCUMENT'),
     ('DATA_PHYSICAL'), ('DATA_DIGITAL'), ('FOOD_HOT'), ('FOOD_COLD'),
     ('MEDICAL_SUPPLIES'), ('MEDICAL_URGENT'), ('BIOLOGICALS'), ('ORGAN_TRANSPORT'),
-    ('WEAPONS'), ('CONTRABAND'), ('PERSON_VIP'), ('PERSON_COVERT'), ('UNKNOWN_SEALED');
+    ('WEAPONS'), ('CONTRABAND'), ('PERSON_VIP'), ('PERSON_COVERT'), ('UNKNOWN_SEALED'),
+    ('STANDARD'), ('FRAGILE'), ('HAZMAT'), ('COVERT'), ('CONTESTED');
 
 -- World Enums
 CREATE TABLE IF NOT EXISTS enum_region_type (
@@ -168,7 +169,8 @@ CREATE TABLE IF NOT EXISTS enum_faction_type (
 );
 INSERT OR IGNORE INTO enum_faction_type (value) VALUES
     ('MEGACORP'), ('CORPORATION'), ('GOVERNMENT'), ('LAW_ENFORCEMENT'), ('MILITARY'),
-    ('GANG'), ('SYNDICATE'), ('CULT'), ('MOVEMENT'), ('COLLECTIVE'), ('GUILD'), ('MERCENARY_GROUP');
+    ('GANG'), ('SYNDICATE'), ('CULT'), ('MOVEMENT'), ('COLLECTIVE'), ('GUILD'), ('MERCENARY_GROUP'),
+    ('UNDERGROUND');
 
 CREATE TABLE IF NOT EXISTS enum_reputation_tier (
     value TEXT PRIMARY KEY
@@ -179,7 +181,8 @@ INSERT OR IGNORE INTO enum_reputation_tier (value) VALUES
 
 -- Combat Enums
 CREATE TABLE IF NOT EXISTS enum_condition_type (
-    value TEXT PRIMARY KEY
+    value TEXT PRIMARY KEY,
+    description TEXT
 );
 INSERT OR IGNORE INTO enum_condition_type (value) VALUES
     ('BUFF'), ('DEBUFF'), ('DOT'), ('HOT'), ('CROWD_CONTROL'), ('MOVEMENT_IMPAIR'),

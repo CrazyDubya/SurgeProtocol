@@ -1,0 +1,107 @@
+
+export interface ContractDefinition {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  legal_text: string | null;
+  contract_type: string;
+  issuer_type: string;
+  issuer_faction_id: string | null;
+  duration_type: string;
+  duration_value: number | null;
+  renewable: number;
+  termination_conditions: string | null;
+  early_termination_penalty: number | null;
+  player_obligations: string | null;
+  issuer_obligations: string | null;
+  performance_metrics: string | null;
+  compensation: string | null;
+  benefits_granted: string | null;
+  access_granted: string | null;
+  discounts_granted: string | null;
+  exclusivity_clauses: string | null;
+  non_compete_clauses: string | null;
+  restricted_activities: string | null;
+  required_availability: number | null;
+  has_tracking_requirements: number;
+  gps_tracking_required: number;
+  performance_reviews_frequency: number | null;
+  hidden_clauses: string | null;
+  hidden_reveal_condition: string | null;
+  corporate_override_clause: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CharacterContract {
+  id: string;
+  character_id: string;
+  contract_definition_id: string;
+  signed_at: string;
+  issuer_npc_id: string | null;
+  issuer_faction_id: string | null;
+  custom_terms: string | null;
+  start_date: string;
+  end_date: string | null;
+  auto_renew: number;
+  status: string;
+  current_performance_score: number;
+  violations_count: number;
+  warnings_count: number;
+  total_paid_to_player: number;
+  total_paid_by_player: number;
+  next_payment_date: string | null;
+  next_payment_amount: number | null;
+  last_review_date: string | null;
+  next_review_date: string | null;
+  review_score: number | null;
+  terminated_at: string | null;
+  termination_reason: string | null;
+  termination_initiated_by: string | null;
+  termination_penalty_paid: number | null;
+  hidden_clauses_revealed: string | null;
+  corporate_override_invoked: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Debt {
+  id: string;
+  character_id: string;
+  created_at: string;
+  creditor_type: string;
+  creditor_npc_id: string | null;
+  creditor_faction_id: string | null;
+  creditor_name: string;
+  original_amount: number;
+  current_balance: number;
+  currency_id: string | null;
+  interest_rate_annual: number;
+  interest_type: string | null;
+  payment_frequency: string | null;
+  minimum_payment: number;
+  payment_due_day: number | null;
+  is_secured: number;
+  collateral_type: string | null;
+  collateral_item_id: string | null;
+  collateral_value: number | null;
+  status: string;
+  payments_made: number;
+  payments_missed: number;
+  total_paid: number;
+  total_interest_paid: number;
+  start_date: string;
+  maturity_date: string | null;
+  last_payment_date: string | null;
+  next_payment_due: string | null;
+  collection_started: number;
+  collection_agency: string | null;
+  legal_action_pending: number;
+  garnishment_active: number;
+  garnishment_percentage: number | null;
+  partial_forgiveness: number | null;
+  forgiveness_conditions: string | null;
+  can_be_worked_off: number;
+  updated_at: string;
+}

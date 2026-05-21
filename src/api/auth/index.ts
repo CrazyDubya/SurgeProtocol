@@ -12,7 +12,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
 import {
   hashPassword,
   verifyPassword,
@@ -94,7 +94,7 @@ authRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
   const passwordHash = await hashPassword(password);
 
   // Create user
-  const userId = nanoid();
+  const userId = crypto.randomUUID();
   const now = new Date().toISOString();
 
   await c.env.DB
@@ -122,7 +122,12 @@ authRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
   return c.json({
     success: true,
     data: {
-      userId,
+      user: {
+        id: userId,
+        email: email.toLowerCase(),
+        displayName: displayName ?? null,
+        createdAt: now,
+      },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       expiresIn: tokens.expiresIn,
@@ -139,9 +144,16 @@ authRoutes.post('/login', zValidator('json', loginSchema), async (c) => {
 
   // Find user
   const user = await c.env.DB
-    .prepare('SELECT id, password_hash, is_active FROM users WHERE email = ?')
+    .prepare('SELECT id, email, display_name, created_at, password_hash, is_active FROM users WHERE email = ?')
     .bind(email.toLowerCase())
-    .first<{ id: string; password_hash: string; is_active: number }>();
+    .first<{
+      id: string;
+      email: string;
+      display_name: string | null;
+      created_at: string;
+      password_hash: string;
+      is_active: number;
+    }>();
 
   if (!user) {
     return c.json({
@@ -200,8 +212,12 @@ authRoutes.post('/login', zValidator('json', loginSchema), async (c) => {
   return c.json({
     success: true,
     data: {
-      userId: user.id,
-      characterId: character?.id,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.display_name,
+        createdAt: user.created_at,
+      },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       expiresIn: tokens.expiresIn,

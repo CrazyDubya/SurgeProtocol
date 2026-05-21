@@ -31,3 +31,22 @@ export {
   type GenerationOptions,
   type GenerationResult,
 } from './generator';
+
+export {
+  MissionActionService,
+  getActiveVehicle,
+  validateVehicleForMission,
+  calculateVehicleTimeBonus,
+  type MissionActionContext,
+} from './actions';
+
+export type {
+  ActiveVehicleInfo,
+  VehicleValidationResult,
+  MissionActionType,
+  MissionActionInput,
+  MissionActionResult,
+  DialogueEffect,
+  ComplicationDefinition,
+  FormattedObjective,
+} from './types';

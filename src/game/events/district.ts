@@ -453,3 +453,35 @@ export function getEventSummary(event: DistrictEvent): string {
 
   return `${event.name}: ${effects.join(', ')}`;
 }
+
+/**
+ * Get active events for a district (compatible with API usage).
+ */
+export async function getActiveDistrictEvents(_cache: any, districtId: string): Promise<DistrictEvent[]> {
+  // Pass cache but ignore for now in favor of singleton
+  return districtEvents.getActiveEvents(districtId);
+}
+
+/**
+ * Calculate effective modifiers from a list of events.
+ */
+export function getEffectiveModifiers(events: DistrictEvent[]): Map<EventModifier['type'], number> {
+  const modifiers = new Map<EventModifier['type'], number>();
+  const modifierTypes: EventModifier['type'][] = [
+    'ROUTE_TIME', 'ROUTE_DANGER', 'SHOP_PRICE',
+    'NPC_AVAILABILITY', 'MISSION_REWARD', 'DETECTION_RISK'
+  ];
+
+  for (const type of modifierTypes) {
+    modifiers.set(type, 1.0);
+  }
+
+  for (const event of events) {
+    for (const mod of event.modifiers) {
+      const current = modifiers.get(mod.type) || 1.0;
+      modifiers.set(mod.type, current * mod.value);
+    }
+  }
+
+  return modifiers;
+}

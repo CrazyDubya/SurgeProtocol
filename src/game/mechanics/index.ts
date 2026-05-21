@@ -36,6 +36,7 @@ export {
   type Armor,
   type Cover,
   type Combatant,
+  type TerrainMap,
   type InitiativeResult,
   type AttackResult,
   type DamageResult,
@@ -55,6 +56,8 @@ export {
   getWoundPenalty,
   applyDamage,
   calculateRestHealing,
+  calculateCover,
+  isFlanking,
 } from './combat';
 
 // Rating System
@@ -83,3 +86,26 @@ export {
   isNearTierUp,
   getAlgorithmCommentary,
 } from './rating';
+
+// Derived Stats
+export {
+  calculateCarryCapacity,
+  calculateMemoryCapacity,
+} from './stats';
+
+// Grid & Pathfinding
+export {
+  type Point,
+  getDistance,
+  findPath,
+  hasLineOfSight,
+} from './grid';
+
+// Effects
+export {
+  type CombatEffect,
+  type EffectResult,
+  applyEffect,
+  CONSUMABLE_EFFECTS,
+  ABILITY_EFFECTS,
+} from './effects';

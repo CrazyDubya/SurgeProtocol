@@ -93,6 +93,10 @@ interface DifficultyData {
 // FILE READERS
 // =============================================================================
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const SEED_DATA_DIR = path.join(__dirname, '..', 'seed_data');
 
 function readJsonFile<T>(filename: string): T | null {
@@ -506,6 +510,6 @@ async function main() {
 export { runSeeders, SEEDERS, type SeedResult, type SeedOptions, type DbExecutor };
 
 // Run if called directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch(console.error);
 }

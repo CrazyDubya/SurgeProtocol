@@ -57,6 +57,7 @@ export {
   factions,
   finances,
   conditions,
+  activeVehicle,
   equipped,
   isLoadingCharacter,
   isLoadingStats,

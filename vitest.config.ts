@@ -14,6 +14,9 @@ export default defineConfig({
     // Environment
     environment: 'node',
 
+    // Pool configuration - use forks for better isolation
+    pool: 'forks',
+
     // Coverage
     coverage: {
       provider: 'v8',
@@ -26,8 +29,10 @@ export default defineConfig({
       ],
     },
 
-    // Timeouts
+    // Timeouts - add hook and teardown timeouts
     testTimeout: 10000,
+    hookTimeout: 10000,
+    teardownTimeout: 5000,
 
     // Reporter
     reporters: ['verbose'],
